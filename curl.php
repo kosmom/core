@@ -1,0 +1,136 @@
+<?php
+namespace c;
+
+/**
+ * Curl class
+ * @author Kosmom <Kosmom.ru>
+ */
+class curl{
+	private static $tasks=array();
+	private static $stack=array();
+	private static $tasks_link=array();
+	private static $pipe=0;
+	private static $running=0;
+	private static $master;
+	private static $contents;
+
+
+	static function getContent($URL,$post=null,$cookieFile=null,$options=array()){
+		$c = curl_init();
+		curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($c, CURLOPT_URL, $URL);
+		curl_setopt($c, CURLOPT_REFERER, $URL);
+		if ($post){
+			curl_setopt($c, CURLOPT_POST, 1);
+		if (is_array($post)){
+			curl_setopt($c, CURLOPT_POSTFIELDS, http_build_query($post));
+		}else{
+			curl_setopt($c, CURLOPT_POSTFIELDS, $post);
+		}
+		}
+		if ($cookieFile){
+			curl_setopt($c, CURLOPT_COOKIEJAR, $cookieFile);
+			curl_setopt($c, CURLOPT_COOKIEFILE, $cookieFile);
+		}
+		curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($c, CURLOPT_USERAGENT, 'Mozilla Firefox 3 (compatible; MSIE 6.0; LAS Linux)');
+		if ($options)curl_setopt_array($c, $options);
+		$rs = curl_exec($c);
+		if ($rs===false)throw new \Exception(curl_error($c));
+		curl_close($c);
+		return $rs;
+	}
+
+
+	static function addTasks($url,$position=0,$callback=null){
+		$task=array('url'=>trim($url),'position'=>$position);
+		if (is_callable($callback))$task['callback']=$callback;
+		self::$tasks[]=$task;
+		//sort array and form stack
+
+		$fil=array_filter(self::$tasks,function($item){
+			return !isset($item['status']);
+		});
+		datawork::stable_uasort($fil,function($a,$b){
+			if ((float)@$a['position'] == (float)@$b['position'])return 0;
+			return ((float)$a['position'] > (float)$b['position']) ? -1 : 1;
+		});
+		self::$stack=array_keys($fil);
+	}
+	//    private static function done($ch,$header){
+	//        self::$pipe--;
+	//        $task_id=self::$tasks_link[(int)$ch];
+	//        self::$tasks[$task_id]['status']=1;
+	//        $content=self::$contents[(int)$ch];
+	//        if (isset(self::$tasks[$task_id]['callback']))self::$tasks[$task_id]['callback']($ch,$header,$content);
+	//    }
+	static private function addCh($task_id){
+		$ch = curl_init();
+		$options = array(
+			CURLOPT_RETURNTRANSFER => TRUE,
+			//CURLOPT_HEADERFUNCTION=>'self::done',
+		);
+		//if (isset(self::$tasks[$task_id]['callback']))$options[CURLOPT_HEADERFUNCTION]=self::$tasks[$task_id]['callback'];
+		$options[CURLOPT_URL]=self::$tasks[$task_id]['url'];
+		curl_setopt_array($ch, $options);
+		self::$tasks[$task_id]['handler']=(int)$ch;
+		self::$tasks_link[(int)$ch]=$task_id;
+		self::$tasks[$task_id]['status']=0; //0-send 1-done
+		curl_multi_add_handle(self::$master, $ch);
+		unset($ch);
+	//return $ch;
+	}
+	/**
+	 * send requests
+	 */
+	static function push(){
+		// make sure the rolling window isn't greater than the # of urls
+		$rolling_window = min(sizeof(self::$stack),5);
+		if (!self::$master or gettype(self::$master)=='unknown type')self::$master = curl_multi_init();
+		// $curl_arr = array();
+		// add additional curl options here
+
+		// start the first batch of requests
+		for ($i = self::$pipe; $i < $rolling_window; $i++) {
+		  self::addCh(array_shift(self::$stack));
+		  self::$pipe++;
+		}
+		self::check(0);
+		self::check();
+	}
+	static function check($pause=100){
+	usleep($pause);
+	//      while (($execrun = ) == CURLM_CALL_MULTI_PERFORM) {
+	//        ;
+	//      }
+	  curl_multi_exec(self::$master, self::$running);
+	  //if ($execrun != CURLM_OK)return false;
+	  while ($done = curl_multi_info_read(self::$master)) {
+			self::$pipe--;
+			$task_id=self::$tasks_link[(int)$done['handle']];
+			self::$tasks[$task_id]['status']=1;
+			$content=curl_multi_getcontent($done['handle']);
+			if (isset(self::$tasks[$task_id]['callback']))self::$tasks[$task_id]['callback']($done['handle'],$content);
+
+			//var_dump(curl_multi_getcontent($done['handle']));
+		  if (self::$stack){
+			$rolling_window = min(sizeof(self::$stack),5);
+			for ($i = self::$pipe; $i < $rolling_window; $i++) {
+				self::addCh(array_shift(self::$stack));
+				self::$pipe++;
+			}
+			self::$running=1;
+		}
+		curl_multi_remove_handle(self::$master, $done['handle']);
+	  }
+	}
+	static function waitAll(){
+		self::push();
+		do {
+			$rs=self::check();
+			if ($rs===false)break;
+		} while (self::$running);
+		curl_multi_close(self::$master);
+		var_dump(self::$contents);
+	}
+}
