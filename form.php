@@ -562,9 +562,9 @@ class form implements \ArrayAccess{
 			return $this->fillData();
 		}
 	function fillData(){
-		foreach ($this->fields as &$params){
+		foreach ($this->fields as $key=>&$params){
 			if (!is_callable($params['fill']))  continue;
-			$out=$params['fill']($this->getData());
+			$out=$params['fill']($this->getData(),$key);
 			if (!is_null($out))$params['value']=$out;
 		}
 		return $this;

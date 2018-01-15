@@ -751,7 +751,7 @@ class input{
 		return self::jsVar($value);
 	}
 	static private function jsReplace($value){
-		return str_replace(array("\n", "'","</script>"),array("\\n", "\'","<\/script>"),$value);
+		return str_replace(array("\r", "\n", "'","</script>"),array('', "\\n", "\'","<\/script>"),$value);
 	}
 	static function jsVar($value){
 		switch(gettype($value)){

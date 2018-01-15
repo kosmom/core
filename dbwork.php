@@ -89,10 +89,10 @@ class dbwork{
 	 * @return array [datatable struct,primary key,unique keys]
 	 */
 	static function describeTable($tablename,$schema='',$db=''){
-		if ($db=='')$db=core::$data['db'];
+            	if ($db=='')$db=core::$data['db'];
 		if (is_array($db))$db=db::autodb($db);
 		$defaultScheme=$schema?$schema:$db;
-		if (core::$debug){
+                if (core::$debug){
 			debug::group('DBWork describeTable start');
 			debug::consoleLog('Table '.($schema?$schema.'.':'').$tablename);
 		}
@@ -206,18 +206,18 @@ class dbwork{
 				if ($schema){
 					$schema=strtoupper($schema);
 					$sql="select CONSTRAINT_NAME from ALL_CONS_COLUMNS WHERE owner=:schema and table_name=:tablename and position is not null";
-					$pkConstraint=db::ea11($sql,array('tablename'=>$tablename,'schema'=>$schema));
+					$pkConstraint=db::ea11($sql,array('tablename'=>$tablename,'schema'=>$schema),$db);
 					$sql="select atc.column_name,atc.data_type,data_length,ucc.comments,atc.nullable,atc.data_default from all_tab_columns atc inner join ALL_COL_COMMENTS ucc on atc.table_name=ucc.table_name and atc.column_name=ucc.column_name where atc.table_name = :tablename and atc.OWNER=:schema order by COLUMN_ID";
-					$rs=db::ea($sql,array('tablename'=>$tablename,'schema'=>$schema));
+					$rs=db::ea($sql,array('tablename'=>$tablename,'schema'=>$schema),$db);
 					$sql="select ai.INDEX_NAME,COLUMN_NAME from ALL_INDEXES ai left join ALL_IND_COLUMNS aic on AI.INDEX_NAME=AIC.INDEX_NAME WHERE owner=:schema and ai.table_name=:tablename and UNIQUENESS='UNIQUE'";
-					$uniqueKey=datawork::group(db::ea($sql,array('tablename'=>$tablename,'schema'=>$schema)),array('INDEX_NAME','[]'),'COLUMN_NAME');
+					$uniqueKey=datawork::group(db::ea($sql,array('tablename'=>$tablename,'schema'=>$schema),$db),array('INDEX_NAME','[]'),'COLUMN_NAME');
 				}else{
 					$sql="select CONSTRAINT_NAME from USER_CONS_COLUMNS WHERE table_name=:tablename and position is not null";
-					$pkConstraint=db::ea11($sql,array('tablename'=>$tablename));
+					$pkConstraint=db::ea11($sql,array('tablename'=>$tablename),$db);
 					$sql="select atc.column_name,atc.data_type,data_length,ucc.comments,atc.nullable,atc.data_default from user_tab_columns atc inner join USER_COL_COMMENTS ucc on atc.table_name=ucc.table_name and atc.column_name=ucc.column_name where atc.table_name = :tablename order by COLUMN_ID";
-					$rs=db::ea($sql,array('tablename'=>$tablename));
+					$rs=db::ea($sql,array('tablename'=>$tablename),$db);
 					$sql="select ai.INDEX_NAME,COLUMN_NAME from USER_INDEXES ai left join USER_IND_COLUMNS aic on AI.INDEX_NAME=AIC.INDEX_NAME WHERE ai.table_name=:tablename and UNIQUENESS='UNIQUE'";
-					$uniqueKey=datawork::group(db::ea($sql,array('tablename'=>$tablename)),array('INDEX_NAME','[]'),'COLUMN_NAME');
+					$uniqueKey=datawork::group(db::ea($sql,array('tablename'=>$tablename),$db),array('INDEX_NAME','[]'),'COLUMN_NAME');
 				}
 				if ($pkConstraint){
 					$primaryKey=$uniqueKey[$pkConstraint];
@@ -230,7 +230,7 @@ class dbwork{
 					$data[$column]['typerange']=$item['DATA_LENGTH'];
 					if ($item['COMMENTS']) $data[$column]['comment']=$item['COMMENTS'];
 					if ($item['NULLABLE'] == 'N') $data[$column]['notnull']=true;
-										if (@$item['DATA_DEFAULT']) $data[$column]['default']=$item['DATA_DEFAULT'];
+                                        if (@$item['DATA_DEFAULT']) $data[$column]['default']=$item['DATA_DEFAULT'];
 				}
 				break;
 			default:

@@ -325,8 +325,8 @@ class db{
 	private static function connect($db){
 		self::getConfig();
 		$class='db_'.self::$db_config[core::$env][$db]['type'];
-		if (file_exists(__DIR__.DIRECTORY_SEPARATOR.'factory'.DIRECTORY_SEPARATOR.$class.'.php')){
-			require_once(__DIR__.DIRECTORY_SEPARATOR.'factory'.DIRECTORY_SEPARATOR.$class.'.php');
+		if (file_exists(__DIR__.'/factory/'.$class.'.php')){
+			require_once(__DIR__.'/factory/'.$class.'.php');
 			$class='c\\'.$class;
 			self::$dbs[core::$env][$db]=new $class(self::$db_config[core::$env][$db],$db);
 		}else{
@@ -405,7 +405,7 @@ class db{
 		return dbwork::filterDiap($string,$field,$bind,$bindPrefix,$blockDelimeter,$diapDilimeter);
 	}
 	static function describeTable($tablename,$schema='',$db=''){
-		return dbwork::describeTable($tablename,$schema='',$db);
+		return dbwork::describeTable($tablename,$schema,$db);
 	}
 	static function setMassData($tableName,$arrayIn='',$parentArrayIn='',$clearBefore=true,$sequence='',$db=''){
 		return dbwork::setMassData($tableName,$arrayIn,$parentArrayIn,$clearBefore,$sequence,$db);
