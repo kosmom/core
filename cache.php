@@ -156,22 +156,23 @@ class cache{
 	static function get($var,$callback=null,$timeout=null) {
 		if ($timeout===null)$timeout=isset(core::$data['cacheTimeout'])?core::$data['cacheTimeout']:self::$cacheTimeout;
 		$path=isset(core::$data['cachePath'])?core::$data['cachePath']:self::$cachePath;
-
-		$fullpath=$path.DIRECTORY_SEPARATOR.$var.'.cache';
-		$rs = filedata::loaddata($fullpath);
-		if(!$rs or ($timeout>0 && time() - filemtime($fullpath) > $timeout)){
-//			todo make flock() blocking;
+		$fullpath=$path.'/'.$var.'.cache';
+		$mtime=filemtime($fullpath);
+		if($mtime===false or ($timeout>0 && time() - $mtime > $timeout)){
 			if ($callback===null)return null;
 			$rs=$callback($var);
 			filedata::savedata($fullpath, $rs);
+			$mtime=filemtime($fullpath);
+			clearstatcache(false,$fullpath);
+			return $rs;
 		}
-		return $rs;
+		return filedata::loaddata($fullpath);
 	}
-
+	
 	static function set($var, $data) {
 		$path=isset(core::$data['cachePath'])?core::$data['cachePath']:self::$cachePath;
 
-		$fullpath=$path.DIRECTORY_SEPARATOR.$var.'.cache';
+		$fullpath=$path.'/'.$var.'.cache';
 		filedata::savedata($fullpath, $data);
 	}
 }

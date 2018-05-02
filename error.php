@@ -21,9 +21,9 @@ class error{
 	/**
 	 * Add error to buffer
 	 * @param string $text error text
-	 * @param string $type error type
-	 * @param string $redirect redirect after error
-	 * @param integer $header redirect type after error
+	 * @param int $type error type
+	 * @param string|boolean $redirect redirect after error
+	 * @param int $header redirect type after error
 	 */
 	static function add($text,$type=self::ERROR,$redirect=false,$header=''){
 		if (core::$debug){
@@ -72,7 +72,7 @@ class error{
 
 	/**
 	 * Buffere error count
-	 * @param string $type error type
+	 * @param int $type error type
 	 * @return integer
 	 */
 	static function count($type=self::ERROR){
@@ -116,7 +116,7 @@ class error{
 	/**
 	 * Add page header
 	 * @param integer $code
-	 * @return boolean operation result
+	 * @return super|false
 	 */
 	static function header($code){
 		if (headers_sent())return false;

@@ -273,14 +273,10 @@ class forms{
 	}
 
 	/**
-	 * Set or return active form
-	 * @param string|null $form
-	 * @return null|string
 	 * @deprecated since version 3.4
 	 */
 	static function active_form($form=null){
-		if ($form===null)return self::$activeForm;
-		self::$activeForm=(string)$form;
+		return self::activeForm($form);
 	}
 	/**
 	 * Set or return active form
@@ -337,7 +333,7 @@ class forms{
 	static function fillData($form=null){
 		if ($form===null)$form=self::$activeForm;
 		self::createForm($form);
-		return self::$forms[$form]->fillData($field);
+		return self::$forms[$form]->fillData();
 	}
 
 	/**
@@ -386,7 +382,7 @@ class forms{
 	}
 	/**
 	 * Render full form
-	 * @param tring $form form name
+	 * @param string $form form name
 	 * @return string html text
 	 */
 	static function render($form=null){
@@ -400,7 +396,7 @@ class forms{
 		return self::$forms[$form]->renderOtherFields();
 	}
 
-	function addSubmitField($params=array(),$fieldKey='submit',$form=null){
+	static function addSubmitField($params=array(),$fieldKey='submit',$form=null){
 		if ($form===null)$form=self::$activeForm;
 		self::createForm($form);
 		return self::$forms[$form]->addSubmitField($params,$fieldKey);
@@ -419,7 +415,7 @@ class forms{
 		self::createForm($form);
 		return self::$forms[$form]->renderAsTable();
 	}
-	static function getFormDescription($key=''){
+	static function getFormDescription($key='',$form=null){
 		if ($form===null)$form=self::$activeForm;
 		self::createForm($form);
 		return self::$forms[$form]->getFormDescription($key);

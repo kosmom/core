@@ -54,8 +54,8 @@ class datawork{
 	/**
 	 * Prepare array element as array
 	 * @param array $format
-	 * @param type $key
-	 * @param type $item
+	 * @param string|array $key
+	 * @param string|array $item
 	 */
 	private static function arrayGroup($format,$key,$item){
 		// sample: c\datawork::group($rs,array('k1','k2'),array('k1'=>'k1',k2'=>c\datawork::KEY,'k3'=>function($row){ return $row['k1']});
@@ -86,9 +86,35 @@ class datawork{
 		return $result;
 	}
 
+	static function unflatten($array,$concat='.'){
+		$buffer=array();
+		foreach ($array as $key=>$value){
+			$keys=  explode($concat, $key);
+			switch (count($keys)){
+				case 5:
+					$buffer[$keys[0]][$keys[1]][$keys[2]][$keys[3]][$keys[4]]=$value;
+				break;
+				case 4: 
+					$buffer[$keys[0]][$keys[1]][$keys[2]][$keys[3]]=$value;
+				break;
+				case 3:
+					$buffer[$keys[0]][$keys[1]][$keys[2]]=$value;
+				break;
+				case 2:
+					$buffer[$keys[0]][$keys[1]]=$value;
+				break;
+				case 1:
+					$buffer[$keys[0]]=$value;
+				break;
+			}
+		}
+		return $buffer;
+	}
+
+
 	/**
 	 * Transform array to $key var as key.
-	 * @param array $array soruce array
+	 * @param array|\SplFixedArray $array soruce array
 	 * @param string|array $key key element of $array. if type is array - group result for all parametars. Up to 4 params array
 	 * @param string|boolean|callable $val if not exist will be return $array[$key]=>$item, if exists will be return $array[$key]=>$array[$val]
 	 * @return array
@@ -144,7 +170,7 @@ class datawork{
 				}elseif ($val===true){
 					foreach ($array as $item)$out[]=true;
 				}elseif ($val===self::KEY){
-					foreach ($array as $tkey=>$item)$out[]=$tkey;
+					foreach ($array as $tkey=>$i)$out[]=$tkey;
 				}else{
 					foreach ($array as $item)$out[]=$item[$val];
 				}
@@ -495,10 +521,7 @@ class datawork{
 	}
 
 	/**
-	 * Transform describe array to form array
-	 * @param array $describeArray array with format describe_table function
-	 * @return array
-		* @deprecated since version 3.4
+ 	 * @deprecated since version 3.4
 	 */
 	static function describe_to_form($describeArray){
 		return self::describeToForm($describeArray);
@@ -506,7 +529,7 @@ class datawork{
 	/**
 	 * Transform describe array to form array
 	 * @param array $describeArray array with format describe_table function
-	 * @return array
+	 * @return array|boolean
 	 */
 	static function describeToForm($describeArray){
 		if (empty($describeArray['data']))return false;
@@ -525,10 +548,12 @@ class datawork{
 				case 'mediumtext':
 				case 'longtext':
 				case 'VARCHAR2':
-				case 'float':
+					$out[$name]['type']='text';
+					break;
+                                case 'float':
 				case 'double':
 				case 'NUMBER':
-					$out[$name]['type']='text';
+					$out[$name]['type']='float';
 					break;
 				case 'tinyint':
 				case 'smallint':
@@ -590,7 +615,7 @@ class datawork{
 			}
 			if ($item['notnull'] && !$item['autoincrement'])$out[$name]['validate'][]=array('type'=>'required','text'=>input::VALIDATE_AUTO_TEXT);
 		}
-		return $out;
+                return $out;
 	}
 
 	/**
@@ -628,9 +653,9 @@ class datawork{
 
 	/**
 	 * Flatten array with subtree
-	 * @param type $array tree array
-	 * @param type $children children branch
-	 * @param type $level level of subbranch
+	 * @param array $array tree array
+	 * @param string $children children branch
+	 * @param int $level level of subbranch
 	 * @return array
 	 */
 	static function flatTree($array,$children='children',$level=0){
@@ -706,7 +731,7 @@ class datawork{
 	}
 	/**
 	 * Transform array with only vals to array with keys==vals
-	 * @param array $vals_array
+         * @param mixed ...$vals_array
 	 * @return array
 	 */
 	static function valsToKeyVals(){

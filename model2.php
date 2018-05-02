@@ -19,7 +19,7 @@ class model{
 	/**
 	 * @return static
 	 */
-	static function where($field,$prop,$value=null){
+	static function where($field,$prop=null,$value=null){
 	}
 	
 	/**
@@ -27,5 +27,12 @@ class model{
 	 */
 	static function order($field,$order='',$prior=999,$func=false,$expression=false){
 	}
+        
+        /**
+	 * @return static
+	 */
+        static function whereIn($field,$arrayIn){
+        }
+
 	
 }

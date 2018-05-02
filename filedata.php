@@ -86,7 +86,7 @@ class filedata{
 		if (is_array($var)) {
 			$toImplode = array();
 			foreach ($var as $key => $value) {
-				$toImplode[] = var_export($key, true).'=>'.self::varExportMin($value, true);
+				$toImplode[] = var_export($key, true).'=>'.self::varExportMin($value);
 			}
 			return 'array('.implode(',', $toImplode).')';
 		} else {
@@ -127,13 +127,14 @@ class filedata{
 			if (filemtime($file)<time()-$mTimeAgo)unlink ($file);
 		}
 	}
+	
 	/**
 	 * Get full list in folder with mask
-	 * @param string $dir
-	 * @param string $mask
-	 * @return array
+	 * @param string $src_dir
+	 * @param string $mask preg match mask of filename
+	 * @return array|boolean
 	 */
-	static function filelist($src_dir,$mask='*',$callback=null){
+	static function filelist($src_dir,$mask='',$callback=null){
 		if (!is_dir($src_dir))return false;
 		$dir = opendir($src_dir);
 		$out=array();
@@ -141,13 +142,14 @@ class filedata{
 			if (( $file == '.' ) || ( $file == '..' ))continue;
 			if ( is_dir($src_dir . DIRECTORY_SEPARATOR . $file) ) {
 				$out+=self::filelist($src_dir . DIRECTORY_SEPARATOR . $file,$mask,$callback);
-			} else {
+			} elseif (!$mask || preg_match($mask, $file)){
 				$out[$src_dir . DIRECTORY_SEPARATOR . $file]=is_callable($callback)?$callback($src_dir . DIRECTORY_SEPARATOR . $file,$file,$src_dir):true;
 			}
 		}
 		closedir($dir);
 		return $out;
 	}
+	
 	/**
 	 * Recursivety copy directory
 	 * @param string $src source directory

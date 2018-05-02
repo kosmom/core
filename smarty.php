@@ -54,17 +54,4 @@ class smarty{
 		if (substr($number2,0,1)=='.')return '0'.$number2;
 		return (float)$number2;
 	}
-	public static function album($id){
-		// для использования - нужно положить альбом в указаную папку
-		include 'templates/plugins/album.php';
-	}
-	public static function comments($page){
-		// для использования - нужно положить шаблон коментария в указаную папку
-		include 'templates/plugins/comments.php';
-	}
-	public static function setup($val){
-	    // вывод общих переменных
-	    global $setup;
-	    if (isset($setup[$val]))return $setup[$val];
-	}
 }

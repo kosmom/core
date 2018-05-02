@@ -22,6 +22,8 @@ class form implements \ArrayAccess{
 	var $classes=array();
 	var $target;
 	private $renderedFields=array();
+	
+	static private $fieldCounter=0;
 
 	function offsetExists($offset){
 		return isset($this->fields[$offset]);
@@ -43,6 +45,7 @@ class form implements \ArrayAccess{
 
 	function __construct($fields=null){
 		if (is_array($fields))$this->addFields($fields);
+		if (isset(core::$data['form_prop_type']))$this->prop['type']=core::$data['form_prop_type'];
 	}
 
 	/**
@@ -60,7 +63,6 @@ class form implements \ArrayAccess{
 	}
 	/**
 	 * @deprecated since version 3.4
-	 * @return boolean
 	 */
 	function is_submit(){
 		return $this->isSubmit();
@@ -80,7 +82,7 @@ class form implements \ArrayAccess{
 		return $this;
 	}
 	function attributes($attributes=null){
-		if ($classes===null)return $this->attributes;
+		if ($attributes===null)return $this->attributes;
 		$this->attributes=$attributes;
 		return $this;
 	}
@@ -165,7 +167,7 @@ class form implements \ArrayAccess{
 		if (core::$debug)debug::dir($fields);
 		if (core::$debug)debug::groupEnd();
 		foreach ($fields as $key=>$item){
-
+			if (!isset($item['type']))$item['type']='text';
 			if (@$item['type']=='submit'){
 				$this->submit[$key][$item['value']]=1;
 				if (core::$debug && !$item['value'])debug::trace('Form add_field SUBMIT not have value parameter',error::WARNING);
@@ -242,7 +244,7 @@ class form implements \ArrayAccess{
 	 * @param string $fieldKey key of new field
 	 * @param string $asFieldKey key of exists field
 	 * @param array $params addition params
-	 * @return c\form
+	 * @return form
 	 * @throws \Exception
 	 */
 	function addFieldAs($fieldKey,$asFieldKey,$params=array()){
@@ -629,6 +631,7 @@ class form implements \ArrayAccess{
 		if ($this->needSort)datawork::stable_uasort($sort_form,array('c\\datawork','positionCompare'));
 		foreach ($sort_form as $name=>$item){
 			if ($this->renderedFields[$name])continue;
+			if ($item['type']=='subform')continue;
 			$out.=$this->renderField($name,$item);
 		}
 		return $out;
@@ -647,7 +650,9 @@ class form implements \ArrayAccess{
 			if ($field['name'][0]==$prefix)$partform[$key]=$field;
 		}
 		if ($this->needSort)datawork::stable_uasort($partform,array('c\\datawork','positionCompare'));
-		foreach ($partform as $key=>$field){
+		$htmlout='';
+                $out='';
+                foreach ($partform as $key=>$field){
 			if (core::$debug)$htmlout.='
 <?=$form->renderField(\''.$key.'\')?>';
 			$out.=$this->renderField($key);
@@ -670,6 +675,8 @@ class form implements \ArrayAccess{
 			if (!isset($field['position'])) continue;
 			$partform[$key]=$field;
 		}
+                $htmlout='';
+                $out='';
 		if ($this->needSort)datawork::stable_uasort($partform,array('c\\datawork','positionCompare'));
 		foreach ($partform as $key=>$field){
 			if (core::$debug)$htmlout.='
@@ -718,7 +725,7 @@ class form implements \ArrayAccess{
 	}
 
 	private function horizontalGetLabelClass(){
-		if ($this->prop['type']!='form-horizontal')return '';
+		if (@$this->prop['type']!='form-horizontal')return '';
 		$out=' class="control-label';
 		foreach ($this->prop['label_classes_array'] as $key=>$val){
 			$out.=' col-'.$key.'-'.$val;
@@ -729,7 +736,7 @@ class form implements \ArrayAccess{
 	private function horizontalGetColDiv($field){
 		if (@$this->prop['type']!='form-horizontal')return '';
 		$classes=array();
-		if (!$field['label'] || $field['type']=='check' ||$field['type']=='checkbox'|| $field['type']=='boolean'){
+		if (!@$field['label'] || @$field['type']=='check' || @$field['type']=='checkbox'|| @$field['type']=='boolean'){
 			foreach ($this->prop['label_classes_array'] as $key=>$val){
 				$classes[]='col-'.$key.'-offset-'.$val;
 			}
@@ -742,11 +749,11 @@ class form implements \ArrayAccess{
 
 	private function inputGroupPrefix($item){
 		if (empty($item['prefix']) && empty($item['postfix']))return '';
-		return '<div class="input-group">'.(!empty($item['prefix'])?'<span class="input-group-addon">'.$item['prefix'].'</span>':'');
+		return '<div class="input-group">'.(!empty($item['prefix'])?'<span class="'.(core::$data['render']=='bootstrap4'?'input-group-text':'input-group-addon').'">'.$item['prefix'].'</span>':'');
 	}
 	private function inputGroupPostfix($item){
 		if (empty($item['prefix']) && empty($item['postfix']))return '';
-		return (!empty($item['postfix'])?'<span class="input-group-addon">'.$item['postfix'].'</span>':'').'</div>';
+		return (!empty($item['postfix'])?'<span class="'.(core::$data['render']=='bootstrap4'?'input-group-text':'input-group-addon').'">'.$item['postfix'].'</span>':'').'</div>';
 	}
 
 	/**
@@ -775,10 +782,24 @@ class form implements \ArrayAccess{
 	function render_field($name,$item=null){
 		return $this->renderField($name,$item);
 	}
+	/**
+	 * Calculate item data with all algoritms
+	 * @param array $item
+	 */
+	function calcField(&$item){
+		
+	}
 	function renderField($name,$item=null){
 		$item=$this->mergeItem($name,$item);
-		if ($item['type']=='none')return '';
-		return $this->renderFieldFormGroupBegin('',$item).$this->renderFieldLabel('',$item).$this->renderFieldField($name,$item).$this->renderFieldFormGroupEnd('',$item);
+		if (@$item['type']=='none')return '';
+		if (!isset($item['attributes']['id']))$item['attributes']['id']='core_form_field_'.self::$fieldCounter++;
+		$out=$this->renderFieldFormGroupBegin('',$item);
+		if (@!$item['range'] && isset($item['ico']) && $this->prop['type']=='md-form')$out.= '<i class="'.$item['ico'].' prefix grey-text"></i>';
+		if ($this->prop['type']=='md-form'){
+			return $out.$this->renderFieldField($name,$item).$this->renderFieldLabel('',$item).$this->renderFieldFormGroupEnd('',$item);
+		}else{
+			return $out.$this->renderFieldLabel('',$item).$this->renderFieldField($name,$item).$this->renderFieldFormGroupEnd('',$item);
+		}
 	}
 	private function mergeItem($name,$item){
 		if ($item===null){
@@ -801,8 +822,11 @@ class form implements \ArrayAccess{
 	}
 	function renderFieldFormGroupBegin($name,$item=null){
 		if ($name!='')$item=$this->mergeItem($name,$item);
-		if ($item['type']=='hidden')return '';
+		if (@$item['type']=='hidden')return '';
 		if (@$this->prop['type']=='form-inline' && $item['type']=='submit')return '';
+		$base_group='form-group';
+		if ($this->prop['type']=='md-form')$base_group='md-form';
+		if (core::$data['render']=='bootstrap4' && in_array($item['type'],array('checkbox','boolean','radio')))$base_group='form-check';
 		if (isset($item['group_classes'])){
 			if (is_callable($item['group_classes'])){
 				$classes=$item['group_classes']($item,$this->getData());
@@ -812,11 +836,11 @@ class form implements \ArrayAccess{
 
 			if (is_string($classes))$classes=explode(' ',$classes);
 			//array only
-			$classes=array_merge(array('form-group'),$classes);
+			$classes=array_merge(array($base_group),$classes);
 		}else{
-			$classes=array('form-group');
+			$classes=array($base_group);
 		}
-		if (isset($item['ico']))$classes[]='has-feedback';
+		if (isset($item['ico']) && $this->prop['type']!='md-form')$classes[]='has-feedback';
 
 		$attributes=array();
 		if (isset($item['group_attributes'])){
@@ -862,8 +886,8 @@ class form implements \ArrayAccess{
 	}
 	function renderFieldLabel($name,$item=null){
 		if ($name!='')$item=$this->mergeItem($name,$item);
-		if ($item['type']=='hidden')return '';
-		if (@$this->prop['type']!='form-inline' || $item['type']!='submit')return (!empty($item['label']) && $item['type']!='check' && $item['type']!='boolean' && $item['type']!='checkbox'?'<label'.$this->horizontalGetLabelClass().'>'.(@$item['label_html']?$item['label']:input::htmlspecialchars($item['label'])).'</label> ':'').$this->horizontalGetColDiv($item);
+		if (@$item['type']=='hidden')return '';
+		if (@$this->prop['type']!='form-inline' || @$item['type']!='submit')return (!empty($item['label']) && @$item['type']!='check' && @$item['type']!='boolean' && @$item['type']!='checkbox'?'<label for="'.$item['attributes']['id'].'" '.$this->horizontalGetLabelClass().'>'.(@$item['label_html']?$item['label']:input::htmlspecialchars($item['label'])).'</label> ':'').$this->horizontalGetColDiv($item);
 		return '';
 	}
 	/**
@@ -899,6 +923,11 @@ class form implements \ArrayAccess{
 			if ($validate['type']=='maxlength')$item['attributes']['maxlength']=$validate['value'];
 		}
 		if (empty($item['render']))$item['render']='auto';
+                if ($item['type']=='float'){
+                    $item['type']='number';
+                    if (!isset($item['attributes']['step']))$item['attributes']['step']='.0000001';
+                    $item['value']= str_replace(',', '.', $item['value']);
+                }
 		$renderValue=isset($item['value'])?is_callable($item['value'])?$item['value']($item):$item['value']:@$item['default'];
 		if (@$item['range']){
 			$value['min']=(isset($renderValue['min'])?'value="'.input::htmlspecialchars($renderValue['min']).'" ':'');
@@ -913,6 +942,7 @@ class form implements \ArrayAccess{
 		}
 
 		if (isset($item['inputmask'])){
+                    $mask=$item['inputmask'];
 			if (is_array($item['inputmask'])){
 				$masks=array();
 				foreach ($item['inputmask'] as $maskKey=>$mask){
@@ -927,14 +957,14 @@ class form implements \ArrayAccess{
 			}else{
 				$item['attributes']['data-inputmask']="'mask':'".$mask."'";
 			}
-			if (is_array($item['classes'])){
+			if (is_array(@$item['classes'])){
 				$item['classes'][]='inputmask';
 			}else{
-				$item['classes'].=' inputmask';
+				@$item['classes'].=' inputmask';
 			}
 			mvc::addJs('inputmask');
 		}
-
+                
 		if (@$item['disabled'])$item['attributes']['disabled']='disabled';
 		if (@$item['readonly'])$item['attributes']['readonly']='readonly';
 		$attributes='';
@@ -956,7 +986,7 @@ class form implements \ArrayAccess{
 			}
 		}
 		$arg=array('name'=>$renderName,'attributes'=>$attributes,'value'=>$value,'classes'=>$classes,'multiple'=>false,'placeholder'=>$placeholder);
-		if (isset(core::$data['form_render'][$item['type']])){
+		if (isset(core::$data['form_render'][@$item['type']])){
 			if (is_callable(core::$data['form_render'][$item['type']])){
 				$a=core::$data['form_render'][$item['type']];
 				$a=$a($item,$arg);
@@ -970,8 +1000,10 @@ class form implements \ArrayAccess{
 			}
 		}
 		if (is_callable($item['render']))return $item['render']($item,$arg);
-		if ($item['type']=='hidden')return '<input'.($classes?'class="'.$classes.'"':'').' name="'.$renderName.'" type="'.$item['type'].'" '.$attributes.$value.'/>';
+		if (@$item['type']=='hidden')return '<input'.($classes?'class="'.$classes.'"':'').' name="'.$renderName.'" type="'.$item['type'].'" '.$attributes.$value.'/>';
+		
 		$out=$this->inputGroupPrefix($item);
+		
 		switch ($item['type']){
 			case 'submit':
 				if ($this->ajax())$out.='<input name="'.$renderName.'" type="hidden" '.$value.'/>';
@@ -984,7 +1016,11 @@ class form implements \ArrayAccess{
 			case 'boolean':
 			case 'check':
 			case 'checkbox':
-				$out.='<div class="checkbox"><label><input type="checkbox" class="'.$classes.'" value=1 name="'.$renderName.'" '.$attributes.($item['value']?'checked':'').'/>'.$item['label'].'</label></div>';
+				if (core::$data['render']=='bootstrap4'){
+					$out.='<input type="checkbox" class="form-check-input '.$classes.'" value=1 name="'.$renderName.'" '.$attributes.(@$item['value']?'checked':'').'/><label class="form-check-label" for="'.$item['attributes']['id'].'">'.$item['label'].'</label>';
+				}else{
+					$out.='<div class="checkbox"><label><input type="checkbox" class="'.$classes.'" value=1 name="'.$renderName.'" '.$attributes.(@$item['value']?'checked':'').'/>'.$item['label'].'</label></div>';
+				}
 				break;
 			case 'select':
 				// multiple values
@@ -1114,8 +1150,8 @@ class form implements \ArrayAccess{
 					$out.='<input class="form-control'.$classes.'" name="'.$renderName.'" type="'.$item['type'].'" '.$attributes.$placeholder.$required.'/>';
 					break;
 				case 'file':
-					$has_file=$item['value'] && is_file($item['value']);
-					$out.=($has_file?'<img src="'.$item['value'].'?time='.time().'" style="max-width: 100%;display: block;">':'').'<input name="'.$renderName.'" type="'.$item['type'].'" '.$attributes.$placeholder.($has_file?'':$required).'/>'.(is_callable($item['fill'])?$item['fill']($this->getData()):'');
+					$has_file=@$item['value'] && is_file($item['value']);
+					$out.=($has_file?'<img src="'.$item['value'].'?time='.time().'" style="max-width: 100%;display: block;">':'').'<input name="'.$renderName.'" type="'.$item['type'].'" '.$attributes.$placeholder.($has_file?'':$required).'/>'.(isset($item['fill']) && is_callable($item['fill'])?$item['fill']($this->getData()):'');
 					break;
 				case 'capcha':
 					$out.='<img src="'.$item['url'].'" style="max-width: 100%;display: block;"><input class="form-control'.$classes.'" name="'.$renderName.'" type="text" '.$attributes.$placeholder.$required.'/>';
@@ -1130,14 +1166,15 @@ class form implements \ArrayAccess{
 							if ($this->prop['type']=='form-inline'){
 								$out.='<label>'.$item['range_before_text'].'</label> <input name="'.$renderName.'[min]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.$attributes.$placeholder.$required.$value['min'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
-								$out.=' <label>'.$item['range_to_text'].'</label> <input name="'.$renderName.'[max]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.$attributes.$placeholder.$required.$value['max'].'/>';
+//var_dump($attributes);
+								$out.=' <label>'.$item['range_to_text'].'</label> <input name="'.$renderName.'[max]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.str_replace('id=', 'id2=', $attributes).$placeholder.$required.$value['max'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 							}else{
 								$out.='<div class="row"><div class="col-xs-6">';
 								$out.=$item['range_before_text'].' <input name="'.$renderName.'[min]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.$attributes.$placeholder.$required.$value['min'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 								$out.='</div><div class="col-xs-6">';
-								$out.=$item['range_to_text'].' <input name="'.$renderName.'[max]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.$attributes.$placeholder.$required.$value['max'].'/>';
+								$out.=$item['range_to_text'].' <input name="'.$renderName.'[max]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.str_replace('id=', 'id2=', $attributes).$placeholder.$required.$value['max'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 								$out.='</div></div>';
 							}
@@ -1208,7 +1245,7 @@ class form implements \ArrayAccess{
 							// todo: but you need manually set script initialize `.ckeditor` after form
 							break;
 						case 'textarea':
-							$out.='<textarea name="'.$renderName.'" class="form-control'.$classes.'" '.$attributes.$placeholder.$required.'>'.input::htmlspecialchars(@$item['value']).'</textarea>';
+							$out.='<textarea name="'.$renderName.'" class="form-control'.$classes.' '.($this->prop['type']=='md-form'?'md-textarea':'').'" '.$attributes.$placeholder.$required.'>'.input::htmlspecialchars(@$item['value']).'</textarea>';
 							break;
 						default :
 							if (@$item['range']){
@@ -1216,7 +1253,7 @@ class form implements \ArrayAccess{
 								$out.='<input name="'.$renderName.'[min]" type="'.$item['type'].'" class="form-control'.$classes.'" '.$attributes.$placeholder.$required.$value['min'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 								$out.='</div><div class="col-xs-6">';
-								$out.='<input name="'.$renderName.'[max]" type="'.$item['type'].'" class="form-control'.$classes.'" '.$attributes.$placeholder.$required.$value['max'].'/>';
+								$out.='<input name="'.$renderName.'[max]" type="'.$item['type'].'" class="form-control'.$classes.'" '.str_replace('id=', 'id2=', $attributes).$placeholder.$required.$value['max'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 								$out.='</div></div>';
 							}else{
@@ -1224,7 +1261,8 @@ class form implements \ArrayAccess{
 							}
 					}
 			}
-			if (@!$item['range'] && isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
+			if (@!$item['range'] && isset($item['ico']) && $this->prop['type']!='md-form')$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
+			
 			$out.=$this->inputGroupPostfix($item);
 			$datalist='';
 		if (isset($item['datalist'])){

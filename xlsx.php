@@ -83,7 +83,7 @@ class xlsx{
 
 	/**
 	 * generate buffer with data
-	 * @param array|connector_id $data input data
+	 * @param array|int $data input data
 	 * @param array $callback array of callback functions for cells
 	 */
 	static function writesheet($data,$callback=array()){
@@ -118,7 +118,7 @@ class xlsx{
 
 	/**
 	 * Generate xlsx file for output with headers from sample.xlsx
-	 * @param type $filename generated filename
+	 * @param string $filename generated filename
 	 */
 	static function generate($filename='',$out=true){
 		return self::generateXlsx('',$filename,$out);
@@ -133,7 +133,7 @@ class xlsx{
 	static function generateXlsx($source='',$filename='',$out=true){
 		$tempresult=ini_get('upload_tmp_dir').(ini_get('upload_tmp_dir')==''?'':'/').'temp.xlsx';
 		if (empty(self::$outbuffer)) throw new \Exception('Before generate xlsx need prepare data');
-		if (empty($source))$source=__DIR__.DIRECTORY_SEPARATOR.'sample.xlsx';
+		if (empty($source))$source=__DIR__.'/sample.xlsx';
 		if (!file_exists($source)) throw new \Exception('Source sample file not found');
 		if (file_exists($tempresult))unlink($tempresult);
 		copy($source,$tempresult);
@@ -306,7 +306,7 @@ class xlsx{
 		}
 		return $data;
 	}
-	private static function readSheet($sheet=l,$zip,$styles){
+	private static function readSheet($sheet=1,$zip,$styles){
 		$file=$zip->getFromName('xl/worksheets/sheet'.$sheet.'.xml');
 		$xml=simplexml_load_string($file);
 		$data=array();
@@ -360,13 +360,14 @@ class xlsx{
 		$strings=explode("\r",$file);
 		$data=array();
 		foreach ($strings as $string){
-			$str=explode($delimeter,trim($string));
-			foreach ($str as $key=>$cell){
-				if (substr($cell,0,1)=='"' && substr($cell,-1,1)=='"'){
-					$str[$key]=str_replace('""','"',substr($cell,1,-1));
-				}
-			}
-			$data[]=$str;
+			$data[]=  str_getcsv($string, $delimeter);
+//			$str=explode($delimeter,trim($string));
+//			foreach ($str as $key=>$cell){
+//				if (substr($cell,0,1)=='"' && substr($cell,-1,1)=='"'){
+//					$str[$key]=str_replace('""','"',substr($cell,1,-1));
+//				}
+//			}
+//			$data[]=$str;
 		}
 		if (core::$debug){
 			debug::group('Xlsx class get CSV '.$source);

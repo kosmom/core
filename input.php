@@ -22,7 +22,7 @@ class input{
 				if (trim($var)=='')return translate::t('Set empty value');
 			}elseif (trim($value)!=''){
 				if ($value=='plus'){
-					if (floatvar($var)<0)return translate::t('Value cannot be minus');
+					if (floatval($var)<0)return translate::t('Value cannot be minus');
 				}elseif ($value=='date'){
 					if (!strtotime($var))return translate::t('Date wrong');
 				}elseif ($value=='date_format'){
@@ -49,8 +49,8 @@ class input{
 	}
 	/**
 	 * Filter $var with $filters array
-	 * @param string,integer $var input variable
-	 * @param array $filters. Possible variants trim,lower,upper,int,float,bool,abs,ucfirst,ucwords,tag,iconv,phone
+	 * @param string|integer $var input variable
+	 * @param array|string $filters. Possible variants trim,lower,upper,int,float,bool,abs,ucfirst,ucwords,tag,iconv,phone
 	 * @return super
 	 */
 	static function filter(&$var,$filters=''){
@@ -69,6 +69,9 @@ class input{
 						break;
 					case 'trim':
 						$var=trim($var);
+						break;
+					case 'grammar':
+						$var=  translate::grammar($var);
 						break;
 					case 'strtolower':
 					case 'lower':
@@ -148,50 +151,53 @@ class input{
 		if ($validator['type']=='required' || $validator['type']=='require')return ($val!=='' && $val!==null);
 		if ($val==='' or $val===null)return true;
 		if (empty($validator['inverse']))$validator['inverse']=false;
+                $i=$validator['inverse'];
 		switch ($validator['type']){
 				case 'int':
 				case 'number':
 				case 'numberic':
 				case 'numeric':
-					return is_numeric($val) xor $validator['inverse'];
+					return is_numeric($val) xor $i;
 				case 'maxlength':
-					return mb_strlen($val,core::$charset)<=$validator['value'] xor $validator['inverse'];
+					return mb_strlen($val,core::$charset)<=$validator['value'] xor $i;
 				case 'minlength':
-					return mb_strlen($val,core::$charset)>=$validator['value'] xor $validator['inverse'];
+					return mb_strlen($val,core::$charset)>=$validator['value'] xor $i;
 				case 'between':
-					return ($val>=$validator['min'] && $val<=$validator['max']) xor $validator['inverse'];
+					return ($val>=$validator['min'] && $val<=$validator['max']) xor $i;
 				case 'min':
-					return $val>=$validator['value'] xor $validator['inverse'];
+					return $val>=$validator['value'] xor $i;
 				case 'max':
-					return $val<=$validator['value'] xor $validator['inverse'];
+					return $val<=$validator['value'] xor $i;
 				case 'in':
-					return in_array($val,$validator['values']) xor $validator['inverse'];
+					return in_array($val,$validator['values']) xor $i;
+				case 'email':
+					return self::mailTest($val) xor $i;
 				case 'match':
 				case '==':
-					return $val==$validator['value'] xor $validator['inverse'];
+					return $val==$validator['value'] xor $i;
 				case 'date':
 				case 'datetime':
-					return (input::strtotime($val)) xor $validator['inverse'];
+					return (input::strtotime($val)) xor $i;
 				case 'pattern':
 				case 'preg_match':
-					return preg_match($validator['value'],$val) xor $validator['inverse'];
+					return preg_match($validator['value'],$val) xor $i;
 				case 'function':
 				case 'closure':
 				case 'anonymous':
 				case 'callback':
 				case 'func':
-					return $validator['function']($val) xor $validator['inverse'];
+					return $validator['function']($val) xor $i;
 				case 'filesize':
-					return filesize($val)<=$validator['value'] xor $validator['inverse'];
+					return filesize($val)<=$validator['value'] xor $i;
 				case 'extension':
 					$extension= strtolower(filedata::extension(request::fileName($formKey)));
-					return in_array($extension,$validator['values']) xor $validator['inverse'];
+					return in_array($extension,$validator['values']) xor $i;
 			}
 			return true;
 	}
 	/**
 	 * Validate var of validate filters
-	 * @param type $val testing variable
+	 * @param any $val testing variable
 	 * @param array $validators array of validators with need format
 	 * @param array $label label of field with error thrown
 	 * @param array $formKey key of field with error for file validate
@@ -216,6 +222,7 @@ class input{
 			'required'=>'"{label_full}" field cannot be empty',
 			'require'=>'"{label_full}" field cannot be empty',
 			'pattern'=>'"{label_full}" field has wrong value',
+			'email'=>'"{label_full}" field not valid email address',
 			'date'=>'"{label_full}" field has wrong date format',
 			'datetime'=>'"{label_full}" field has wrong date format',
 			'filesize'=>'"{label_full}" file has too big size',
@@ -526,7 +533,7 @@ class input{
 	 * Crypt string with method
 	 * @deprecated because hardcode
 	 * @param string $string
-	 * @param MD5|MD5MD5 $method
+	 * @param string $method MD5|MD5MD5
 	 * @return string
 	 */
 	static function crypt($string,$method='MD5'){
@@ -586,7 +593,6 @@ class input{
 		"\n"=>' ',
 		"\t"=>' ',
 		'+'=>' ',
-		'-'=>' ',
 		'%'=>' ',
 		'`'=>' ',
 		'('=>' ( ',
@@ -852,6 +858,13 @@ class input{
 		if (preg_match('/([12]\d\d\d)[\.\-]([0-2]\d)/', $time,$matches)){
 			return mktime(0, 0, 0, $matches[2], 1, $matches[1]);
 		}
-		return strtotime($string);
+		return strtotime($time);
 	}
+        static function number_format($number,$decimals=0,$dec_point='.',$thousands_sep=','){
+            return strtr(number_format($number,$decimals,'d','t'),array('d'=>$dec_point,'t'=>$thousands_sep));
+        }
+        static function roundFirstNumber($number,$precision=0){
+            if ($number>1)return round($number,$precision);
+            return round($number,-floor(log10($number)));
+        }
 }

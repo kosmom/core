@@ -65,6 +65,7 @@ class core {
 	 * @param mail
 	 * @param roles
 	 * @param db_autobind
+	 * @param db_exception
 	 * @param render
 	 */
 	static $data=array('db_autobind'=>array(),'render'=>'bootstrap3');
@@ -108,15 +109,20 @@ class super{
 	function filter(&$var,$filters=''){
 		return input::filter($var,$filters);
 	}
-	function addSuccess($text){
+	function addSuccess($text,$redirect){
 		return error::addSuccess($text,$redirect);
 	}
-	function addError($text){
+	function addError($text,$redirect){
 		return error::addError($text,$redirect);
 	}
-	function addWarning($text){
+	function addWarning($text,$redirect){
 		return error::addWarning($text,$redirect);
 	}
+	/**
+	 * Set response header
+	 * @param int $code
+	 * @return super|false
+	 */
 	function header($code){
 		return error::header($code);
 	}

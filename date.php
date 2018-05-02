@@ -20,16 +20,21 @@ class date{
 		return date(self::$format,strtotime($parameter,strtotime($from)));
 	}
 	static function weekday($from='now'){
-		return date('w',strtotime($from));
+            $date=strtotime($from);
+            if ($date===false)throw new \Exception('date recognize error');
+            return date('N',$date);
 	}
+        static function is_weekend($from='now'){
+            return self::weekday($from)>5;
+        }
     static function to_date($val){
         return new \DateTime($val);
     }
 	/**
 	 * Pretty russian date formatter support Д,д,л,Ф,ф,М output formats
-	 * @param type $outFormat output format support Д,д,л,Ф,ф,М
-	 * @param type $time timestamp or format string, if input_format isset
-	 * @param type $inputFormat input format of datetime
+	 * @param string $outFormat output format support Д,д,л,Ф,ф,М
+	 * @param string|int|null $time timestamp or format string, if input_format isset
+	 * @param null|string $inputFormat input format of datetime
 	 * @return string
 	 */
 		static function date($outFormat='d.m.Y',$time=null,$inputFormat=null){

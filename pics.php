@@ -60,9 +60,6 @@ class pics{
 		return true;
 	}
 	/**
-	 * is pic filename or not
-	 * @param string $filename filename of image or inline string
-	 * @return boolean
 	 * @deprecated since version 3.4
 	 */
 	static function is_pic($filename){
@@ -84,7 +81,7 @@ class pics{
 				}
 			}
 			if (empty($prop[2]))return false;
-			if (!in_array($prop[2],array(IMAGETYPE_JPEG,IMAGETYPE_GIF,IMAGETYPE_PNG)))return false;
+			if (!in_array($prop[2],array(IMAGETYPE_JPEG,IMAGETYPE_GIF,IMAGETYPE_PNG,IMAGETYPE_BMP)))return false;
 			return true;
 	}
 	/**
@@ -151,10 +148,6 @@ class pics{
 	}
 
 	/**
-	 * Resize pic with fix rate to max of params
-	 * @param type $x width
-	 * @param type $y height
-	 * @return boolean operation result
 	 * @deprecated since version 3.4
 	 */
 	static function resize_box($x,$y=false){
@@ -162,8 +155,8 @@ class pics{
 	}
 	/**
 	 * Resize pic with fix rate to max of params
-	 * @param type $x width
-	 * @param type $y height
+	 * @param int $x width
+	 * @param int $y height
 	 * @return boolean operation result
 	 */
 	static function resizeBox($x,$y=false){
@@ -186,6 +179,14 @@ class pics{
 		self::$image=$copy;
 		return true;
 	}
+        static function resizeMaxWidth($x){
+            if (self::$prop[0]<$x)return false;
+            return self::resizeBox($x,99999);
+        }
+        static function resizeMaxHeight($y){
+            if (self::$prop[1]<$y)return false;
+            return self::resizeBox(99999,$y);
+        }
 	/**
 	 * Change size with save dimensions for max of values
 	 * @deprecated since version 3.4
@@ -233,7 +234,7 @@ class pics{
 	 */
 	static function crop($x,$y,$width=false,$height=false){
 		if (!self::$image)return false;
-		if (($x>self::$prop[0]) && ($y>$self::$prop[1]))return false;
+		if (($x>self::$prop[0]) && ($y>self::$prop[1]))return false;
 		if (!$height)$height=$width?$width:self::$prop[1]-$y;
 				if (!$width)$width=self::$prop[0]-$x;
 		$copy = imagecreatetruecolor($width, $height);
@@ -278,10 +279,6 @@ class pics{
 
 	}
 	/**
-	 * crop center frame of picture
-	 * @param number $x width
-	 * @param number $y height
-	 * @return boolean operaiotn result
 	 * @deprecated since version 3.4
 	 */
 	static function crop_center($x,$y=false){
@@ -311,12 +308,6 @@ class pics{
 		return true;
 	}
 	/**
-	 * add watermart to picture
-	 * @param type $x % width position
-	 * @param type $y % height position
-	 * @param type $watermarkFile watermark file
-	 * @param type $opacity watermart opacity
-	 * @return boolean operation result
 	 * @deprecated since version 3.4
 	 */
 	static function add_watermark($x,$y,$watermarkFile,$opacity=100){
@@ -324,10 +315,10 @@ class pics{
 	}
 	/**
 	 * add watermart to picture
-	 * @param type $x % width position
-	 * @param type $y % height position
-	 * @param type $watermarkFile watermark file
-	 * @param type $opacity watermart opacity
+	 * @param int $x % width position
+	 * @param int $y % height position
+	 * @param string $watermarkFile watermark file
+	 * @param float $opacity watermart opacity
 	 * @return boolean operation result
 	 */
 	static function addWatermark($x,$y,$watermarkFile,$opacity=100){
@@ -357,8 +348,8 @@ class pics{
 
 	/**
 	 * Save buffer picture
-	 * @param type $filename filename
-	 * @param type $quality quality for some formats. Quality must be between 0 - 100
+	 * @param string $filename filename
+	 * @param float $quality quality for some formats. Quality must be between 0 - 100
 	 */
 	static function save($filename,$quality=50){
 		$quality=(int)$quality;

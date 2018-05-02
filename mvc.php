@@ -23,7 +23,9 @@ class mvc{
 	static $partical_content_folder=false;
 	static $indexfile=array();
 	static $bodyAttributes=array();
+	private static $isConfig;
 	static $slashAtEnd='/';
+        static $appFolder='app';
 	/**
 	 * counter - __DIR__
 	 * @var array
@@ -99,7 +101,7 @@ class mvc{
 	static $route_placeholder;
 	/**
 	 *
-	 * @var String content for included pages (if it have)
+	 * @var string|boolean content for included pages (if it have)
 	 */
 	static $content=false;
 	private static $folder;
@@ -112,7 +114,7 @@ class mvc{
 	}
 
 	static function virtualRoute($folder,$baseDir=null,$startFromBaseDir=true){
-		self::$virtualDir=$baseDir===null?self::$base__DIR__.DIRECTORY_SEPARATOR.'app':$baseDir;
+		self::$virtualDir=$baseDir===null?self::$base__DIR__.DIRECTORY_SEPARATOR.self::$appFolder:$baseDir;
 		self::$virtualFolder=$folder;
 		if ($startFromBaseDir)self::controllerRoute(self::getRemaningParams());
 	}
@@ -220,7 +222,7 @@ class mvc{
 	}
 
 	static function r($routeParams,$defaultParams=array()){
-		$route=array('dir'=>self::$base__DIR__.DIRECTORY_SEPARATOR.'app');
+		$route=array('dir'=>self::$base__DIR__.DIRECTORY_SEPARATOR.self::$appFolder);
 		if (isset(core::$data['r']) && is_array(core::$data['r']))$route=core::$data['r']+$route;
 		if (is_array($defaultParams))$route=$defaultParams+$route;
 		if (is_array($routeParams))$route=$routeParams+$route;
@@ -245,7 +247,7 @@ class mvc{
 		$regexp=preg_replace_callback('/\{(.*)\}/sU',function($matches) use(&$match_vars,&$order){
 			$params=explode('|',$matches[1]);
 			$attributes=array();
-			if (isset(mvc::$route_placeholder[$params[0]]))$attributes=$temp[$params[0]];
+			//if (isset(mvc::$route_placeholder[$params[0]]))$attributes=$temp[$params[0]];
 			$attributes['position']=$order++;
 			if (isset($params[1]))$attributes['default']=$params[1];
 			if (empty($attributes['regexp']))$attributes['regexp']='[^/]'.(empty($attributes['default'])?'+':'*');
@@ -336,7 +338,7 @@ class mvc{
 	/**
 	 * Exists module or not with path
 	 * @param string $path
-	 * @param __DIR__|null $__DIR__
+	 * @param string|null $__DIR__
 	 * @return boolean
 	 * @deprecated since version 3.4
 	*/
@@ -346,14 +348,14 @@ class mvc{
 	/**
 	 * Exists module or not with path
 	 * @param string $path
-	 * @param __DIR__|null $__DIR__
+	 * @param string|null $__DIR__
 	 * @return boolean
 	*/
 	static function moduleExists( $path='',$__DIR__=null){
-		if (empty($__DIR__))$__DIR__=self::$base__DIR__.'/app/';
+		if (empty($__DIR__))$__DIR__=self::$base__DIR__.'/'.self::$appFolder.'/';
 		if (substr($path,0,1)=='/'){
 			$path=substr($path,1);
-			$__DIR__=self::$base__DIR__.'/app/';
+			$__DIR__=self::$base__DIR__.'/'.self::$appFolder.'/';
 		}
 		return (file_exists($__DIR__.'/'.$path.'/index.php'));
 	}
@@ -361,8 +363,8 @@ class mvc{
 	/**
 	 * Redirect relative current dir of mvc component
 	 * @param string $path relative path
-	 * @param __DIR__ $__DIR__ current dir
-	 * @param type $header
+	 * @param string $__DIR__ current dir
+	 * @param int $header
 	 */
 	static function redirect($path='',$__DIR__=null,$header=302){
 		if ($__DIR__===null)$__DIR__=self::$current__DIR__;
@@ -387,7 +389,7 @@ class mvc{
 	
 	/**
 	 * Prepare full links array from $_GET['link'] param
-	 * @param string $link
+	 * @param string|null $__DIR__
 	 */
 	static function init($__DIR__=null){
 		chdir($__DIR__);
@@ -396,12 +398,12 @@ class mvc{
 			debug::timer();
 		}
 		header('Content-Type: text/html; charset='.core::$charset);
-		if (@$_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest')ajax::init();
+		if (request::isAjax())ajax::init();
 		$dir=trim(dirname($_SERVER['SCRIPT_NAME']),'\\/');
 		if ($dir)self::$basefolder=$dir.'/';
 		if ($__DIR__!==null){
 			self::$base__DIR__=$__DIR__;
-			self::$next_dir=array($__DIR__.DIRECTORY_SEPARATOR.'app');
+			self::$next_dir=array($__DIR__.DIRECTORY_SEPARATOR.self::$appFolder);
 		}
 		if (request::isCmd()){
 			global $argv;
@@ -417,12 +419,18 @@ class mvc{
 		}
 		if (core::$charset!=core::UTF8)self::$links_string=iconv('utf-8',core::$charset,self::$links_string);
 		self::$links=explode('/',self::$links_string);
-		include __DIR__.'/global-config/mvc.php';
-		self::$nextFolder=$__DIR__.DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR;
+		self::getConfig();
+		self::$nextFolder=$__DIR__.DIRECTORY_SEPARATOR.self::$appFolder.DIRECTORY_SEPARATOR;
+	}
+	
+	private static function getConfig(){
+		if (self::$isConfig)return ;
+		if (file_exists(__DIR__.'/global-config/mvc.php'))include __DIR__.'/global-config/mvc.php';
+		if (file_exists('config/mvc.php'))include 'config/mvc.php';
+		self::$isConfig=true;
 	}
 	/**
 	 * Add title peace into title array
-	 * @param type $title
 	 * @return super
 	 * @deprecated since version 3.4
 	 */
@@ -431,7 +439,7 @@ class mvc{
 	}
 	/**
 	 * Add title peace into title array
-	 * @param type $title
+	 * @param string $title
 	 * @return super
 	 */
 	static function addTitle($title){
@@ -527,7 +535,7 @@ class mvc{
 	static function getUrl($__DIR__=null){
 		if ($__DIR__===null)$__DIR__=self::$current__DIR__;
 		if (empty($__DIR__))return self::$basefolder.'/';
-		return self::$url[$__DIR__]?self::$url[$__DIR__].'/':'';
+		return @self::$url[$__DIR__]?self::$url[$__DIR__].'/':'';
 	}
 
 	static function getUrlFromRoute($routeAs,$params=array()){
@@ -574,8 +582,6 @@ class mvc{
 	}
 
 	/**
-	 * Add css style from mvc dictionary or create css link to file
-	 * @param type $css
 	 * @deprecated since version 3.4
 	 */
 	static function add_css($css){
@@ -583,10 +589,11 @@ class mvc{
 	}
 	/**
 	 * Add css style from mvc dictionary or create css link to file
-	 * @param type $css
+	 * @param string $css
+         * @return super
 	 */
 	static function addCss($css){
-		if (empty(self::$css_dict))include_once __DIR__.'/global-config/mvc.php';
+		self::getConfig();
 		if (empty(self::$css_dict[$css])){
 			if (substr($css,0,4)!='http' && substr($css,0,2)!='//' && !file_exists($css)){
 				if (core::$debug)debug::trace('Css '.$css.' not exists',error::ERROR);
@@ -605,9 +612,6 @@ class mvc{
 	}
 
 	/**
-	 * Add script from mvc dictionary or create script link to file
-	 * @param string $js
-	 * @return boolean
 	 * @deprecated since version 3.4
 	 */
 	static function add_js($js,$isComponent=false){
@@ -616,11 +620,11 @@ class mvc{
 	/**
 	 * Add script from mvc dictionary or create script link to file
 	 * @param string $js
-	 * @return boolean
+	 * @return super
 	 */
 	static function addJs($js,$isComponent=false){
 		if (core::$ajax)return new super();
-		if (empty(self::$js_dict))include_once __DIR__.'/global-config/mvc.php';
+		self::getConfig();
 		if (empty(self::$js_dict[$js])){
 			// not in dictionary
 			if (isset(self::$required_js[$js]))return new super(); //already in use
@@ -774,7 +778,7 @@ class mvc{
 	<head>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta charset="<?=core::$charset?>">
-		<link rel="canonical" href='//<?=$_SERVER['HTTP_HOST']?>/<?=self::$basefolder?><?=rtrim(implode('/',self::$url_links).'/'.@self::$canonical_links,'/')?><?=self::$slashAtEnd?>'>
+		<link rel="canonical" href='//<?=$_SERVER['HTTP_HOST']?>/<?=self::$basefolder.htmlspecialchars(rtrim(implode('/',self::$url_links).'/'.@self::$canonical_links,'/')).self::$slashAtEnd?>'>
 	<title><?=self::drawTitle();?></title><?
 foreach (self::$meta as $name=>$content){?>
 <meta name="<?=$name?>" content="<?=input::htmlspecialchars($content)?>">
@@ -1103,8 +1107,6 @@ foreach (self::$meta as $name=>$content){?>
 	}
 
 		/**
-		 * Replace current path of new path and display page from start
-		 * @param type $routePath
 		 * @deprecated since version 3.4
 		 */
 	static function controller_route($routePath){
@@ -1112,7 +1114,7 @@ foreach (self::$meta as $name=>$content){?>
 	}
 		/**
 		 * Replace current path of new path and display page from start
-		 * @param type $routePath
+		 * @param string $routePath
 		 */
 	static function controllerRoute($routePath){//,$startDir=''){
 		self::$next_dir=array(self::$next_dir[0]);
@@ -1130,7 +1132,7 @@ foreach (self::$meta as $name=>$content){?>
 		self::$routeMatch=false;
 		self::$routeAs=null;
 		self::$routeLazyCallback=null;
-		self::$nextFolder=self::$base__DIR__.DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR;//.($startDir?$startDir.'/':'');
+		self::$nextFolder=self::$base__DIR__.DIRECTORY_SEPARATOR.self::$appFolder.DIRECTORY_SEPARATOR;//.($startDir?$startDir.'/':'');
 		self::$isRoute=true;
 		self::$lastDir=false;
 		//clean scripts
@@ -1293,7 +1295,7 @@ foreach (self::$meta as $name=>$content){?>
 	/**
 	* Show subpage link from current page if is wrapper page
 	* @param boolean $showError auto show error in beginnig of next layout
-	* @return sttring|boolean filename of found subpage layout
+	* @return string|boolean filename of found subpage layout
 	 */
 	static function viewPage($showError=null){
 		if ($showError==null){
@@ -1303,13 +1305,13 @@ foreach (self::$meta as $name=>$content){?>
 				if (self::$partical_content_folder===false){
 					$showError=false;
 				}else{
-					self::layoutStartAfter(self::$base__DIR__.DIRECTORY_SEPARATOR.'app'.self::$partical_content_folder);
+					self::layoutStartAfter(self::$base__DIR__.DIRECTORY_SEPARATOR.self::$appFolder.self::$partical_content_folder);
 					$showError=true;
 				}
 			}
 		}
 		self::$layoutCounter++;
-		if ($showError!==false)render::showErrors();
+		if ($showError!==false)render::showAlerts();
 		do {
 			$dir=array_shift(self::$next_dir);
 			if (!$dir)return false;

@@ -91,6 +91,7 @@ class model implements \Iterator{
 		if (!$this->pk_value && $this->storage[$name])return $this->storage[$name];
 		// if storage has data - get storage
 		// try get data from request
+		if (!$this->pk_value)return null;
 		try{
 			return storage::getDataOrFail($this,$this->pk_value,$name);
 		} catch (\Exception $exc) {
@@ -203,7 +204,10 @@ class model implements \Iterator{
 			if (!@$fieldVal['dbname'])continue;
 			if ($values[$fieldKey])$result[$fieldVal['dbname']]=$values[$fieldKey];
 		}
-		$this->pk_value=db::setData($this->getTableName(), $result,$this->sequence,$this->getConnections());
+	$this->pk_value=db::setData($this->getTableName(), $result,$this->sequence,$this->getConnections());
+                //storage::setData($this,$this->pk_value,$result);
+		$this->storage=null;
+		if ($this->mode!='row')$this->find($this->pk_value);
 		$this->on_after_save();
 		return $this;
 	}
@@ -244,11 +248,25 @@ class model implements \Iterator{
 			$name=new $name;
 			return $name->delete();
 		}
-		$this->on_before_delete();
-		$sql="DELETE from ".$this->getSchemeName().'.'.$this->getTableName().$this->getWhereSqlPart();
-		$rs=db::e($sql,$this->queryBind,$this->getConnections());
-		$this->on_after_delete();
-		return $rs;
+                if ($this->isRowMode()){
+                    $this->on_before_delete();
+                    $sql="DELETE from ".$this->getSchemeName().'.'.$this->getTableName().$this->getWhereSqlPart();
+                    $rs=db::e($sql,$this->queryBind,$this->getConnections());
+                    $this->on_after_delete();
+                }else{ //model
+                    $datas=$this->get();
+                    foreach ($datas as $data){
+                        $data->on_before_delete();
+                    }
+                    
+                    $sql="DELETE from ".$this->getSchemeName().'.'.$this->getTableName().$this->getWhereSqlPart();
+                    $rs=db::e($sql,$this->queryBind,$this->getConnections());
+                    
+                    foreach ($datas as $data){
+                        $data->on_after_delete();
+                    }
+                }
+                return $rs;
 	}
 	//    function getBinds(){
 	//		return $this->queryBind;
@@ -288,10 +306,25 @@ class model implements \Iterator{
 		if (is_array($bind))$this->queryBind+=$bind;
 		return $this;
 	}
+        /**
+	 * Set filter as In to query
+	 * @param string $field
+	 * @param array $value
+	 * @return static
+	 */
+        function whereIn($field,$arrayIn){
+            if (!@$this){
+			$name=get_called_class();
+			$name=new $name;
+			return $name->whereIn($field,$arrayIn);
+		}
+            $this->whereCondition($field,'in',$arrayIn);
+            return $this;
+        }
 	/**
 	 * Set filter to query
 	 * @param string $field
-	 * @param string|any $prop prop or value if prop '='
+	 * @param string|array $prop prop or value if prop '='
 	 * @param any $value
 	 * @return static
 	 */
@@ -376,7 +409,13 @@ class model implements \Iterator{
 
 			case 'in':
 			if (!is_array($value))$value=array($value);
-			$value='('.db::in($this->queryBind,$value,$field).')';
+			if (empty($value))return $this->queryWhere[]=['expression'=>'1=0'];
+                        $value='('.db::in($this->queryBind,$value,$field).')';
+			break;
+			case 'not in':
+			if (!is_array($value))$value=array($value);
+			if (empty($value))return $this->queryWhere[]=['expression'=>'1=1'];
+                        $value='('.db::in($this->queryBind,$value,$field).')';
 			break;
 			case 'is null':
 			case 'is not null':
@@ -464,38 +503,35 @@ class model implements \Iterator{
 			return $name->get();
 		}
 		// if has cache - return cache
-		$hash=md5(json_encode(array($this->queryWhere,$this->queryBind)));
-	//        var_dump(json_encode(array($this->queryWhere,$this->queryBind)));
-	//        var_dump(md5(json_encode(array($this->queryWhere,$this->queryBind))));
+		$hash=md5(json_encode(array($this->queryWhere,$this->queryBind,$this->queryOrders)));
 
-		$is_full=empty($this->queryWhere);
+                $pk=$this->getPrimaryField();
+                $is_full=empty($this->queryWhere);
 		if (isset(storage::$cache[get_called_class()][$hash])){
-			return new collection_object(storage::$cache[get_called_class()][$hash],get_called_class(),$this->getPrimaryField(),$is_full);
+			return new collection_object(storage::$cache[get_called_class()][$hash],get_called_class(),$pk,$is_full);
 		}
 		// if get from collection - mass request with "in" and group
 		if ($this->collectionSource){
-			//подмена первого where и bind, возможно костыль, но на первое время сойдет
+                    	//if get with relation
 			$tempWhere=$this->queryWhere;
 			$tempBind=$this->queryBind;
-			$field=$tempWhere[0]['field'];
+                        $field=$tempWhere[0]['field'];
 			array_shift($this->queryWhere);
 			array_shift($this->queryBind);
-			$collenction_elments=$this->collectionSource->keys();
-			if (!$this->collectionSource->is_full)$this->where($field, $collenction_elments);
+                        $collection_elements=$this->collectionSource->keys();
+			if (!$this->collectionSource->is_full)$this->where($field, $collection_elements);
 			$rs=db::ea($this->getSql(),$this->queryBind,$this->getConnections());
 			foreach ($rs as $row){
-				storage::setData($this,$row[$this->getPrimaryField()],$row);
+                            storage::setData($this,$row[$pk],$row);
 			}
 			//set hashs for each element of collection
 			$this->queryWhere=$tempWhere;
 			$this->queryBind=$tempBind;
-			$elements=  datawork::group($rs, array($field,'[]'),  $this->getPrimaryField());
-			foreach ($collenction_elments as $element){
+			$elements=  datawork::group($rs, array($field,'[]'),  $pk);
+			foreach ($collection_elements as $element){
 				$this->queryBind[$field]=$element;
-	//                var_dump(json_encode(array($this->queryWhere,$this->queryBind)));
-	//                var_dump(md5(json_encode(array($this->queryWhere,$this->queryBind))));
-				$temphash=md5(json_encode(array($this->queryWhere,$this->queryBind)));
-				storage::$cache[get_called_class()][$temphash]=isset($elements[$element])?$elements[$element]:array();
+				$temphash=md5(json_encode(array($this->queryWhere,$this->queryBind,$this->queryOrders)));
+                                storage::$cache[get_called_class()][$temphash]=isset($elements[$element])?$elements[$element]:array();
 			}
 			
 	//            var_dump(storage::$cache);
@@ -504,12 +540,12 @@ class model implements \Iterator{
 			//get data for cache
 			$rs=db::ea($this->getSql(),$this->queryBind,$this->getConnections());
 			foreach ($rs as $row){
-				storage::setData($this,$row[$this->getPrimaryField()],$row);
+				storage::setData($this,$row[$pk],$row);
 			}
 			// set cache
-			storage::$cache[get_called_class()][$hash]=datawork::group($rs,'[]',$this->getPrimaryField());
+			storage::$cache[get_called_class()][$hash]=datawork::group($rs,'[]',$pk);
 		}
-		return new collection_object(storage::$cache[get_called_class()][$hash],get_called_class(),$this->getPrimaryField(),$is_full);
+		return new collection_object(storage::$cache[get_called_class()][$hash],get_called_class(),$pk,$is_full);
 	}
 
 	private function getWhereSqlPart(){
@@ -519,7 +555,7 @@ class model implements \Iterator{
 			if (!$this->queryWhere)return '';
 			$wheres=array();
 			foreach ($this->queryWhere as $where){
-				$wheres[]=$this->sqlExpression($where,false);
+				$wheres[]=$this->sqlExpression($where);
 			}
 //		}
 		return ' WHERE '.implode(' AND ',$wheres);
@@ -532,7 +568,7 @@ class model implements \Iterator{
 			return $name->count($distinctField);
 		}
 		$this->globalScope();
-		$sql="SELECT count(".($distinctField?$distinctField:'*').") from `".$this->getSchemeName().'`.'.$this->getTableName().$this->getWhereSqlPart();
+		$sql="SELECT count(".($distinctField?$distinctField:'*').") from ".$this->getSchemeName().'.'.$this->getTableName().$this->getWhereSqlPart();
 		return (int)db::ea11($sql,$this->queryBind,$this->getConnections());
 	}
 	function max($field){
@@ -542,7 +578,7 @@ class model implements \Iterator{
 			return $name->max($field);
 		}
 		$this->globalScope();
-		$sql="SELECT max(".$field.") from `".$this->getSchemeName().'`.'.$this->getTableName().$this->getWhereSqlPart();
+		$sql="SELECT max(".$field.") from ".$this->getSchemeName().'.'.$this->getTableName().$this->getWhereSqlPart();
 		return (float)db::ea11($sql,$this->queryBind,$this->getConnections());
 	}
 	function min($field){
@@ -552,7 +588,7 @@ class model implements \Iterator{
 			return $name->min($field);
 		}
 		$this->globalScope();
-		$sql="SELECT min(".$field.") from `".$this->getSchemeName().'`.'.$this->getTableName().$this->getWhereSqlPart();
+		$sql="SELECT min(".$field.") from ".$this->getSchemeName().'.'.$this->getTableName().$this->getWhereSqlPart();
 		return (float)db::ea11($sql,$this->queryBind,$this->getConnections());
 	}
 	function avg($field){
@@ -562,7 +598,7 @@ class model implements \Iterator{
 			return $name->avg($field);
 		}
 		$this->globalScope();
-		$sql="SELECT avg(".$field.") from `".$this->getSchemeName().'`.'.$this->getTableName().$this->getWhereSqlPart();
+		$sql="SELECT avg(".$field.") from ".$this->getSchemeName().'.'.$this->getTableName().$this->getWhereSqlPart();
 		return (float)db::ea11($sql,$this->queryBind,$this->getConnections());
 	}
 	function sum($field){
@@ -572,7 +608,7 @@ class model implements \Iterator{
 			return $name->sum($field);
 		}
 		$this->globalScope();
-		$sql="SELECT sum(".$field.") from `".$this->getSchemeName().'`.'.$this->getTableName().$this->getWhereSqlPart();
+		$sql="SELECT sum(".$field.") from ".$this->getSchemeName().'.'.$this->getTableName().$this->getWhereSqlPart();
 		return (float)db::ea11($sql,$this->queryBind,$this->getConnections());
 	}
 
@@ -590,16 +626,16 @@ class model implements \Iterator{
 		$types=array();
 			foreach ($this->fields as $fieldKey=>$fieldVal){
 				if (@$fieldVal['type']=='date'){
-					$fieldName=@$fieldVal['dbname']?$fieldVal['dbname']:$fieldKey;
+					$fieldName=isset($fieldVal['dbname'])?$fieldVal['dbname']:$fieldKey;
 					$types[]=db::dateFromDb($fieldName,'Y-m-d',$this->getConnections()).' "'.$fieldKey.'"';
 				}elseif (@$fieldVal['type']=='datetime'){
-					$fieldName=$fieldVal['dbname']?$fieldVal['dbname']:$fieldKey;
+					$fieldName=isset($fieldVal['dbname'])?$fieldVal['dbname']:$fieldKey;
 					$types[]=db::dateFromDb($fieldName,'Y-m-d H:i:s',$this->getConnections()).' "'.$fieldKey.'"';
 				}elseif (@$fieldVal['dbname']){
 					$types[]=$fieldName.' "'.$fieldKey.'"';
 				}
 			}
-			$return="SELECT t.*".($types?','.implode(',',$types):'')." from `".$this->getSchemeName().'`.'.$this->getTableName().' t'.$this->getWhereSqlPart();
+			$return="SELECT t.*".($types?','.implode(',',$types):'')." from ".$this->getSchemeName().'.'.$this->getTableName().' t'.$this->getWhereSqlPart();
 
 		if ($this->queryOrders){
 			$orders=array();
@@ -640,18 +676,48 @@ class model implements \Iterator{
 			return $out;
 		}
 	}
+        /**
+         * create row replicate without primary key
+         * @return static
+         * @throws \Exception
+         */
+        function replicate(){
+            if (!$this->isRowMode())throw new \Exception('replicate possible only in row mode');
+            $name=get_called_class();
+            $name=new $name;
+            $source=$this->toArray();
+            unset($source[$this->getPrimaryField()]);
+            $name->fill($source);
+            return $name;
+        }
 	function relationInner($model,$foreign_key=null,$local_key=null){
 		return $this->relation($model,$foreign_key,$local_key,true);
 	}
-	function relation($model,$foreign_key=null,$local_key=null,$is_inner=false){
+	function relation($model,$foreign_key=null,$local_key=null,$is_inner=false,$to_one=false){
 		// уххх
-		$obj=new $model(null, $this->collectionSource);
-		if ($foreign_key===null)$foreign_key=$obj->getPrimaryField();
-		if ($local_key===null)$local_key=$this->getPrimaryField();
+            
+            if ($foreign_key===null)$foreign_key=$obj->getPrimaryField();
+            if ($local_key===null)$local_key=$this->getPrimaryField();
+            
+            // get base collection from keys
+            $baseCollection=null;
+            if ($this->collectionSource){
+                $generator=new $this->collectionSource->generator;
+                if ($generator->getPrimaryField()==$local_key){
+                    $baseCollection=$this->collectionSource;
+                }else{
+                    $baseCollection=new collection_object(array_values($this->collectionSource->group($local_key,$local_key)),$this->collectionSource->generator,$local_key);
+                }
+                
+            }
+            $obj=new $model(null, $baseCollection);
+            
+		
 		if ($this->isRowMode()){
 			// для состояния строки - new модель с ограничением по ключу
 			
-			return $obj->is($foreign_key,$this->$local_key);
+                    $obj->is($foreign_key,$this->$local_key);
+                    return $to_one?$obj->first():$obj;
 		}else{
 			// if full
 //			var_dump($this->get()->toArray());
@@ -662,7 +728,9 @@ class model implements \Iterator{
 			return $obj;
 		}
 	}
-
+        function relationToOne($model,$foreign_key=null,$local_key=null){
+		return $this->relation($model,$foreign_key,$local_key,false,true);
+	}
 	function lister($onPage=10,$page=null){
 		if (!@$this){
 			$name=get_called_class();
@@ -674,7 +742,7 @@ class model implements \Iterator{
 		$limitStart=$this->limitStart;
 		$this->limitCount=0;
 		$this->limitStart=0;
-		$cnt=db::ea11('select count(*) from ('. $this->getSql().')',$this->getBinds(),$this->getConnections());
+		$cnt=db::ea11('select count(*) from ('. $this->getSql().')',$this->queryBind,$this->getConnections());
 		$this->limitCount=$limitCount;
 		$this->limitStart=$limitStart;
 		return array('count'=>$cnt,

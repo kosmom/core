@@ -24,9 +24,15 @@ class render{
      * @deprecated since version 3.4
      */
 	static function show_errors($type='html'){
-        return self::showErrors($type);
+        return self::showAlerts($type);
     }
+    /**
+     * @deprecated since version 3.5 use showAlerts method
+     */
 	static function showErrors($type='html'){
+        return self::showAlerts($type);
+    }
+	static function showAlerts($type='html'){
 		switch($type){
 			case 'html':
 				if (error::count()){?><div class='alert alert-danger'><?php foreach(error::errors() as $item){?><div><?=$item?></div><?php }?></div><?php }

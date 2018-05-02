@@ -123,7 +123,7 @@ if($code != 250)throw new \Exception('Error DATA2 '.$code);
 fputs($smtp_conn,"QUIT\r\n");
 
 			$success=1;
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			fclose($smtp_conn);
 			error::add('SMTP Error:'.$e->getMessage());
 			$success=0;

@@ -10,12 +10,7 @@ class pic{
 	private $x;
 	private $y;
 
-	/**
-	 * @deprecated since version 3.4
-	 */
-	static function memory_test($x,$y){
-		return self::memoryTest($x,$y);
-	}
+	
 	/**
 	 * memory test before picture loading
 	 * @param integer $x width
@@ -50,17 +45,11 @@ class pic{
 		return true;
 	}
 	/**
-	 * @deprecated since version 3.4
-	 */
-	static function is_pic($filename){
-		return self::isPic($filename);
-	}
-	/**
 	 * is pic filename or not
 	 * @param string $filename filename of image or inline string
 	 * @return boolean
 	 */
-	static function isPic($filename){
+	function isPic($filename){
 		if (!file_exists($filename)){
 			$prop=getimagesizefromstring($filename);
 			if (!$prop){
@@ -71,7 +60,7 @@ class pic{
 			$prop=getimagesize($filename);
 		}
 		if (empty($prop[2]))return false;
-		if (!in_array($prop[2],array(IMAGETYPE_JPEG,IMAGETYPE_GIF,IMAGETYPE_PNG)))return false;
+		if (!in_array($prop[2],array(IMAGETYPE_JPEG,IMAGETYPE_GIF,IMAGETYPE_PNG,IMAGETYPE_BMP)))return false;
 		return true;
 	}
 
@@ -94,11 +83,11 @@ class pic{
 			'y'=>2,//IMG_FLIP_VERTICAL,
 			'x'=>1//IMG_FLIP_HORIZONTAL
 		);
-		self::imageflip($this->image,isset($dirs[$direction])?$dirs[$direction]:$direction);
+		$this->imageflip($this->image,isset($dirs[$direction])?$dirs[$direction]:$direction);
 		return $this;
 	}
 
-	static function imageflip($image, $mode) {
+	function imageflip($image, $mode) {
 		if (function_exists('imageflip')){
 			imageflip($image,$mode);
 			return true;
@@ -140,8 +129,8 @@ class pic{
 	imagedestroy($temp_image);
 	}
 
-	static function load($filename,$autorotate=true){
-	  return new self($filename,$autorotate);
+	function load($filename,$autorotate=true){
+	  return new $this($filename,$autorotate);
 	}
 
 	/**
@@ -158,7 +147,7 @@ class pic{
 			$prop=getimagesizefromstring($filename);
 		}
 		if (!$prop) throw new \Exception('Image not recognized',3);
-		if (!self::memoryTest($prop[0],$prop[1]))throw new \Exception('Need more memory',4);
+		if (!$this->memoryTest($prop[0],$prop[1]))throw new \Exception('Need more memory',4);
 		$this->x=$prop[0];
 		$this->y=$prop[1];
 		if ($this->image)imagedestroy($this->image);
@@ -195,9 +184,9 @@ class pic{
 	 * @param integer $x width
 	 * @param integer $y height
 	 */
-	static function resize($x,$y=false){
+	function resize($x,$y=false){
 		if (!$y)$y=$x;
-		if (!self::memoryTest($x,$y))  throw new \Exception('Need more memory');
+		if (!$this->memoryTest($x,$y))  throw new \Exception('Need more memory');
 		$new = imagecreatetruecolor($x, $y);
 		imagealphablending($new, false);
 		imagesavealpha($new, true);
@@ -226,8 +215,8 @@ class pic{
 
 	/**
 	 * Resize pic with fix rate to max of params
-	 * @param type $x width
-	 * @param type $y height
+	 * @param int $x width
+	 * @param int $y height
 	 */
 	function resizeBox($x,$y=false){
 		if (!$y)$y=$x;
@@ -239,7 +228,7 @@ class pic{
 			$reduce=$this->x/$x;
 		}
 		if ($reduce==0)return $this;
-		if (!self::memoryTest($this->x/$reduce,$this->y/$reduce))throw new \Exception('Need more memory');
+		if (!$this->memoryTest($this->x/$reduce,$this->y/$reduce))throw new \Exception('Need more memory');
 		$copy = imagecreatetruecolor($this->x/$reduce, $this->y/$reduce);
 		imagecopyresampled($copy,$this->image,0,0,0,0,$this->x/$reduce,$this->y/$reduce,$this->x,$this->y);
 		$this->x=$this->x/$reduce;
@@ -248,6 +237,14 @@ class pic{
 		$this->image=$copy;
 		return $this;
 	}
+        function resizeMaxWidth($x){
+            if ($this->x<$x)return $this;
+            return $this->resizeBox($x,99999);
+        }
+        function resizeMaxHeight($y){
+            if ($this->y<$y)return $this;
+            return $this->resizeBox(99999,$y);
+        }
 	/**
 	 * Change size with save dimensions for max of values
 	 */
@@ -265,7 +262,7 @@ class pic{
 			$height=($y-$this->y/$reduce)*.5;
 		}
 		if ($reduce==0)return $this;
-		if (!self::memoryTest($x,$y))throw new \Exception('Need more memory');
+		if (!$this->memoryTest($x,$y))throw new \Exception('Need more memory');
 		$copy = imagecreatetruecolor($x, $y);
 		imagesavealpha($copy,true);
 		$transparent = imagecolorallocatealpha($copy,255,255,255,127);
@@ -313,7 +310,7 @@ class pic{
 			$width=$x*.5-$this->x/$reduce*.5;
 		}
 		if ($reduce==0)return $this;
-		if (!self::memoryTest($x,$y))throw new \Exception('Need more memory');
+		if (!$this->memoryTest($x,$y))throw new \Exception('Need more memory');
 		$copy = imagecreatetruecolor($x, $y);
 		imagecopyresampled($copy,$this->image,$width,$height,0,0,$this->x/$reduce,$this->y/$reduce,$this->x,$this->y);
 		$this->x=$this->x/$reduce;
@@ -348,15 +345,15 @@ class pic{
 
 	/**
 	 * add watermart to picture
-	 * @param type $x % width position
-	 * @param type $y % height position
-	 * @param type $watermarkFile watermark file
-	 * @param type $opacity watermart opacity
+	 * @param int $x % width position
+	 * @param int $y % height position
+	 * @param string $watermarkFile watermark file
+	 * @param float $opacity watermart opacity
 	 */
 	function addWatermark($x,$y,$watermarkFile,$opacity=100){
 		if (!is_readable($watermarkFile))  throw new \Exception('watermark file not exists');
 		$prop=getimagesize($watermarkFile);
-		if (!self::memoryTest($prop[0],$prop[1]))throw new \Exception('Need more memory');
+		if (!$this->memoryTest($prop[0],$prop[1]))throw new \Exception('Need more memory');
 		switch($prop[2]){
 			case IMAGETYPE_JPEG:
 				$watermark = imagecreatefromjpeg($watermarkFile);
@@ -431,7 +428,7 @@ class pic{
 			imagecopy($new, $this->image, 0, 0, 0, 0, $this->x, $this->y);
 			imagefilter($new, IMG_FILTER_GRAYSCALE);
 			// Merge with specified percentage
-			$this->imagecopymerge_alpha($this->image, $new, 0, 0, 0, 0, $this->x, $this->y, $percentage);
+			imagecopymerge($this->image, $new, 0, 0, 0, 0, $this->x, $this->y, $percentage);
 			imagedestroy($new);
 		}
 		return $this;
@@ -464,8 +461,8 @@ class pic{
 
 	/**
 	 * Save buffer picture
-	 * @param type $filename filename
-	 * @param type $quality quality for some formats. Quality must be between 0 - 100
+	 * @param string $filename filename
+	 * @param float $quality quality for some formats. Quality must be between 0 - 100
 	 */
 	function save($filename,$quality=50){
 		$quality=(int)$quality;
@@ -493,16 +490,12 @@ class pic{
 
 	function output($quality=50){
 		$quality=(int)$quality;
-		if (core::$debug){
-			if ($quality<0 or $quality>100)debug::trace('Save image quality must be between 0 and 100. Current val is: '.$quality);
-		}
+		if (core::$debug && ($quality<0 or $quality>100))debug::trace('Save image quality must be between 0 and 100. Current val is: '.$quality);
 		header('Content-Type: image/png');
 		imagepng($this->image);
 	}
 
 	function __destruct() {
-		if( $this->image !== null && get_resource_type($this->image) === 'gd' ) {
-			imagedestroy($this->image);
-		}
+		if( $this->image !== null && get_resource_type($this->image) === 'gd' )imagedestroy($this->image);
 	}
 }

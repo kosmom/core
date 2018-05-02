@@ -19,12 +19,12 @@ class mail{
 		}
 	}
 
-	private static function toMailArray($string){
+	private static function toMailArray($string,$db=''){
 		if (is_array($string))return $string;
 		if (is_string($string) or is_numeric($string)){
 			$string=trim($string);
 			if ($string==''){
-				error::add('Error on main send: Not set email address',c\error::WARNING);
+				error::add('Error on main send: Not set email address',error::WARNING);
 				self::$mails[$db]->ClearAddresses();
 				return false;
 			}
@@ -130,7 +130,7 @@ class mail{
 		self::$mails[$db]->Subject=$subject;
 
 		if(!self::$mails[$db]->Send()){
-			error::add('Error with send message: ' . self::$mails[$db]->ErrorInfo,c\error::WARNING);
+			error::add('Error with send message: ' . self::$mails[$db]->ErrorInfo,error::WARNING);
 		}elseif (core::$debug){
 			debug::trace('Message successfull send: '.$subject.' - '.implode(';',$adress),error::SUCCESS);
 		}
@@ -158,15 +158,16 @@ class mail{
 		return call_user_func(core::$data['mail_send_to_queue'],$text,$adress,$subject,$db,$order,$date_must);
 	}
 	private static function connect($db){
-		if (empty(self::$db_config)){
+		if (empty(self::$mail_config)){
 			if (is_array(core::$data['mail']))self::$mail_config['my']=core::$data['mail'];
-			include(__DIR__.DIRECTORY_SEPARATOR.'global-config'.DIRECTORY_SEPARATOR.'mail.php');
+			if (file_exists(__DIR__.'/global-config/mail.php'))include __DIR__.'/global-config/mail.php';
+			if (file_exists('config/mail.php'))include 'config/mail.php';
 		}
 				if (!$db)throw new \Exception('not set mail connection c\\core::$data["mail"]');
 		if (!self::$mail_config[$db])throw new \Exception('mail connection "'.$db.'" not exists');
 				switch (self::$mail_config[$db]['type']){
 			case 'smtp':
-				require_once(__DIR__.DIRECTORY_SEPARATOR.'factory'.DIRECTORY_SEPARATOR.'mail_smtp.php');
+				require_once(__DIR__.'/factory/mail_smtp.php');
 				self::$mails[$db]=new mail_smtp();
 				self::$mails[$db]->From=self::$mail_config[$db]['from'];
 				self::$mails[$db]->Host=self::$mail_config[$db]['host'];
@@ -176,7 +177,7 @@ class mail{
 				if (isset(self::$mail_config[$db]['auth']))self::$mails[$db]->auth=self::$mail_config[$db]['auth'];
 				break;
 			case 'apache':
-				require(__DIR__.DIRECTORY_SEPARATOR.'factory'.DIRECTORY_SEPARATOR.'mail_apache.php');
+				require_once(__DIR__.'/factory/mail_apache.php');
 				self::$mails[$db]=new mail_apache();
 				self::$mails[$db]->From=self::$mail_config[$db]['from'];
 				self::$mails[$db]->Host=self::$mail_config[$db]['host'];

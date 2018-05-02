@@ -217,12 +217,12 @@ class u{
 	static function freenumber($filename='',$folder='',$signs=0){
 		$filetype=self::filetype($filename);
 		if ($filetype!='')$filetype='.'.$filetype;
-		$newname=self::filename($filename);
+		$newname=self::filename();
 		$i=0;
 		$starttrim=0;
 		while (file_exists($folder.'/'.$newname.$filetype)){
 			$i++;
-			$newname=self::filename($filename).$i;
+			$newname=self::filename().$i;
 			if ($signs>0)$starttrim=strlen($newname.$filetype)-$signs;
 			if ($starttrim>0)$newname=substr($newname,$starttrim);
 		}
@@ -244,7 +244,7 @@ class u{
 	}
 	static function randomchar($length){
 		list($usec, $sec) = explode(' ', microtime());
-		srand(((float)$usec + (float)$sec) + $adv_index);
+		srand(((float)$usec + (float)$sec));
 		$index = 1;
 		$string = '';
 		while ($index <= $length){
@@ -260,7 +260,7 @@ class u{
 	static function zip($name){
 		$tmp=dirname($_FILES[self::$file]['tmp_name']).'/'.md5(uniqid(rand(),TRUE));
 		$zip = new \ZipArchive();
-		if ($zip->open($tmp, \ZIPARCHIVE::CREATE)!==TRUE)throw new \Exception('Error while creating of zip file');
+		if ($zip->open($tmp, \ZipArchive::CREATE)!==TRUE)throw new \Exception('Error while creating of zip file');
 		$zip->addFile(self::get_tmp_name(),iconv('windows-1251', 'cp866', self::getname()));
 		$zip->close();
 		$_FILES[self::$file]['tmp_name']=$tmp;

@@ -34,7 +34,7 @@ class db_mysql {
 
 	function connect(){
 		@$this->m_connect = mysqli_connect('p:'.$this->data['host'], $this->data['login'], $this->data['password'],$this->data['name']);
-		if (!$this->m_connect){trigger_error('MySQL connection error.'.mysqli_connect_errno(), E_USER_ERROR);exit;}
+		if (!$this->m_connect)throw new \Exception('MySQL connection error '.mysqli_connect_errno());
 		if (core::$debug){
 			debug::group('Connection to '.($this->cn?$this->cn:'MySQL'),error::SUCCESS);
 			@core::$data['stat']['db_connections']++;
@@ -79,7 +79,8 @@ class db_mysql {
 				debug::trace('clear whitespaces at begin of query for correct work. Autocorrect in debug mode',error::ERROR);
 				$sql=ltrim($sql);
 			}
-			debug::trace('SQL:'.$sql,false);
+                        debug::trace('Connection: '.$this->cn,false);
+			debug::trace('SQL: '.$sql,false);
 			if ($bind){
 				debug::dir(array('BIND:'=>$bind));
 			}else{
@@ -102,16 +103,13 @@ class db_mysql {
 			$start=microtime(true);
 		}
 		if(!$_result){
-			if (core::$debug){
+           	if (core::$debug){
 				debug::trace('Query error: '.mysqli_error($this->m_connect),error::ERROR);
 				debug::groupEnd();
 				debug::trace('MySQL error: '.mysqli_error($this->m_connect),error::ERROR);
-				return false;
-			}elseif ($this->error_resume){
-				return mysqli_error($this->m_connect);
-			}else{
-				throw new \Exception('DataBase error. Ошибка при работе с базой данных. В скором времени она будет решена. Просим прощения за временные неудобства'.mysqli_error($this->m_connect));
 			}
+                        if (empty(core::$data['db_exception']))return false;
+                        throw new \Exception('SQL execute error');
 		}
 		$subsql=strtolower(substr($sql,0,4));
 		$_data = array();

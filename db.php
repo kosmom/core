@@ -53,7 +53,7 @@ class db{
 	/**
 	 * Auto search db from array
 	 * @param array $db
-	 * @return
+	 * @return string
 	 */
 	static function autodb($db){
 		if (!is_array($db))return $db;
@@ -152,7 +152,7 @@ class db{
 		}
 	/**
 	 * Fetch assoc hydrator after db::query
-	 * @param number $queryNumber
+	 * @param number|boolean $queryNumber
 	 * @return array|false
 	 */
 	static function fa($queryNumber=false){
@@ -203,7 +203,7 @@ class db{
 	 * @param string $sql
 	 * @param array $bind
 	 * @param string|null $db
-	 * @return collection
+	 * @return collection|boolean
 	 */
 	static function eo($sql=null,$bind=array(), $db=''){
 		if ($db=='')$db=core::$data['db'];
@@ -285,22 +285,29 @@ class db{
 	/**
 	 * Add <i>in (...)</i> syntax into sql query with modified $bind variable
 	 * @param array $bind
-	 * @param type $value input array
+	 * @param array $value input array
 	 * @param string $variable using for binds
 	 * @return string
 	 */
-	static function in(&$bind,$value=array(),$variable=null){
+	static function in(&$bind,$value=array(),$variable=null,$wrapper=null){
 		if ($variable===null)$variable='temp_bind_'.(self::$counter++).'_';
 		$out=array();
 		foreach ($value as $key=>$item){
-			$out[]=':'.$variable.'_'.$key;
+			if (is_callable($wrapper)){
+				$out[]= call_user_func($wrapper, ':'.$variable.'_'.$key);
+			}else{
+				$out[]=':'.$variable.'_'.$key;
+			}
 			$bind[$variable.'_'.$key]=$item;
 		}
 		return implode(',',$out);
 	}
 
 	private static function getConfig(){
-		if (empty(self::$db_config[core::$env]))require __DIR__.'/global-config/db'.core::$env.'.php';
+		if (empty(self::$db_config[core::$env])){
+			if (file_exists(__DIR__.'/global-config/db'.core::$env.'.php'))require __DIR__.'/global-config/db'.core::$env.'.php';
+			if (file_exists('config/db'.core::$env.'.php'))require 'config/db'.core::$env.'.php';
+		}
 	}
 	static function addConnect($connectName,$params){
 		if ($params['type']=='oci8')$params['type']='oracle';
@@ -395,8 +402,8 @@ class db{
 	}
 
 	// functions from dbwork
-	static function setData($tablename,$array_in='',$sequence=true,$db='',&$outErrors=true){
-		return dbwork::setData($tablename,$array_in,$sequence,$db,$outErrors);
+	static function setData($tablename,$array_in='',$sequence=true,$db='',&$outErrors=true,$schema=''){
+		return dbwork::setData($tablename,$array_in,$sequence,$db,$outErrors,$schema);
 	}
 	static function setDataOrFail($tablename,$arrayIn='',$sequence='',$db=''){
 		return dbwork::setDataOrFail($tablename,$arrayIn,$sequence,$db);

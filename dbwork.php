@@ -17,14 +17,6 @@ class dbwork{
 	const NULL='{NULL}';
 
 	/**
-	 * Prepare where part for diap text or number field
-	 * @param string $string input string
-	 * @param string $field field in database
-	 * @param array $bind source bind array
-	 * @param string $bindPrefix
-	 * @param string $blockDelimeter
-	 * @param tring $diapDilimeter
-	 * @return string where array part
 	 * @deprecated since version 3.4
 	 */
 	static function filter_diap($string,$field,&$bind,$bindPrefix=null,$blockDelimeter=',',$diapDilimeter='-'){
@@ -37,7 +29,7 @@ class dbwork{
 	 * @param array $bind source bind array
 	 * @param string $bindPrefix
 	 * @param string $blockDelimeter
-	 * @param tring $diapDilimeter
+	 * @param string $diapDilimeter
 	 * @return string where array part
 	 */
 	static function filterDiap($string,$field,&$bind,$bindPrefix=null,$blockDelimeter=',',$diapDilimeter='-'){
@@ -86,7 +78,7 @@ class dbwork{
 	 * Get struct of table
 	 * @param string $tablename Table name
 	 * @param string $db Database
-	 * @return array [datatable struct,primary key,unique keys]
+	 * @return bollean|array [datatable struct,primary key,unique keys]
 	 */
 	static function describeTable($tablename,$schema='',$db=''){
             	if ($db=='')$db=core::$data['db'];
@@ -105,6 +97,7 @@ class dbwork{
 		}
 		$primaryKey=array();
 		$uniqueKey=array();
+                $data=array();
 		switch(db::type($db)){
 			case 'mysql':
 				/************************ MYSQL *************************/
@@ -251,14 +244,15 @@ class dbwork{
 	/**
 	 * Insert or update $array_in data into $tablename with use sequence $sequence
 	 * @param string $tablename
-	 * @param array $array_in input array. Keys - fields name. Vals - values. Magic values is {SYSDATE} - current timestamp and {+} - add or concat value with current. For example '{+}100'
-	 * @param string $sequence
+	 * @param array $arrayIn input array. Keys - fields name. Vals - values. Magic values is {SYSDATE} - current timestamp and {+} - add or concat value with current. For example '{+}100'
+	 * @param string|boolean $sequence
 	 * @param string $db
 	 * @return boolean or inserted ID
 	 */
 	static function setData($tablename,$arrayIn='',$sequence=true,$db='',&$errors=true,$schema=''){
 		if ($db=='')$db=core::$data['db'];
 		if (is_array($db))$db=db::autodb($db);
+		if (!$arrayIn)return false;
 		$dbType=db::type($db);
 		$strcolname=array();
 		$bind=array();
@@ -526,9 +520,7 @@ class dbwork{
 			}
 			db::e($sql,$bind,$db);
 			if ($opType == 1){ // insert
-				if (isset($inserted)){
-					$return=$inserted;
-				}elseif (isset($bind[$notIsset])){
+				if (isset($bind[$notIsset])){
 					$return=(int)$bind[$notIsset];
 				}else{
 					$return=db::lastId($db);

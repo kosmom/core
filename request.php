@@ -20,8 +20,8 @@ while (c\request::eachFile('filename')){
  */
 class request{
 	private static $result=null;
-	private $files=array();
-	private $counter=array();
+	private static $files=array();
+	private static $counter=array();
 	private static $isCMD;
 	
 	static function isCmd(){
@@ -29,7 +29,10 @@ class request{
 		return self::$isCMD=(PHP_SAPI === 'cli' || empty($_SERVER['REMOTE_ADDR']));
 	}
 	
-	
+	static function isAjax(){
+		return @$_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+	}
+
 	/**
 	 * Current user IP
 	 * @return string
@@ -38,6 +41,10 @@ class request{
 		return (isset($_SERVER['HTTP_X_REAL_IP']))?$_SERVER['HTTP_X_REAL_IP']:$_SERVER['REMOTE_ADDR'];
 	}
 
+	static function url(){
+		return self::protocol().$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].($_SERVER['QUERY_STRING']===''?'':$_SERVER['QUERY_STRING']);
+	}
+	
 	static function protocol() {
 		return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 	}
@@ -110,8 +117,8 @@ class request{
 	static function fileToPic($parameter='CoreEachFile'){
 		if (core::$debug && empty($_FILES))debug::consoleLog ('probably not set form enctype', error::WARNING);
 		if (self::fileError($parameter)!==0 && self::fileError($parameter)!==4)  throw new \Exception('Error on upload file '.self::fileError($parameter),1);
-		if (!\c\pic::isPic(self::fileTmpName($parameter))) throw new \Exception('Uploaded file is not a picture',2);
-		return new \c\pic(self::fileTmpName($parameter));
+		if (!pics::isPic(self::fileTmpName($parameter))) throw new \Exception('Uploaded file is not a picture',2);
+		return new pic(self::fileTmpName($parameter));
 	}
 	private static function manyFiles($file){
 		self::$files[$file]=array();
@@ -124,7 +131,7 @@ class request{
 			return true;
 		}
 		foreach ($_FILES[$file]['tmp_name'] as $key=>$v){
-			self::$files[$file][$key]=array('name'=>$_FILES[$file]['name'][$key],'type'=>$_FILES[$file]['type'][$key],'tmp_name'=>$val,'error'=>$_FILES[$file]['error'][$key],'size'=>$_FILES[$file]['size'][$key]);
+			self::$files[$file][$key]=array('name'=>$_FILES[$file]['name'][$key],'type'=>$_FILES[$file]['type'][$key],'tmp_name'=>$v,'error'=>$_FILES[$file]['error'][$key],'size'=>$_FILES[$file]['size'][$key]);
 		}
 		return true;
 	}
@@ -244,7 +251,7 @@ class request{
 	 * @param $conditions    -- vetsions to compre array('Opera' => array(9, 4), 'Firefox' => array(3, 1, 1), ...)
 	 * @return int
 	 */
-	static function checkForBrowserVersion(array $browser, array $conditions){
+	static function checkForBrowserVersion($browser, $conditions){
 		if (!isset($browser['name']) || !isset($conditions[$browser['name']])
 		|| !isset($browser['version']) || count($browser['version']) < 1)return null;
 

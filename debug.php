@@ -177,7 +177,7 @@ class debug{
 	}
 	/**
 	 * Zaeb. Echo variable with pre tags and exit
-	 * @param type $var
+	 * @param mixed $var
 	 * @param boolean $exit
 	 */
 	static function z($var,$exit=true){

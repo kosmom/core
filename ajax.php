@@ -84,12 +84,13 @@ class ajax {
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function add_action($type,$data=array()) {
+	static function add_action($type,$data=null) {
 		self::addAction($type,$data);
 	}
-	static function addAction($type,$data=array()) {
+	static function addAction($type,$data=null) {
 		if (core::$debug)debug::trace('Add ajax action '.$type,error::INFO,$data);
-		if (core::$ajax && !core::$partition){
+		if (core::$ajax){ // && !core::$partition
+			if (!is_array($data))$data=array('_val'=>$data);
 			$data['_type']=$type;
 			self::$answer[] = $data;
 		}else{
@@ -174,9 +175,9 @@ class ajax {
 	}
 
 
-	static function render($redirect = false,$answer_needed=null) {
-                // if redirect - not need show errors. Error stack must be added with messages
-		if (!$redirect) {
+	static private function renderPrepare($redirect,$answer_needed){
+		// if redirect - not need show errors. Error stack must be added with messages
+		if (!$redirect){
 			if (error::count()) {
 				foreach (error::errors() as $item)self::$answer[] = array('_type' => 'message', 'message' => $item, 'type' => error::ERROR);
 			}
@@ -187,11 +188,22 @@ class ajax {
 				foreach (error::success() as $item)self::$answer[] = array('_type' => 'message', 'message' => $item, 'type' => error::SUCCESS);
 			}
 			// todo: think about need answer when was not ajax actions
-                        if ($answer_needed===null)$answer_needed=self::$answer_needed;
+			if ($answer_needed===null)$answer_needed=self::$answer_needed;
 			if ($answer_needed && empty(self::$answer))self::$answer[] = array('_type' => 'message', 'message' => 'Action not supported', 'type' => error::ERROR);
 		}
 		if (core::$debug)self::consoleLog('Core MVC debug finished',error::INFO);
 		if (core::$debug)self::consoleGroupEnd();
+		
+	}
+	static function renderOutLoad(){
+		return '<script>core_ajax_process('.self::renderOut(false,false).')</script>';
+	}
+	static function renderOut($redirect=false,$answer_needed=null){
+		self::renderPrepare ($redirect,$answer_needed);
+		return input::jsonEncode(self::$answer);
+	}
+	static function render($redirect = false,$answer_needed=null) {
+		self::renderPrepare ($redirect,$answer_needed);
 		header_remove('Content-Length');
 		if (@core::$data['ajax_gzip']){
 			header('content-encoding: gzip');

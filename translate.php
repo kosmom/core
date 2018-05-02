@@ -14,9 +14,10 @@ class translate{
 		core::$lang=$locate;
 		self::$tDict=array();
 		if (!core::$lang)return true;
-		if (file_exists($file=__DIR__.DIRECTORY_SEPARATOR.'global-config'.DIRECTORY_SEPARATOR.'translate_'.core::$lang.'.php'))include $file;
+		if (file_exists($file=__DIR__.'/global-config/translate_'.core::$lang.'.php'))include $file;
+		if (file_exists($file='config/translate_'.core::$lang.'.php'))include $file;
 		foreach (mvc::$url as $url=>$v){
-			if (file_exists($file=$url.DIRECTORY_SEPARATOR.'translate_'.core::$lang.'.php'))include $file;
+			if (file_exists($file=$url.'/translate_'.core::$lang.'.php'))include $file;
 		}
 		return true;
 	}
@@ -273,7 +274,7 @@ class translate{
 	static function translit($text){
 		$text=input::lower($text);
 		if (core::$charset!=core::UTF8)$text=iconv(core::$charset,core::UTF8,$text);
-		return trim(str_replace(array("\r\n","\r","\n",'--'),array('-','-','-','-'),strtr($text,self::$transArr)),'-');
+		return trim(str_replace(array("\t","\r\n","\r","\n",'--'),array('-','-','-','-','-'),strtr(trim($text),self::$transArr)),'-');
 	}
 
 	/**
@@ -506,7 +507,8 @@ class translate{
 	static function mat($str,$trans=false){
 		if (core::$charset!=core::UTF8)$str=iconv(core::$charset,core::UTF8,$str);
 		$pos=0;
-		include __DIR__.DIRECTORY_SEPARATOR.'global-config'.DIRECTORY_SEPARATOR.'mat.php';
+		if (file_exists($file=__DIR__.'/global-config/mat.php'))include_once $file;
+		if (file_exists($file='config/mat.php'))include_once $file;
 		foreach ($dict as $val){
 			if ($pos=preg_match('/'.$val['word'].'/imu', $str)>-1){
 				if (!$trans)return $pos;
@@ -519,12 +521,6 @@ class translate{
 	}
 
 	/**
-	 * Ending of word for count of elements
-	 * @param  $number Integer count
-	 * @param  $ending1 1 count phrase,
-	 * @param  $ending4 4 counts phrase,
-	 * @param  $ending5 5 counts phrase,
-	 * @return String
 	 * @deprecated since version 3.4 use plural method
 	 */
 	static function num_ending($number, $ending1,$ending4,$ending5=null){
@@ -532,11 +528,11 @@ class translate{
 	}
 	/**
 	 * Ending of word for count of elements
-	 * @param  $number Integer count
-	 * @param  $ending1 1 count phrase,
-	 * @param  $ending4 4 counts phrase,
-	 * @param  $ending5 5 counts phrase,
-	 * @return String
+	 * @param $number int count
+	 * @param $ending1 1 count phrase,
+	 * @param $ending4 4 counts phrase,
+	 * @param $ending5 5 counts phrase,
+	 * @return string
 	 */
 	static function plural($number, $ending1,$ending4,$ending5=null){
 		if (!is_numeric($number))$number=str_replace(',','.',$number);
@@ -558,7 +554,8 @@ class translate{
 		if (core::$charset!=core::UTF8)$str=iconv(core::$charset,core::UTF8,$str);
 		$str=strtr($str,array('ё'=>'е',' ,'=>', '));
 		$p=array();$r=array();
-		include __DIR__.DIRECTORY_SEPARATOR.'global-config'.DIRECTORY_SEPARATOR.'grammar.php';
+		if (file_exists($file=__DIR__.'/global-config/grammar.php'))include_once $file;
+		if (file_exists($file='config/grammar.php'))include_once $file;
 		$out= preg_replace($p,$r,$str);
 		if (core::$charset!=core::UTF8)$out=iconv(core::UTF8,core::$charset,$out);
 		return $out;

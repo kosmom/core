@@ -25,7 +25,7 @@ class storage{
 
 	static function getChanged($model,$pk){
 		$modelName=get_class($model);
-		return self::$durty[$modelName][$pk]+array($model->getPrimaryField()=>$pk);
+		return self::$durty[$modelName][$pk]?self::$durty[$modelName][$pk]+array($model->getPrimaryField()=>$pk):array();
 	}
 	static function is_set($model,$pk){
 		$modelName=get_class($model);
@@ -53,6 +53,9 @@ class storage{
 	}
 	static function getDataOrFail($model,$pk,$field=null){
 		$modelName=is_object($model)?get_class($model):$model;
+//		var_dump($modelName);
+//		var_dump($pk);
+//		var_dump($field);
 		if ($field===null){
 			$out=array();
 			foreach (self::$base[$modelName][$pk] as $field=>$value){

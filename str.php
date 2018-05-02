@@ -104,7 +104,7 @@ class str{
 		return $matches[0];
 	}
 	function explode($delimeter){
-		return explode($delimiter, $this->val);
+		return explode($delimeter, $this->val);
 	}
 	function split($delimeter){
 		return $this->explode($delimeter);
@@ -162,7 +162,7 @@ class str{
 		return $percent;
 	}
 	function pad($length,$pad_string,$pad_type=\STR_PAD_RIGHT){
-		$this->val= str_pad($this->val, $pad_length, $pad_string, $pad_type);
+		$this->val= str_pad($this->val, $length, $pad_string, $pad_type);
 		return $this;
 	}
 	function str_pad($length,$pad_string,$pad_type=\STR_PAD_RIGHT){
@@ -181,7 +181,7 @@ class str{
 		return $this;
 	}
 	function t($vars=array()){
-		$this->val=translate::t($text, $vars);
+		$this->val=translate::t($this->val, $vars);
 		return $this;
 	}
 	function iconv(){

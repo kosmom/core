@@ -482,8 +482,8 @@ class models{
 	 * @throws Exception
 	 */
 	function update($params){
-		if (sizeof($this->queryJoins)>1)  throw new Exception('Query with joins cannot be updated');
-		if (empty($params))  throw new Exception('Params must be set');
+		if (sizeof($this->queryJoins)>1)  throw new \Exception('Query with joins cannot be updated');
+		if (empty($params))  throw new \Exception('Params must be set');
 		$set=array();
 		foreach ($params as $field=>$value){
 			$set[]=$this->expressions($field,$this->activeAlias).'=:update_'.$field;
@@ -493,7 +493,7 @@ class models{
 		if ($this->queryWhere){
 			$wheres=array();
 			foreach ($this->queryWhere as $where){
-				$wheres[]=$this->sqlExpression($where,$need_write_alias);
+				$wheres[]=$this->sqlExpression($where);
 			}
 			$sql.=' WHERE '.implode(' AND ',$wheres);
 		}
@@ -590,7 +590,7 @@ class models{
 	}
 	/**
 	 *
-	 * @param type $bind
+	 * @param array $bind
 	 * @return collection
 	 */
 	function ea($bind=array()){
@@ -614,7 +614,7 @@ class models{
 
 	/**
 	 *
-	 * @param type $bind
+	 * @param array $bind
 	 * @return collection_object
 	 */
 	function get($bind=array()){

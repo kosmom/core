@@ -47,7 +47,7 @@ class table{
 	}
 	function sort($default='',$field=''){
 		if ($field == '') $field=$_GET['sort'];
-		if (empty($this->$header[$field]['sort'])) return $default;
+		if (empty($this->header[$field]['sort'])) return $default;
 		return $field;
 	}
 	function order($field=''){
@@ -126,6 +126,7 @@ class table{
 				$item=array('name'=>$item);
 				continue;
 			}
+			if (isset($item[0]) && !isset($item['name']))$item['name']=$item[0];
 			if (isset($item['position']))$need_sort=true;
 		}
 		if (!$need_sort)return $header;
@@ -270,6 +271,7 @@ class table{
 		if (!isset($input['group'])) return '';
 		$lastGroupState=array();
 		$reset=false;
+                $out='';
 		foreach($input['group'] as $groupKey=> $item){
 			if ($reset) $this->lastGroupState[$groupKey]='';
 			$lastGroupState[$groupKey]=(isset($item['field']))?$row[$item['field']]:$item['fill']($row);
@@ -295,6 +297,7 @@ class table{
 		if (!isset($input['groupFooter'])) return '';
 		$lastGroupState=array();
 		$reset=false;
+                $out='';
 		foreach($input['groupFooter'] as $groupKey=> $item){
 			if ($reset) $this->lastGroupFooterState[$groupKey]='';
 			$lastGroupState[$groupKey]=(isset($item['field']))?$row[$item['field']]:$item['fill']($row);
@@ -485,13 +488,13 @@ class table{
 	function xlsx_generate($input=array(),$filename=''){
 		return $this->xlsxGenerate($input,$filename);
 	}
-	function xlsxGenerate($input=array(),$filename=''){
+	function xlsxGenerate($input=array(),$filename='',$out=true){
 		if (is_string($input) && $filename==''){
 			$filename=$input;
 			$input=array();
 		}
 		xlsx::writesheetFromTable($input,$this);
-		xlsx::generate($filename);
+		return xlsx::generate($filename,$out);
 	}
 	/**
 	 * Render data as array with headers and fill parameters
