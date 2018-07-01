@@ -297,7 +297,7 @@ class table{
 		if (!isset($input['groupFooter'])) return '';
 		$lastGroupState=array();
 		$reset=false;
-                $out='';
+        $out='';
 		foreach($input['groupFooter'] as $groupKey=> $item){
 			if ($reset) $this->lastGroupFooterState[$groupKey]='';
 			$lastGroupState[$groupKey]=(isset($item['field']))?$row[$item['field']]:$item['fill']($row);
@@ -327,9 +327,9 @@ class table{
 		return $attributes;
 	}
 	private function drawCellValue($value,$key){
-		if (!is_array($this->header[$key]))return $value;
-		if (!isset($this->header[$key]['values']))return $value;
-		return @$this->header[$key]['values'][$value]?$this->header[$key]['values'][$value]:$value;
+		if (!is_array($this->header[$key]))return input::htmlspecialchars($value);
+		if (!isset($this->header[$key]['values']))return input::htmlspecialchars($value);
+		return @$this->header[$key]['values'][$value]?$this->header[$key]['values'][$value]:input::htmlspecialchars($value);
 	}
 	/**
 	 * @deprecated since version 3.4
@@ -364,7 +364,7 @@ class table{
 			if (is_callable(@$h['fill']))$input['fill'][$key]=$h['fill'];
 		}
 
-
+		$row=array();
 		$out='<tbody>';
 		$lastrow=null;
 		if ($this->data instanceof model)$this->data=$this->data->get();
@@ -378,7 +378,7 @@ class table{
 						foreach($input['header'] as $key=> $coll){
 							$out.=$this->drawCell($key,$row,$input);
 						}
-						$out.='</tr>'.($key?$this->drawGroupFooter($input,$row):'');
+						$out.='</tr>';//.($key?$this->drawGroupFooter($input,$row):'');
 						$lastrow=$row;
 					}
 				}else{
@@ -388,7 +388,7 @@ class table{
 						foreach($input['header'] as $key=> $coll){
 							$out.='<td'.(isset($input['cell_attributes'][$key])?' '.$this->drawCellAttributes($key,$row,$input):'').'>'.$this->drawCellValue(@$row[$key],$key).'</td>';
 						}
-						$out.='</tr>'.($key?$this->drawGroupFooter($input,$row):'');
+						$out.='</tr>';//.($key?$this->drawGroupFooter($input,$row):'');
 						$lastrow=$row;
 					}
 				}
@@ -401,7 +401,7 @@ class table{
 						foreach($input['header'] as $key=> $coll){
 							$out.=$this->drawCell($key,$row,$input);
 						}
-						$out.='</tr>'.($key?$this->drawGroupFooter($input,$row):'');
+						$out.='</tr>';//.($key?$this->drawGroupFooter($input,$row):'');
 						$lastrow=$row;
 					}
 				}else{

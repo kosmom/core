@@ -7,6 +7,7 @@ namespace c;
  */
 class model implements \Iterator{
 	var $connection;
+	var $connectionAlter;
 	//var $lazy;
 	//private $getters=array();
 	var $readonly=false;
@@ -136,6 +137,10 @@ class model implements \Iterator{
 		if ($this->connection)return $this->connection;
 		return core::$data['db'];
 	}
+	function getConnectionsAlter(){
+		if ($this->connectionAlter)return $this->connectionAlter;
+		return $this->getConnections();
+	}
 	function calculateValue($field,$value, $values=array()){
 	//        if (is_null($value))throw new \Exception('no data in '.$field);
 		if (is_null($value))return null;
@@ -204,7 +209,8 @@ class model implements \Iterator{
 			if (!@$fieldVal['dbname'])continue;
 			if ($values[$fieldKey])$result[$fieldVal['dbname']]=$values[$fieldKey];
 		}
-	$this->pk_value=db::setData($this->getTableName(), $result,$this->sequence,$this->getConnections());
+                $errors=array();
+	$this->pk_value=db::setData($this->getTableName(), $result,$this->sequence,$this->getConnectionsAlter(),$errors,$this->getSchemeName());
                 //storage::setData($this,$this->pk_value,$result);
 		$this->storage=null;
 		if ($this->mode!='row')$this->find($this->pk_value);
@@ -539,7 +545,7 @@ class model implements \Iterator{
 		}else{
 			//get data for cache
 			$rs=db::ea($this->getSql(),$this->queryBind,$this->getConnections());
-			foreach ($rs as $row){
+                        foreach ($rs as $row){
 				storage::setData($this,$row[$pk],$row);
 			}
 			// set cache
@@ -715,7 +721,6 @@ class model implements \Iterator{
 		
 		if ($this->isRowMode()){
 			// для состояния строки - new модель с ограничением по ключу
-			
                     $obj->is($foreign_key,$this->$local_key);
                     return $to_one?$obj->first():$obj;
 		}else{
@@ -791,18 +796,20 @@ class model implements \Iterator{
 	/**
 	 * Find row model by pk. Thrown exception if not found
 	 * @param string|integer $pk_value
+	 * @param \Exception,null $exception throwable not found exception
 	 * @return model
 	 */
-	function findOrFail($pk_value){
+	function findOrFail($pk_value,$exception=null){
 		if (!@$this){
 			$name=get_called_class();
 			$name=new $name;
-			return $name->findOrFail($pk_value);
+			return $name->findOrFail($pk_value,$exception);
 		}
-		$this->where($this->getPrimaryField(),$pk_value);
-		$this->pk_value=$pk_value;
-		$this->mode='row';
-		if (!$this->formData(false))throw new \Exception('not found');
+		$this->find($pk_value);
+                if (!$this->formData(false)){
+                    if ($exception instanceof \Exception) throw $exception;
+                    throw new \Exception('not found');
+                }
 		return $this;
 	}
 	/**

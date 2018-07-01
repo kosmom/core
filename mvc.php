@@ -25,7 +25,7 @@ class mvc{
 	static $bodyAttributes=array();
 	private static $isConfig;
 	static $slashAtEnd='/';
-        static $appFolder='app';
+	static $appFolder='app';
 	/**
 	 * counter - __DIR__
 	 * @var array
@@ -153,10 +153,8 @@ class mvc{
 				if (file_exists($dir.'index.js'))self::addJs($dir.'index.js');
 			}
 			self::$current__DIR__=realpath($dir);
-	//				return self::$folder;
 		}
-		// if $old_folder
-		if (!self::$folder)return false; // the end
+		if (!self::$folder)return false; // same folder drive to the end
 
 		switch (self::$content){
 		case 'true':
@@ -184,15 +182,18 @@ class mvc{
 			}
 		case 'ajax.php':
 			if ((core::$debug) && file_exists(self::$folder.'debug.php')){
-				self::$content='debug.php';
-				return self::$folder.self::$content;
+                            self::$content='debug.php';
+                            return self::$folder.self::$content;
 			}
-			self::$content='index.php';
-			return self::$folder.self::$content;
-				case 'debug.php':
+		case 'debug.php':
 			self::$content='index.php';
 			return self::$folder.self::$content;
 		case 'index.php':
+                        if ($_POST && file_exists(self::$folder.'post.php')){
+                            self::$content='post.php';
+                            return self::$folder.self::$content;
+                        }
+		case 'post.php':
 			if (self::$search_css_js){
 				$dir=self::getRealDir(self::$folder);
 				if (file_exists($dir.'index.css'))self::addCss($dir.'index.css');
@@ -336,10 +337,6 @@ class mvc{
 	}
 
 	/**
-	 * Exists module or not with path
-	 * @param string $path
-	 * @param string|null $__DIR__
-	 * @return boolean
 	 * @deprecated since version 3.4
 	*/
 	static function module_exists( $path='',$__DIR__=null){
@@ -381,13 +378,6 @@ class mvc{
 	}
 
 	/**
-	 * @deprecated since version 3.4
-	 */
-	static function get_links($__DIR__=null){
-		self::init($__DIR__);
-	}
-	
-	/**
 	 * Prepare full links array from $_GET['link'] param
 	 * @param string|null $__DIR__
 	 */
@@ -398,6 +388,7 @@ class mvc{
 			debug::timer();
 		}
 		header('Content-Type: text/html; charset='.core::$charset);
+                mb_internal_encoding(core::$charset);
 		if (request::isAjax())ajax::init();
 		$dir=trim(dirname($_SERVER['SCRIPT_NAME']),'\\/');
 		if ($dir)self::$basefolder=$dir.'/';
@@ -415,7 +406,7 @@ class mvc{
 			}
 			self::$links_string=ltrim($_SERVER['REDIRECT_URL'],'\\/');
 		}else{
-			self::$links_string=substr(ltrim($_SERVER['REDIRECT_URL'],'\\/'), strlen(self::$basefolder));
+			self::$links_string=substr(ltrim(@$_SERVER['REDIRECT_URL'],'\\/'), strlen(self::$basefolder));
 		}
 		if (core::$charset!=core::UTF8)self::$links_string=iconv('utf-8',core::$charset,self::$links_string);
 		self::$links=explode('/',self::$links_string);
@@ -430,8 +421,6 @@ class mvc{
 		self::$isConfig=true;
 	}
 	/**
-	 * Add title peace into title array
-	 * @return super
 	 * @deprecated since version 3.4
 	 */
 	static function add_title($title){
@@ -494,10 +483,6 @@ class mvc{
 	}
 
 	/**
-	 * Get link to current page of __DIR__
-	 *
-	 * @param string $__DIR__
-	 * @return string URL
 	 * @deprecated since version 3.4
 	 */
 	static function this_page_url($__DIR__=null){
@@ -643,11 +628,7 @@ class mvc{
 			if (isset(self::$js_dict[$js]['requires'])){
 				if (!is_array(self::$js_dict[$js]['requires']))self::$js_dict[$js]['requires']=array(self::$js_dict[$js]['requires']);
 				foreach (self::$js_dict[$js]['requires'] as $item){
-					if ($isComponent){
-						self::addComponent($item);
-					}else{
-						self::addJs($item);
-					}
+					$isComponent?self::addComponent($item):self::addJs($item);;
 				}
 			}
 			self::$js[]=array($jslink.(isset(self::$js_dict[$js]['version'])?'?v='.self::$js_dict[$js]['version']:''),self::$jsHard,2,isset(self::$js_dict[$js]['if'])?self::$js_dict[$js]['if']:false);
@@ -778,13 +759,13 @@ class mvc{
 	<head>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta charset="<?=core::$charset?>">
-		<link rel="canonical" href='//<?=$_SERVER['HTTP_HOST']?>/<?=self::$basefolder.htmlspecialchars(rtrim(implode('/',self::$url_links).'/'.@self::$canonical_links,'/')).self::$slashAtEnd?>'>
+		<link rel="canonical" href='//<?=$_SERVER['HTTP_HOST']?>/<?=self::$basefolder.htmlspecialchars(rtrim(@implode('/',self::$url_links).'/'.@self::$canonical_links,'/')).self::$slashAtEnd?>'>
 	<title><?=self::drawTitle();?></title><?
 foreach (self::$meta as $name=>$content){?>
 <meta name="<?=$name?>" content="<?=input::htmlspecialchars($content)?>">
 <?php }?>	
 		<base href="//<?=$_SERVER['HTTP_HOST']?>/<?=self::$basefolder?>" />
-		<?=self::drawCss().(self::$js_first?self::drawJs():'');if (self::$favicon){?><link href="<?=self::$favicon?>" rel="icon" type="image/x-icon" /><?php }?>
+		<?=self::drawCss().(self::$js_first?self::drawJs():'');if (self::$favicon){?><link href="<?=self::$favicon?><?=core::$version?'?v='.core::$version:''?>" rel="icon" type="image/x-icon" /><?php }?>
 	</head>
 		<?php }
 		if (!self::$noBody){?><body<?if (self::$bodyAttributes){
@@ -847,9 +828,6 @@ foreach (self::$meta as $name=>$content){?>
 	}
 
 	/**
-	 * Get file prop in comments //prop:value in beginning of file as array
-	 * @param string $__FILE__ suorce filename
-	 * @return array
 	 * @deprecated since version 3.4
 	 */
 	static function get_file_prop($__FILE__){
@@ -857,8 +835,8 @@ foreach (self::$meta as $name=>$content){?>
 	}
 	/**
 	 * Get file prop in comments //prop:value in beginning of file as array
-	 * @param string $__FILE__ suorce filename
-	 * @return array
+	 * @param string $__FILE__ source filename
+	 * @return fileprop
 	 */
 	static function getFileProp($__FILE__){
 		$data = file($__FILE__); // may be long in largest files?
@@ -882,16 +860,11 @@ foreach (self::$meta as $name=>$content){?>
 				$module[trim(mb_substr($item,2,$delimeter-2,core::$charset))]=trim(mb_substr($item,$delimeter+1,999,core::$charset));
 			}
 		}
-		return $module;
+		return new fileprop($module,$__FILE__);
 	}
 
 
 	/**
-	 * Show menu array from subpages. Get data from comments in begin of file
-	 * @param string $__DIR__ current __DIR__
-	 * @param array|callable $addition_menu array of addition menu if need
-	 * @param number|null $level Number menu levels as submenu
-	 * @return array|boolean Struct of subpages or false if no array
 	 * @deprecated since version 3.4
 	 */
 	static function get_menu($__DIR__=null,$addition_menu=null,$level=1){
@@ -900,16 +873,16 @@ foreach (self::$meta as $name=>$content){?>
 	/**
 	 * Show menu array from subpages. Get data from comments in begin of file
 	 * @param string $__DIR__ current __DIR__
-	 * @param array|callable $addition_menu array of addition menu if need
+	 * @param array|null $additionMenu array of addition menu
 	 * @param number|null $level Number menu levels as submenu
-	 * @return array|boolean Struct of subpages or false if no array
+	 * @return array|fileprop[]|boolean Struct of subpages or false if no array
 	 */
-	static function getMenu($__DIR__=null,$addition_menu=null,$level=1){
+	static function getMenu($__DIR__=null,$additionMenu=null,$level=1){
 	   if ($__DIR__===null)$__DIR__=self::$current__DIR__;
-	   return self::getMenuPart($__DIR__,$__DIR__,'',$addition_menu,$level);
+	   return self::getMenuPart($__DIR__,$__DIR__,'',$additionMenu,$level);
 	}
 
-	private static function getMenuPart($__DIR__,$base__DIR__,$href,$addition_menu=null,$level=1){
+	private static function getMenuPart($__DIR__,$base__DIR__,$href,$additionMenu,$level){
 		$modules=array();
 		if (!($handle = opendir($__DIR__)))return false;
 		while (false !== ($file = readdir($handle))) {
@@ -918,32 +891,36 @@ foreach (self::$meta as $name=>$content){?>
 			$nextfile=$__DIR__.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'index.php';
 			if (!file_exists($nextfile))continue;
 			$module=self::getFileProp($nextfile);
-			if (empty($module['name'])) continue;
+                        
+			if (empty($module->name)) continue;
+			if (!isset($module->link))$module->href=$module->link=@(self::$url[$base__DIR__]?self::$url[$base__DIR__].'/':'').$href.$file.self::$slashAtEnd;
+			$module->__DIR__=$__DIR__.DIRECTORY_SEPARATOR.$file;
 			$modules[$file]=$module;
-			if (!isset($modules[$file]['link']))$modules[$file]['href']=$modules[$file]['link']=@(self::$url[$base__DIR__]?self::$url[$base__DIR__].'/':'').$href.$file.self::$slashAtEnd;
-			$modules[$file]['__DIR__']=$__DIR__.DIRECTORY_SEPARATOR.$file;
 		}
-		$nextpage=@self::$url_links[self::$__DIR__counter[$__DIR__]];
-		if ($nextpage && isset($modules[$nextpage]))$modules[$nextpage]['active']=true;
-		if ($addition_menu){
-			if (is_array($addition_menu)){
-				$modules=array_merge($modules,$addition_menu);
-			}elseif (is_callable($addition_menu)){
-				$modules=$addition_menu($modules);
+		if ($additionMenu){
+			if (is_array($additionMenu)){
+				foreach ($additionMenu as $key=>$item){
+					if (is_string($item)){
+						$modules[$key]=new fileprop(array('name'=>$item));
+					}elseif (is_array($item)){
+						$modules[$key]=new fileprop($item);
+					}elseif ($item instanceof c\arrayaccess){
+						$modules[$key]=clone($item);
+					}
+				}
 			}
 		}
+		$nextpage=@self::$url_links[self::$__DIR__counter[$__DIR__]];
+		if ($nextpage && isset($modules[$nextpage]))$modules[$nextpage]->active=true;
 		uasort($modules,array('c\\datawork','positionCompare'));
 		if ($level>1)foreach ($modules as &$module){
-			$submenu=self::getMenuPart($module['__DIR__'],self::$base__DIR__,$module['href'],null,$level-1);
-			if ($submenu)$module['submenu']=$submenu;
+			$submenu=self::getMenuPart($module->__DIR__,self::$base__DIR__,$module->href,null,$level-1);
+			if ($submenu)$module->submenu=$submenu;
 		}
 		return $modules;
 	}
 
 	/**
-	 * Do controller page if page is exists or return true
-	 * @param string $__DIR__
-	 * @return boolean
 	 * @deprecated since version 3.4
 	 */
 	static function controller_page_instant($__DIR__=null){
@@ -965,12 +942,6 @@ foreach (self::$meta as $name=>$content){?>
 	}
 
 	/**
-	 * Use page as wrapper. Find default, exception subpage from current
-	 * @param string $__DIR__ __DIR__
-	 * @param string $default default page if subpage route not send
-	 * @param string|array $exception exception page if subpage not exist
-	 * @param array $routes routes array of dynamic page
-	 * @return string var of next dynamic page
 	 * @deprecated since version 3.4
 	 */
 	static function controller_page($__DIR__=null,$default='_default',$exception=null,$routes=null){
@@ -1112,6 +1083,29 @@ foreach (self::$meta as $name=>$content){?>
 	static function controller_route($routePath){
 		return self::controllerRoute($routePath);
 	}
+	
+	static function clearScriptsFull(){
+		foreach (self::$required_js as $key=>$hard){
+			unset(self::$required_js[$key]);
+		}
+		foreach (self::$css as $key=>$script){
+			unset(self::$css[$key]);
+		}
+		foreach (self::$js as $key=>$script){
+			unset(self::$js[$key]);
+		}
+	}
+	static function clearScripts(){
+		foreach (self::$required_js as $key=>$hard){
+			if ($hard)unset(self::$required_js[$key]);
+		}
+		foreach (self::$css as $key=>$script){
+			if ($script[1])unset(self::$css[$key]);
+		}
+		foreach (self::$js as $key=>$script){
+			if ($script[1])unset(self::$js[$key]);
+		}
+	}
 		/**
 		 * Replace current path of new path and display page from start
 		 * @param string $routePath
@@ -1135,22 +1129,13 @@ foreach (self::$meta as $name=>$content){?>
 		self::$nextFolder=self::$base__DIR__.DIRECTORY_SEPARATOR.self::$appFolder.DIRECTORY_SEPARATOR;//.($startDir?$startDir.'/':'');
 		self::$isRoute=true;
 		self::$lastDir=false;
-		//clean scripts
-		foreach (self::$required_js as $key=>$hard){
-			if ($hard)unset(self::$required_js[$key]);
-		}
-		foreach (self::$css as $key=>$script){
-			if ($script[1])unset(self::$css[$key]);
-		}
-		foreach (self::$js as $key=>$script){
-			if ($script[1])unset(self::$js[$key]);
-		}
+		self::clearScripts();
 	}
 
 	static function getRemaningParams(){
 		return implode('/',self::getParamsAsArray());
 	}
-		/**
+        /**
 	 * Get route vars from stack /_/_/ up to current page
 	 * @param array $routes
 	 * @return array key=>val
@@ -1207,8 +1192,6 @@ foreach (self::$meta as $name=>$content){?>
 	/*layout work*/
 
 	/**
-	 * Start layout from __DIR__
-	 * @param string $__DIR__
 	 * @deprecated since version 3.4
 	 */
 	static function layout_start_with($__DIR__=null){
@@ -1258,7 +1241,6 @@ foreach (self::$meta as $name=>$content){?>
 	}
 
 	/**
-	 *  Remove parent layout of current page
 	 * @deprecated since version 3.4
 	 */
 	static function layout_parent_remove(){

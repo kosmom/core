@@ -1,5 +1,5 @@
 <?php
-namespace c;
+namespace c\factory;
 
 class db_mssql{
 	var $data;
@@ -16,18 +16,18 @@ class db_mssql{
 	function connect(){
 		$this->m_connect=mssql_pconnect($this->data['host'],$this->data['login'],$this->data['password']);
 		if (!$this -> m_connect){
-			if (core::$debug){
-				debug::trace('Mssql connection error',error::ERROR);
+			if (\c\core::$debug){
+				\c\debug::trace('Mssql connection error',\c\error::ERROR);
 				return false;
 			}
 			trigger_error("Error connection to mssql");
 		}
 
 		if (!$this->m_connect)trigger_error("Mssql Connection Error");
-		if (core::$debug){
-			debug::group('Connection to '.($this->cn?$this->cn:'MsSql'),error::SUCCESS);
-			core::$data['stat']['db_connections']++;
-			debug::groupEnd();
+		if (\c\core::$debug){
+			\c\debug::group('Connection to '.($this->cn?$this->cn:'MsSql'),\c\error::SUCCESS);
+			\c\core::$data['stat']['db_connections']++;
+			\c\debug::groupEnd();
 		}
 		return true;
 	}
@@ -43,34 +43,34 @@ class db_mssql{
 		return strtr($sql,$bind2);
 	}
 	function execute($sql, $bind=array(), $mode='e'){
-		if (core::$debug){
-			core::$data['stat']['db_queryes']++;
-			debug::group('MsSQL query');
+		if (\c\core::$debug){
+			\c\core::$data['stat']['db_queryes']++;
+			\c\debug::group('MsSQL query');
 			if (ltrim($sql)!=$sql){
-				debug::trace('clear whitespaces at begin of query for correct work. Autocorrect in debug mode',error::ERROR);
+				\c\debug::trace('clear whitespaces at begin of query for correct work. Autocorrect in debug mode',\c\error::ERROR);
 				$sql=ltrim($sql);
 			}
-			debug::trace('SQL:'.$sql,false);
+			\c\debug::trace('SQL:'.$sql,false);
 			if ($bind){
-				debug::trace('BIND:',false);
-				debug::dir($bind);
+				\c\debug::trace('BIND:',false);
+				\c\debug::dir($bind);
 			}else{
-				debug::trace('BIND: None',false);
+				\c\debug::trace('BIND: None',false);
 			}
 			$start=microtime(true);
 		}
 		$sql=$this->bind($sql,$bind);
-		if (core::$debug)debug::consoleLog('Full query: '.$sql);
+		if (\c\core::$debug)\c\debug::consoleLog('Full query: '.$sql);
 		$_result=mssql_query($sql,$this->m_connect);
-		if (core::$debug){
-			debug::consoleLog('Query get '.round((microtime(true)-$start)*1000,2).' ms');
+		if (\c\core::$debug){
+			\c\debug::consoleLog('Query get '.round((microtime(true)-$start)*1000,2).' ms');
 			$start=microtime(true);
 		}
 		if(!$_result){
-			if (core::$debug){
-				debug::trace('Mssql Query error: '.mssql_get_last_message(),error::ERROR);
-				debug::groupEnd();
-				debug::trace('MsSQL Query error: '.mssql_get_last_message(),error::ERROR);
+			if (\c\core::$debug){
+				\c\debug::trace('Mssql Query error: '.mssql_get_last_message(),\c\error::ERROR);
+				\c\debug::groupEnd();
+				\c\debug::trace('MsSQL Query error: '.mssql_get_last_message(),\c\error::ERROR);
 				return false;
 			}elseif ($this->error_resume){
 				return 'MsSql execute error: '.mssql_get_last_message();
@@ -93,34 +93,34 @@ class db_mssql{
 					break;
 			}
 			mssql_free_result($_result);
-			if (core::$debug)debug::trace('Result fetch get '.round((microtime(true)-$start)*1000,2).' ms');
+			if (\c\core::$debug)\c\debug::trace('Result fetch get '.round((microtime(true)-$start)*1000,2).' ms');
 		}
-		if (core::$debug){
-			if (!isset($this->result_array[$subsql]) && $mode!='e')debug::trace('ea function used without result. Better use e function',error::WARNING);
-			if (isset($this->result_array[$subsql]) && $mode=='e')debug::trace('e function used with result. Better use ea function',error::WARNING);
+		if (\c\core::$debug){
+			if (!isset($this->result_array[$subsql]) && $mode!='e')\c\debug::trace('ea function used without result. Better use e function',\c\error::WARNING);
+			if (isset($this->result_array[$subsql]) && $mode=='e')\c\debug::trace('e function used with result. Better use ea function',\c\error::WARNING);
 			if (isset($this->result_array[$subsql])){
 				if ($_data){
 					if ($mode=='ea1'){
-						debug::group('Query result');
-						debug::dir($_data);
+						\c\debug::group('Query result');
+						\c\debug::dir($_data);
 					}else{
-						debug::group('Query result. Count: '.sizeof($_data),error::INFO,sizeof($_data)>10);
-						debug::table(array_slice($_data,0,30));
-						if (sizeof($_data)>30)debug::trace('Too large data was sliced',error::INFO);
+						\c\debug::group('Query result. Count: '.sizeof($_data),\c\error::INFO,sizeof($_data)>10);
+						\c\debug::table(array_slice($_data,0,30));
+						if (sizeof($_data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
 					}
-					debug::groupEnd();
+					\c\debug::groupEnd();
 				}else{
-					debug::trace('No results found',error::WARNING);
+					\c\debug::trace('No results found',\c\error::WARNING);
 				}
 			}else{
-				debug::trace('Affected '.$this->rows().' rows',false);
+				\c\debug::trace('Affected '.$this->rows().' rows',false);
 			}
 // explain
 //			debug::group('Explain select');
 //			debug::table($this->explain($sql));
 //			debug::groupEnd();
 
-			debug::groupEnd();
+			\c\debug::groupEnd();
 		}
 		return $_data;
 	}

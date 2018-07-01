@@ -1,5 +1,6 @@
 <?php
-namespace c;
+namespace c\factory;
+
 class mail_apache{
 	var $From='';
 	var $Reply='';
@@ -17,17 +18,17 @@ class mail_apache{
 	private $addresslist=array();
 	private $replylist=array();
 	function AddReplyTo($address){
-            $this->Reply[]=trim($address);
-        }
-    function AddAddress($address){
+			$this->Reply[]=trim($address);
+		}
+	function AddAddress($address){
 		$this->addresslist[]=trim($address);
 	}
 	function AddCC($address){
-        $this->Cc[]=trim($address);
-        }
+		$this->Cc[]=trim($address);
+		}
 	function AddBCC($address){
-        $this->BCc[]=trim($address);
-        }
+		$this->BCc[]=trim($address);
+		}
 	function ClearAddresses(){
 		$this->addresslist=array();
 	}

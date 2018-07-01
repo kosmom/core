@@ -46,7 +46,7 @@ class request{
 	}
 	
 	static function protocol() {
-		return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+		return 'http'.((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? 's' : '').'://';
 	}
 
 	static function get($parameter,$default=null){
@@ -78,6 +78,10 @@ class request{
 	static function fileCopy($parameter='CoreEachFile',$destination){
 		@mkdir(dirname($destination),0777,true);
 		return move_uploaded_file (self::fileTmpName($parameter),$destination);
+	}
+	static function eachFileCopy($destination){
+		@mkdir(dirname($destination),0777,true);
+		return move_uploaded_file (self::fileTmpName(),$destination);
 	}
 	static function fileTmpName($parameter='CoreEachFile',$default=null){
 		if ($parameter=='CoreEachFile')return self::$files[$file][self::$counter]['tmp_name'];
@@ -131,7 +135,7 @@ class request{
 			return true;
 		}
 		foreach ($_FILES[$file]['tmp_name'] as $key=>$v){
-			self::$files[$file][$key]=array('name'=>$_FILES[$file]['name'][$key],'type'=>$_FILES[$file]['type'][$key],'tmp_name'=>$v,'error'=>$_FILES[$file]['error'][$key],'size'=>$_FILES[$file]['size'][$key]);
+			self::$files[$file][$key]=array('key'=>$key, 'name'=>$_FILES[$file]['name'][$key],'type'=>$_FILES[$file]['type'][$key],'tmp_name'=>$v,'error'=>$_FILES[$file]['error'][$key],'size'=>$_FILES[$file]['size'][$key]);
 		}
 		return true;
 	}
@@ -139,10 +143,11 @@ class request{
 		if (!isset(self::$files[$file]))self::manyFiles($file);
 		if (!self::$files[$file])return false;
 		if (self::$counter[$file]>=sizeof(self::$files[$file])){
-			self::$counter=0;
+			self::$counter[$file]=0;
 			return false;
 		}
-		return self::$files[$file][self::$counter++];
+                if (!isset(self::$counter[$file]))self::$counter[$file]=0;
+		return self::$files[$file][self::$counter[$file]++];
 	}
 
 	/**

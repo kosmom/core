@@ -7,8 +7,8 @@ namespace c;
  */
 class form implements \ArrayAccess{
 	const FIELD_KEY='{FIELD_KEY}';
-
-	var $prop=array();
+        var $defaultResolver='c\\factory\\form_bootstrap';
+	var $prop=array('type'=>'normal');
 	private $data;
 	private $ajax=false;
 	private $fileForm=false;
@@ -22,15 +22,20 @@ class form implements \ArrayAccess{
 	var $classes=array();
 	var $target;
 	private $renderedFields=array();
+        
+        static $fieldCounter=0;
 	
-	static private $fieldCounter=0;
-
 	function offsetExists($offset){
 		return isset($this->fields[$offset]);
 	}
 
+	/**
+	 * Get form field
+	 * @param string $offset
+	 * @return formfield|null
+	 */
 	function offsetGet($offset){
-		return $this->offsetExists($offset)?$this->fields[$offset]:null;
+		return $this->offsetExists($offset)?new formfield($this->fields[$offset]):null;
 	}
 
 	function offsetSet($offset, $value){
@@ -74,6 +79,7 @@ class form implements \ArrayAccess{
 
 	function classes($classes=null){
 		if ($classes===null)return $this->classes;
+		if (is_string($classes))$classes=array($classes);
 		$this->classes=$classes;
 		return $this;
 	}
@@ -167,51 +173,12 @@ class form implements \ArrayAccess{
 		if (core::$debug)debug::dir($fields);
 		if (core::$debug)debug::groupEnd();
 		foreach ($fields as $key=>$item){
-			if (!isset($item['type']))$item['type']='text';
-			if (@$item['type']=='submit'){
-				$this->submit[$key][$item['value']]=1;
-				if (core::$debug && !$item['value'])debug::trace('Form add_field SUBMIT not have value parameter',error::WARNING);
-			}
-			if (@$item['type']=='file')$this->fileForm=true;
-			if (isset($item['validator'])){
-				if (core::$debug)debug::trace('Form add_field validator send. Need validate',error::WARNING);
-				$item['validate']=$item['validator'];
-				unset($item['validator']);
-			}
-			if (isset($item['validators'])){
-				if (core::$debug)debug::trace('Form add_field validators send. Need validate',error::WARNING);
-				$item['validate']=$item['validators'];
-				unset($item['validators']);
-			}
-			if (isset($item['filter'])){
-				if (core::$debug)debug::trace('Form add_field filter send. Need filters',error::WARNING);
-				$item['filters']=$item['filter'];
-				unset($item['filter']);
-			}
-			if (@$item['type']=='subform'){
-				foreach ($item['subform']->fields as $subitem){
-					if ($subitem['type']=='file')$this->fileForm=true;
-				}
-			}
-			if (!isset($item['label_full']))@$item['label_full']=$item['label'];
-
-			if (isset(core::$data['form_attribute'])){
-				foreach (core::$data['form_attribute'] as $function){
-					$item=$function($item);
-				}
-			}
-
-			// name const transform
-			if (isset($item['name']) && is_array($item['name']) && $item['name'][1]==self::FIELD_KEY)$item['name'][1]=$key;
-			if (isset($item['position']))$this->needSort=true;
-			$this->fields[$key]=$item;
+			$this->addField($key, $item);
 		}
 		return $this;
 	}
 
 	/**
-	 * Add field to form
-	 * @param array $fields
 	 * @deprecated since version 3.4
 	 */
 	function add_fields($fields){
@@ -219,10 +186,6 @@ class form implements \ArrayAccess{
 	}
 
 	/**
-	 * Add field to form
-	 * @param string $fieldKey
-	 * @param array $params params of field
-	 * @return form
 	 * @deprecated since version 3.4
 	 */
 	function add_field($fieldKey,$params=null){
@@ -230,14 +193,47 @@ class form implements \ArrayAccess{
 	}
 	/**
 	 * Add field to form
-	 * @param string $fieldKey
+	 * @param string $key
 	 * @param array $params params of field
 	 * @return form
 	 */
-	function addField($fieldKey,$params=null){
-		if (is_array($fieldKey))return $this->addFields($fieldKey);
-		if (!$params)throw new \Exception('Form add_field not set parameters');
-		return $this->addFields(array($fieldKey=>$params));
+	function addField($key,$params=null){
+		if ($params instanceof arrayaccess){
+			$params=(array)$params;
+		}
+		if (is_array($key))return $this->addFields($key);
+		if (!$params)throw new \Exception('Form addField not set parameters');
+		
+		if (!isset($params['type']))$params['type']='text';
+			if ($params['type']=='submit'){
+				$this->submit[$key][$params['value']]=1;
+				if (core::$debug && !$params['value'])debug::trace('Form add_field SUBMIT not have value parameter',error::WARNING);
+			}
+			if ($params['type']=='file')$this->fileForm=true;
+			if (isset($params['filter'])){
+				if (core::$debug)debug::trace('Form add_field filter send. Need filters',error::WARNING);
+				$params['filters']=$params['filter'];
+				unset($params['filter']);
+			}
+			if ($params['type']=='subform'){
+				foreach ($params['subform']->fields as $subitem){
+					if ($subitem['type']=='file')$this->fileForm=true;
+				}
+			}
+			if (!isset($params['label_full']))@$params['label_full']=$params['label'];
+
+			if (isset(core::$data['form_attribute'])){
+				foreach (core::$data['form_attribute'] as $function){
+					$params=$function($params);
+				}
+			}
+
+			// name const transform
+			if (isset($params['name']) && is_array($params['name']) && $params['name'][1]==self::FIELD_KEY)$params['name'][1]=$key;
+			if (isset($params['position']))$this->needSort=true;
+			$this->fields[$key]=$params;
+		
+		return $this;
 	}
 	/**
 	 * Add field to form as already exists field
@@ -250,7 +246,7 @@ class form implements \ArrayAccess{
 	function addFieldAs($fieldKey,$asFieldKey,$params=array()){
 		if (!isset($this->fields[$asFieldKey]))throw new \Exception('Field as not exists in form');
 		if (!$params)$params=array();
-		return $this->addFields(array($fieldKey=>$params+$this->fields[$asFieldKey]));
+		return $this->addField($fieldKey,$params+$this->fields[$asFieldKey]);
 	}
 	function addSubmitField($params=array(),$fieldKey='submit'){
 		if (is_string($params))$params=array('value'=>$params);
@@ -273,9 +269,6 @@ class form implements \ArrayAccess{
 	}
 
 	/**
-	 * Set or get is file attribute for form
-	 * @param null|boolean $isFile
-	 * @return boolean
 	 * @deprecated since version 3.4
 	 */
 	function file_form($isFile=null){
@@ -302,7 +295,6 @@ class form implements \ArrayAccess{
 
 	/**
 	 * @deprecated since version 3.4
-	 * @return form
 	 */
 	function form_inline(){
 		return $this->formInline();
@@ -310,7 +302,7 @@ class form implements \ArrayAccess{
 
 	/**
 	 * set form to inline render mode
-	 * @return \c\form
+	 * @return form
 	 */
 	function formInline(){
 		$this->prop['type']='form-inline';
@@ -320,10 +312,6 @@ class form implements \ArrayAccess{
 	}
 
 	/**
-	 * Set form to horizontal render mode
-	 * @param array $label_classes_array example: array('sm'=>2,'xs'=>4,'md'=>1,'lg'=>4)
-	 * @param array|number $input_classes_array example: array('sm'=>2,'xs'=>4,'md'=>1,'lg'=>4) or number max cells in row
-	 * @param string $form
 	 * @deprecated since version 3.4
 	 */
 	function form_horizontal($label_classes_array,$input_classes_array=12){
@@ -354,9 +342,6 @@ class form implements \ArrayAccess{
 	}
 
 	/**
-	 * Set key-val data to form
-	 * @param array $data default - $_POST
-	 * @param string $form
 	 * @deprecated since version 3.4
 	 */
 	function set_data($data=null){
@@ -459,14 +444,25 @@ class form implements \ArrayAccess{
 	}
 
 	/**
-	 * Get key-val data from form
-	 * @param string $form
-	 * @return array
 	 * @deprecated since version 3.4
 	 */
 	function get_data(){
 		return $this->getData();
 	}
+        function getFieldValue($fieldName){
+            if ($this->data!==null)return $this->data[$fieldName];
+            foreach ($this->fields as $name=>$item){
+                if (isset($item['name'])){
+                    if ($item['name']!=$fieldName)continue;
+                }else{
+                    if ($fieldName!=$name)continue;
+                }
+                if ($item['type']=='check' || $item['type']=='checkbox' || $item['type']=='boolean')return (bool)$item['value'];
+                if (!isset($item['value']) && !isset($item['default']))return null;
+                if (isset($item['value']))return $item['value'];
+                return $item['default'];
+            }
+        }
 	/**
 	 * Get key-val data from form
 	 * @param string $form
@@ -476,13 +472,13 @@ class form implements \ArrayAccess{
 			$out=array();
 			if ($this->data!==null)return $this->data;
 			foreach ($this->fields as $name=>$item){
-				if (@$item['type']=='check' || @$item['type']=='checkbox' || @$item['type']=='boolean'){
+				if ($item['type']=='check' || $item['type']=='checkbox' || $item['type']=='boolean'){
 				$out[$name]=(bool)$item['value'];
 				continue;
 			}
 			if (!isset($item['value']) && !isset($item['default'])) continue;
 			if (isset($item['value'])){
-				if (@$item['type']=='subform'){
+				if ($item['type']=='subform'){
 					$value=array();
 					foreach ($item['value'] as $key=>$val){
 						$value[$key]=$val->getData();
@@ -699,7 +695,7 @@ class form implements \ArrayAccess{
 	function renderBeginTag(){
 		$classes=$this->classes;
 		if ($this->ajax)$classes[]='form_ajax';
-		if (@$this->prop['type'])$classes[]=$this->prop['type'];
+		if (!empty($this->prop['type']))$classes[]=$this->prop['type'];
 
 		if (is_array($this->attributes)){
 			$attributes=array();
@@ -724,38 +720,7 @@ class form implements \ArrayAccess{
 		return '</form>';
 	}
 
-	private function horizontalGetLabelClass(){
-		if (@$this->prop['type']!='form-horizontal')return '';
-		$out=' class="control-label';
-		foreach ($this->prop['label_classes_array'] as $key=>$val){
-			$out.=' col-'.$key.'-'.$val;
-		}
-		return $out.'"';
-	}
-
-	private function horizontalGetColDiv($field){
-		if (@$this->prop['type']!='form-horizontal')return '';
-		$classes=array();
-		if (!@$field['label'] || @$field['type']=='check' || @$field['type']=='checkbox'|| @$field['type']=='boolean'){
-			foreach ($this->prop['label_classes_array'] as $key=>$val){
-				$classes[]='col-'.$key.'-offset-'.$val;
-			}
-		}
-		foreach ($this->prop['input_classes_array'] as $key=>$val){
-			$classes[]='col-'.$key.'-'.$val;
-		}
-		return '<div class="'.implode(' ',$classes).'">';
-	}
-
-	private function inputGroupPrefix($item){
-		if (empty($item['prefix']) && empty($item['postfix']))return '';
-		return '<div class="input-group">'.(!empty($item['prefix'])?'<span class="'.(core::$data['render']=='bootstrap4'?'input-group-text':'input-group-addon').'">'.$item['prefix'].'</span>':'');
-	}
-	private function inputGroupPostfix($item){
-		if (empty($item['prefix']) && empty($item['postfix']))return '';
-		return (!empty($item['postfix'])?'<span class="'.(core::$data['render']=='bootstrap4'?'input-group-text':'input-group-addon').'">'.$item['postfix'].'</span>':'').'</div>';
-	}
-
+	
 	/**
 	 * Get count of fill fields
 	 * @return array
@@ -782,24 +747,31 @@ class form implements \ArrayAccess{
 	function render_field($name,$item=null){
 		return $this->renderField($name,$item);
 	}
-	/**
-	 * Calculate item data with all algoritms
-	 * @param array $item
-	 */
-	function calcField(&$item){
-		
-	}
+        function getResolver($name,$item){
+            $resolver=empty($item['resolver'])?$this->defaultResolver:$item['resolver'];
+            if (is_string($resolver))return new $resolver($this,$name);
+            return $resolver;
+        }
 	function renderField($name,$item=null){
 		$item=$this->mergeItem($name,$item);
-		if (@$item['type']=='none')return '';
-		if (!isset($item['attributes']['id']))$item['attributes']['id']='core_form_field_'.self::$fieldCounter++;
-		$out=$this->renderFieldFormGroupBegin('',$item);
-		if (@!$item['range'] && isset($item['ico']) && $this->prop['type']=='md-form')$out.= '<i class="'.$item['ico'].' prefix grey-text"></i>';
-		if ($this->prop['type']=='md-form'){
-			return $out.$this->renderFieldField($name,$item).$this->renderFieldLabel('',$item).$this->renderFieldFormGroupEnd('',$item);
-		}else{
-			return $out.$this->renderFieldLabel('',$item).$this->renderFieldField($name,$item).$this->renderFieldFormGroupEnd('',$item);
-		}
+                $resolver=$this->getResolver($name,$item);
+                $this->renderedFields[$name]=true;
+                
+                //subform prepare
+            $renderName=$name;
+            if (!isset($item['name']))$item['name']=$renderName;
+            if (is_string($item['name']))$item['name']=array($item['name']);
+            if ($this->counter!==null)array_unshift($item['name'],$this->counter);
+            if ($this->subform!==null)array_unshift($item['name'],$this->subform);
+            if (is_array($item['name'])){
+                   $renderName= array_shift($item['name']);
+                    foreach ($item['name'] as $subitem){
+                            $renderName.='['.$subitem.']';
+                    }
+            }elseif (is_callable($item['name'])){
+                    $renderName=$item['name']($item);
+            }
+                return $resolver->renderField($item,$renderName);
 	}
 	private function mergeItem($name,$item){
 		if ($item===null){
@@ -821,50 +793,9 @@ class form implements \ArrayAccess{
 		return $this->renderFieldFormGroupBegin($name,$item);
 	}
 	function renderFieldFormGroupBegin($name,$item=null){
-		if ($name!='')$item=$this->mergeItem($name,$item);
-		if (@$item['type']=='hidden')return '';
-		if (@$this->prop['type']=='form-inline' && $item['type']=='submit')return '';
-		$base_group='form-group';
-		if ($this->prop['type']=='md-form')$base_group='md-form';
-		if (core::$data['render']=='bootstrap4' && in_array($item['type'],array('checkbox','boolean','radio')))$base_group='form-check';
-		if (isset($item['group_classes'])){
-			if (is_callable($item['group_classes'])){
-				$classes=$item['group_classes']($item,$this->getData());
-			}else{
-				$classes=$item['group_classes'];
-			}
-
-			if (is_string($classes))$classes=explode(' ',$classes);
-			//array only
-			$classes=array_merge(array($base_group),$classes);
-		}else{
-			$classes=array($base_group);
-		}
-		if (isset($item['ico']) && $this->prop['type']!='md-form')$classes[]='has-feedback';
-
-		$attributes=array();
-		if (isset($item['group_attributes'])){
-			if (is_callable($item['group_attributes'])){
-				$attributes=$item['group_attributes']($item,$this->getData());
-			}elseif (is_array($item['group_attributes'])){
-				foreach ($item['group_attributes'] as $key=>$attribute){
-					if (is_callable($attribute)){
-						$attributes[$key]=$attribute($item,$this->getData());
-					}else{
-						$attributes[$key]=$attribute;
-					}
-				}
-			}
-			if (is_string($attributes)){
-				$attr= explode(' ', $attributes);
-			}else{
-				foreach ($attributes as $key=>$val){
-					$attr[]=input::htmlspecialchars($key).'="'.input::htmlspecialchars($val).'"';
-				}
-			}
-		}
-
-		return ' <div class="'.implode(' ',$classes).'" '.(@$attr? implode(' ', $attr):'').'>';
+		if ($name)$item=$this->mergeItem($name,$item);
+                $resolver=$this->getResolver($name,$item);
+                return $resolver->renderFieldFormGroupBegin($item);
 	}
 
 	/**
@@ -874,9 +805,9 @@ class form implements \ArrayAccess{
 		return $this->renderFieldFormGroupEnd($name,$item);
 	}
 	function renderFieldFormGroupEnd($name,$item=null){
-		if ($name!='')$item=$this->mergeItem($name,$item);
-		if ($item['type']=='hidden')return '';
-		return ((@$this->prop['type']!='form-inline' || $item['type']!='submit')?'</div>':'').(@$this->prop['type']=='form-horizontal'?'</div>':'');
+            if ($name)$item=$this->mergeItem($name,$item);
+            $resolver=$this->getResolver($name,$item);
+            return $resolver->renderFieldFormGroupEnd($item);
 	}
 	/**
 	 * @deprecated since version 3.4
@@ -885,10 +816,9 @@ class form implements \ArrayAccess{
 		return $this->renderFieldLabel($name,$item);
 	}
 	function renderFieldLabel($name,$item=null){
-		if ($name!='')$item=$this->mergeItem($name,$item);
-		if (@$item['type']=='hidden')return '';
-		if (@$this->prop['type']!='form-inline' || @$item['type']!='submit')return (!empty($item['label']) && @$item['type']!='check' && @$item['type']!='boolean' && @$item['type']!='checkbox'?'<label for="'.$item['attributes']['id'].'" '.$this->horizontalGetLabelClass().'>'.(@$item['label_html']?$item['label']:input::htmlspecialchars($item['label'])).'</label> ':'').$this->horizontalGetColDiv($item);
-		return '';
+            if ($name)$item=$this->mergeItem($name,$item);
+            $resolver=$this->getResolver($name,$item);
+            return $resolver->renderFieldLabel($item);
 	}
 	/**
 	 * @deprecated since version 3.4
@@ -898,382 +828,26 @@ class form implements \ArrayAccess{
 
 	}
 	function renderFieldField($name,$item=null){
-		if ($name!='')$item=$this->mergeItem($name,$item);
-		$this->renderedFields[$name]=true;
-		$keyName=$name;
-		if (!isset($item['name']))$item['name']=$keyName;
-			if (is_string($item['name']))$item['name']=array($item['name']);
-			if ($this->counter!==null)array_unshift($item['name'],$this->counter);
-			if ($this->subform!==null)array_unshift($item['name'],$this->subform);
-			if (is_array($item['name'])){
-				$keyName=array_shift($item['name']);
-				foreach ($item['name'] as $subitem){
-					$keyName.='['.$subitem.']';
-				}
-			}elseif (is_callable($item['name'])){
-				$keyName=$item['name']($item);
-			}
-		$renderName=$keyName;
-		$required='';
-		if (@$item['validate'])foreach($item['validate'] as $validate){
-			if ($validate['type']=='required' || $validate['type']=='require'){
-				$required='required ';
-				continue;
-			}
-			if ($validate['type']=='maxlength')$item['attributes']['maxlength']=$validate['value'];
-		}
-		if (empty($item['render']))$item['render']='auto';
-                if ($item['type']=='float'){
-                    $item['type']='number';
-                    if (!isset($item['attributes']['step']))$item['attributes']['step']='.0000001';
-                    $item['value']= str_replace(',', '.', $item['value']);
-                }
-		$renderValue=isset($item['value'])?is_callable($item['value'])?$item['value']($item):$item['value']:@$item['default'];
-		if (@$item['range']){
-			$value['min']=(isset($renderValue['min'])?'value="'.input::htmlspecialchars($renderValue['min']).'" ':'');
-			$value['max']=(isset($renderValue['max'])?'value="'.input::htmlspecialchars($renderValue['max']).'" ':'');
-		}else{
-			$value=($renderValue!=='')?'value="'.input::htmlspecialchars($renderValue).'" ':'';
-		}
-		$placeholder='';
-		if (isset($item['placeholder'])){
-			$placeholder='placeholder="'.input::htmlspecialchars($item['placeholder']).'" ';
-			if ($item['render']!='select2')mvc::addJs('placeholder');
-		}
-
-		if (isset($item['inputmask'])){
-                    $mask=$item['inputmask'];
-			if (is_array($item['inputmask'])){
-				$masks=array();
-				foreach ($item['inputmask'] as $maskKey=>$mask){
-					$masks[]="'".$maskKey."':'".$mask."'";
-				}
-				$item['attributes']['data-inputmask']=implode(',',$masks);
-			}elseif($mask=='email' or $mask=='mail' or $mask=='phone' or $mask=='ip' or $mask=='date' or $mask=='mm/dd/yyyy'){
-				if ($mask=='mail')$mask=='email';
-				$item['attributes']['data-inputmask']="'alias':'".$mask."'";
-			}elseif (substr($mask,0,1)=="'"){
-				$item['attributes']['data-inputmask']=$item['inputmask'];
-			}else{
-				$item['attributes']['data-inputmask']="'mask':'".$mask."'";
-			}
-			if (is_array(@$item['classes'])){
-				$item['classes'][]='inputmask';
-			}else{
-				@$item['classes'].=' inputmask';
-			}
-			mvc::addJs('inputmask');
-		}
-                
-		if (@$item['disabled'])$item['attributes']['disabled']='disabled';
-		if (@$item['readonly'])$item['attributes']['readonly']='readonly';
-		$attributes='';
-		if (isset($item['attributes']) && is_array($item['attributes'])){
-				$attributes=array();
-			foreach($item['attributes'] as $key=>$val){
-				$attributes[]=$key.'="'.input::htmlspecialchars($val).'"';
-			}
-			$attributes=implode(' ',$attributes).' ';
-		}
-		$classes='';
-		if (isset($item['classes'])){
-			if (is_array($item['classes'])){
-				foreach($item['classes'] as $key=>$val){
-					$classes.=' '.input::htmlspecialchars($val);
-				}
-			}else{
-				$classes.=' '.input::htmlspecialchars($item['classes']);
-			}
-		}
-		$arg=array('name'=>$renderName,'attributes'=>$attributes,'value'=>$value,'classes'=>$classes,'multiple'=>false,'placeholder'=>$placeholder);
-		if (isset(core::$data['form_render'][@$item['type']])){
-			if (is_callable(core::$data['form_render'][$item['type']])){
-				$a=core::$data['form_render'][$item['type']];
-				$a=$a($item,$arg);
-				if (is_string($a))return $a;
-				$item=$a;
-			}elseif (is_callable(core::$data['form_render'][$item['type']][$item['render']])){
-				$a=core::$data['form_render'][$item['type']][$item['render']];
-				$a=$a($item,$arg);
-				if (is_string($a))return $a;
-				$item=$a;
-			}
-		}
-		if (is_callable($item['render']))return $item['render']($item,$arg);
-		if (@$item['type']=='hidden')return '<input'.($classes?'class="'.$classes.'"':'').' name="'.$renderName.'" type="'.$item['type'].'" '.$attributes.$value.'/>';
-		
-		$out=$this->inputGroupPrefix($item);
-		
-		switch ($item['type']){
-			case 'submit':
-				if ($this->ajax())$out.='<input name="'.$renderName.'" type="hidden" '.$value.'/>';
-				if (@$item['html']){
-					$out.=' <button class="btn btn-primary'.$classes.'" name="'.$renderName.'" '.$attributes.$value.'>'.$item['value'].'</button>';
-				}else{
-					$out.=' <input class="btn btn-primary'.$classes.'" name="'.$renderName.'" type="'.$item['type'].'" '.$attributes.$value.'/>';
-				}
-				break;
-			case 'boolean':
-			case 'check':
-			case 'checkbox':
-				if (core::$data['render']=='bootstrap4'){
-					$out.='<input type="checkbox" class="form-check-input '.$classes.'" value=1 name="'.$renderName.'" '.$attributes.(@$item['value']?'checked':'').'/><label class="form-check-label" for="'.$item['attributes']['id'].'">'.$item['label'].'</label>';
-				}else{
-					$out.='<div class="checkbox"><label><input type="checkbox" class="'.$classes.'" value=1 name="'.$renderName.'" '.$attributes.(@$item['value']?'checked':'').'/>'.$item['label'].'</label></div>';
-				}
-				break;
-			case 'select':
-				// multiple values
-				$multiple=!empty($item['multiple']);
-				if ($item['render']=='auto'){
-					if (sizeof($item['values'])>10 || (!$required && !$multiple)){
-						$item['render']='select';
-					}elseif (@$this->prop['type']=='form-inline' || sizeof($item['values'])>5){
-						if ($multiple){
-							$item['render']='check';
-						}else{
-							$item['render']='radio';
-						}
-					}else{
-						if ($multiple){
-							$item['render']='check-inline';
-						}else{
-							$item['render']='radio-inline';
-						}
-					}
-				}
-
-				if ($multiple){
-					if (is_string($item['value']))$item['value']=array($item['value']);
-					$valArr=array_flip($item['value']);
-				}
-
-				switch ($item['render']){
-					case 'select2':
-						mvc::addComponent('select2');
-						mvc::addCss('select2_bootstrap');
-						if (!empty($item['ajax'])){
-							$out.='<input class="form-control select2-remote'.$classes.'" name="'.$renderName.'" type="hidden" '.$attributes.$value.$required.'/>';
-							break;
-						}else{
-							$item['render']='select';
-						}
-						// add script to select2 element
-						// no break as render=select
-					case 'select':
-						$out.='<select class="form-control'.$classes.'" name="'.$renderName.($multiple?'[]':'').'"'.($multiple?' multiple':'').' '.$attributes.$required.'>';
-						if ($required){
-							if (!isset($item['values'][0]))$out.='<option disabled selected style="display: none;" value="">'.(@$item['placeholder']?input::htmlspecialchars($item['placeholder']):'').'</option>';
-						}else{
-							if (!isset($item['values'][0]))$out.='<option value="">'.(@$item['placeholder']?input::htmlspecialchars(@$item['placeholder']):'').'</option>';
-						}
-						if ($multiple){
-							foreach ($item['values'] as $key=>$val){
-								$out.='<option value="'.input::htmlspecialchars($key).'"'.(isset($valArr[$key])?' selected':'').'>'.input::htmlspecialchars($val).'</option>';
-							}
-						}else{
-							foreach ($item['values'] as $key=>$val){
-								$out.='<option value="'.input::htmlspecialchars($key).'"'.($renderValue==$key?' selected':'').'>'.input::htmlspecialchars($val).'</option>';
-							}
-						}
-						$out.='</select>';
-						break;
-					case 'check':
-						if ($multiple){
-							foreach ($item['values'] as $key=>$val){
-								$out.='<div class="checkbox"><label><input '.$attributes.' name="'.$renderName.'[]"'.(isset($valArr[$key])?' checked':'').' type="checkbox" value="'.input::htmlspecialchars($key).'">'.($item['html']?$val:input::htmlspecialchars($val)).'</label></div>';
-							}
-						}else{
-							foreach ($item['values'] as $key=>$val){
-								$out.='<div class="checkbox"><label><input '.$attributes.' name="'.$renderName.'"'.($renderValue==$key?' checked':'').' type="checkbox" value="'.input::htmlspecialchars($key).'">'.($item['html']?$val:input::htmlspecialchars($val)).'</label></div>';
-							}
-						}
-						break;
-					case 'radio':
-						foreach ($item['values'] as $key=>$val){
-							$out.='<div class="radio"><label><input '.$attributes.$required.' name="'.$renderName.'"'.($renderValue==$key?' checked':'').' type="radio" value="'.input::htmlspecialchars($key).'">'.(@$item['html']?$val:input::htmlspecialchars($val)).'</label></div>';
-						}
-
-						break;
-					case 'check-inline':
-					$out.='<div>';
-					if ($multiple){
-						foreach ($item['values'] as $key=>$val){
-							$out.='<label class="checkbox-inline"><input '.$attributes.' name="'.$renderName.'[]"'.(isset($valArr[$key])?' checked':'').' type="checkbox" value="'.input::htmlspecialchars($key).'">'.($item['html']?$val:input::htmlspecialchars($val)).'</label>';
-						}
-					}else{
-						foreach ($item['values'] as $key=>$val){
-							$out.='<label class="checkbox-inline"><input '.$attributes.' name="'.$renderName.'"'.($renderValue==$key?' checked':'').' type="checkbox" value="'.input::htmlspecialchars($key).'">'.($item['html']?$val:input::htmlspecialchars($val)).'</label>';
-						}
-					}
-					$out.='</div>';
-						break;
-					case 'radio-inline':
-					$out.='<div>';
-					foreach ($item['values'] as $key=>$val){
-						$out.='<label class="radio-inline"><input '.$attributes.$required.' name="'.$renderName.'"'.($renderValue==$key?' checked':'').' type="radio" value="'.input::htmlspecialchars($key).'">'.(@$item['html']?$val:input::htmlspecialchars($val)).'</label>';
-					}
-					$out.='</div>';
-						break;
-					case 'fancytree':
-						mvc::addComponent('fancytree');
-						$out.='<div class="fancytree '.$classes.'" '.$attributes.'></div>';
-							// todo: but you need manually set script initialize `.fancytree` after form
-							/*
-							 * need add script
-	if (typeof(after_load)=='undefined'){
-	function after_load(){
-	<?foreach($_GET['ft_1'] as $tree){?>$(".fancytree").fancytree("getTree").getNodeByKey('<?=$tree?>').setSelected(true);<? }?>
-	<?if (isset($_GET['ft_1_active'])){?>$(".fancytree").fancytree("getTree").activateKey("<?=$_GET['ft_1_active']?>");<? }?>
-	}
-	}
-	$(".fancytree").fancytree({
-	source: {
-		url: "http://...",
-		complete: after_load
-	},
-	minExpandLevel: 1,
-	checkbox: true,
-	selectMode: 3,
-	aria: true
-
-	});
-							 $("form").submit(function () {
-								$(".fancytree").fancytree("getTree").generateFormElements();
-								});
-							 */
-							break;
-					}
-
-					break;
-				case 'password':
-					$out.='<input class="form-control'.$classes.'" name="'.$renderName.'" type="'.$item['type'].'" '.$attributes.$placeholder.$required.'/>';
-					break;
-				case 'file':
-					$has_file=@$item['value'] && is_file($item['value']);
-					$out.=($has_file?'<img src="'.$item['value'].'?time='.time().'" style="max-width: 100%;display: block;">':'').'<input name="'.$renderName.'" type="'.$item['type'].'" '.$attributes.$placeholder.($has_file?'':$required).'/>'.(isset($item['fill']) && is_callable($item['fill'])?$item['fill']($this->getData()):'');
-					break;
-				case 'capcha':
-					$out.='<img src="'.$item['url'].'" style="max-width: 100%;display: block;"><input class="form-control'.$classes.'" name="'.$renderName.'" type="text" '.$attributes.$placeholder.$required.'/>';
-					break;
-				case 'date':
-				case 'datetime':
-				case 'time':
-					if ($item['render']=='auto')$item['render']='jqueryui';
-					if ($item['render']=='jqueryui'){
-						mvc::addComponent('jqueryui');
-						if (@$item['range']){
-							if ($this->prop['type']=='form-inline'){
-								$out.='<label>'.$item['range_before_text'].'</label> <input name="'.$renderName.'[min]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.$attributes.$placeholder.$required.$value['min'].'/>';
-								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
-//var_dump($attributes);
-								$out.=' <label>'.$item['range_to_text'].'</label> <input name="'.$renderName.'[max]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.str_replace('id=', 'id2=', $attributes).$placeholder.$required.$value['max'].'/>';
-								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
-							}else{
-								$out.='<div class="row"><div class="col-xs-6">';
-								$out.=$item['range_before_text'].' <input name="'.$renderName.'[min]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.$attributes.$placeholder.$required.$value['min'].'/>';
-								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
-								$out.='</div><div class="col-xs-6">';
-								$out.=$item['range_to_text'].' <input name="'.$renderName.'[max]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.str_replace('id=', 'id2=', $attributes).$placeholder.$required.$value['max'].'/>';
-								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
-								$out.='</div></div>';
-							}
-						}else{
-							$out.='<input name="'.$renderName.'" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.$attributes.$placeholder.$value.$required.'/>';
-						}
-					}
-
-					break;
-				case 'static':
-					// static plant text
-					$out.='<p class="form-control-static'.$classes.'">'.input::htmlspecialchars($item['value']).'</p><input name="'.$name.'" type="hidden" '.$attributes.$value.'/>';
-					break;
-				case 'color':
-					if ($item['render']=='pick-a-color'){
-						mvc::addComponent('pick-a-color');
-						$out.='<input name="'.$renderName.'" type="text" class="form-control pick-a-color '.$classes.'" '.$attributes.$required.$value.'/>';
-						break;
-					}
-				default:
-					// text field
-					if ($item['render']=='auto' && isset($item['validate'])){
-						foreach ($item['validate'] as $validator){
-							if ($validator['type']=='maxlength' && $validator['value']>150){
-								$item['render']='textarea';
-								break;
-							}
-						}
-					}
-					switch($item['render']){
-						case 'div':
-						$out.='<div class="component">';
-						if ($item['range']){
-								$out.='<input name="'.$renderName.'[min]" type="hidden" '.$value['min'].'/>';
-								$out.='<input name="'.$renderName.'[max]" type="hidden" '.$value['max'].'/>';
-							}else{
-								$out.='<input name="'.$renderName.'" type="hidden" '.$value.'/>';
-							}
-							$out.='<div class="'.$classes.'" '.$attributes.'></div>';
-					$out.='</div>';
-
-					/* for slider
-	var c_adr_dom_min=$('#c_adr_dom').parent().find('input').eq(0);
-	var c_adr_dom_max=$('#c_adr_dom').parent().find('input').eq(1);
-	$('#c_adr_dom').slider({
-		range: true,
-		min: 0,
-		max: 100,
-		values: [c_adr_dom_min.val(),c_adr_dom_max.val()],
-		slide: function (event,ui){
-			c_adr_dom_min.val(ui.values[0]);
-			c_adr_dom_max.val(ui.values[1]);
-		}
-
-	})
-					 */
-
-					break;
-						case 'tinymce':
-							mvc::addJs('tinymce');
-							$out.='<textarea name="'.$renderName.'" class="form-control tinymce'.$classes.'" '.$attributes.$placeholder.'>'.input::htmlspecialchars(@$item['value']).'</textarea>';
-							// todo: but you need manually set script initialize `.tinymce` after form
-							break;
-						case 'ckeditor':
-							mvc::addJs('ckeditor');
-							mvc::addJs('ckeditor_adapter');
-							$out.='<textarea name="'.$renderName.'" class="form-control ckeditor'.$classes.'" '.$attributes.$placeholder.'>'.input::htmlspecialchars(@$item['value']).'</textarea>';
-							// todo: but you need manually set script initialize `.ckeditor` after form
-							break;
-						case 'textarea':
-							$out.='<textarea name="'.$renderName.'" class="form-control'.$classes.' '.($this->prop['type']=='md-form'?'md-textarea':'').'" '.$attributes.$placeholder.$required.'>'.input::htmlspecialchars(@$item['value']).'</textarea>';
-							break;
-						default :
-							if (@$item['range']){
-								$out.='<div class="row"><div class="col-xs-6">';
-								$out.='<input name="'.$renderName.'[min]" type="'.$item['type'].'" class="form-control'.$classes.'" '.$attributes.$placeholder.$required.$value['min'].'/>';
-								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
-								$out.='</div><div class="col-xs-6">';
-								$out.='<input name="'.$renderName.'[max]" type="'.$item['type'].'" class="form-control'.$classes.'" '.str_replace('id=', 'id2=', $attributes).$placeholder.$required.$value['max'].'/>';
-								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
-								$out.='</div></div>';
-							}else{
-								$out.='<input name="'.$renderName.'" type="'.$item['type'].'" class="form-control'.$classes.'" '.$attributes.$placeholder.$required.$value.'/>';
-							}
-					}
-			}
-			if (@!$item['range'] && isset($item['ico']) && $this->prop['type']!='md-form')$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
-			
-			$out.=$this->inputGroupPostfix($item);
-			$datalist='';
-		if (isset($item['datalist'])){
-			$datalist='<p class="help-block">';
-			foreach($item['datalist'] as $key=>$dl){
-				$datalist.='<a href="javascript:;" style="border-bottom: 1px dashed blue;margin: 5px;" onclick="$(this).closest(\'.form-group\').find(\':enabled\').val(\''.$key.'\')">'.$dl.'</a>';
-			}
-			$datalist.='</p>';
-		}
-		if (isset($item['helper']))$datalist.='<p class="help-block">'.(@$item['helperHTML']?$item['helper']:input::htmlspecialchars($item['helper'])).'</p>';
-		return $out.$datalist;
+            $item=$this->mergeItem($name,$item);
+            $resolver=$this->getResolver($name,$item);
+            $this->renderedFields[$name]=true;
+            
+            //subform prepare
+            $renderName=$name;
+            
+            if (!isset($item['name']))$item['name']=$renderName;
+            if (is_string($item['name']))$item['name']=array($item['name']);
+            if ($this->counter!==null)array_unshift($item['name'],$this->counter);
+            if ($this->subform!==null)array_unshift($item['name'],$this->subform);
+            if (is_array($item['name'])){
+                    $renderName=array_shift($item['name']);
+                    foreach ($item['name'] as $subitem){
+                            $renderName.='['.$subitem.']';
+                    }
+            }elseif (is_callable($item['name'])){
+                    $renderName=$item['name']($item);
+            }
+            return $resolver->renderFieldField($item,$renderName);
 	}
 	function getFormDescription($key=''){
 		$listfields=array();

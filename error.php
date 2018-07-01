@@ -82,6 +82,9 @@ class error{
 	static function size($type=self::ERROR){
 		return self::count($type);
 	}
+        static function countMessages(){
+            return self::size()+self::size(self::WARNING)+self::size(self::SUCCESS);
+        }
 
 	static function thrownException($message,$code=0){
 		throw new \Exception($message,$code);
@@ -119,16 +122,7 @@ class error{
 	 * @return super|false
 	 */
 	static function header($code){
-		if (headers_sent())return false;
-		switch ($code){
-			case 404:
-				header('HTTP/1.1 404 Not Found');break;
-			case 301:
-				header('HTTP/1.1 301 Moved Permanently');break;
-			default:
-			if (core::$debug)debug::trace('Redirect header mistmatch in dictionary',error::WARNING,$code);
-		}
-		return new super();
+            return responce::header($code);
 	}
 	/**
 	 * Redirect
@@ -136,19 +130,7 @@ class error{
 	 * @param integer $header redirect with header
 	 */
 	static function redirect($url=null,$header=''){
-		if (core::$ajax)ajax::redirect($url);
-		if (core::$debug && empty(core::$data['miss_debug_redirect'])){
-			debug::trace('Redirect debug mode',self::INFO,array('url'=>$url,'header'=>$header));
-			if (headers_sent())debug::trace('Redirect. Headers already sended',self::WARNING);
-			die('<a href="'.iconv('utf-8','windows-1251',$url).'"><h1>'.translate::t('Core Debug mode: Click to continue').'</h1></a><style>h1{position:relative;top:50%;}a{text-align:center;}a,body,html{font-family:arial;width:100%;position:absolute;top:0px;height:100%;padding:0;border:0;margin:0;outline:none;cursor:pointer;}</style>'.mvc::drawJs(true));
-		}
-		if (!headers_sent()){
-			if ($header!='')self::header($header);
-			if ($url=='')$url=$_SERVER['REQUEST_URI'];
-			header('Location: '.$url);
-		}
-		$url=$url==''?'location.href':"'".$url."'";
-		die('<script>location.replace('.$url.');</script><noscript><meta http-equiv="Refresh" content="0;URL='.$url.'"></noscript>');
+            return responce::redirect($url,$header);
 	}
 	/**
 	 * Log in file

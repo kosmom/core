@@ -1,5 +1,6 @@
 <?php
-namespace c;
+namespace c\factory;
+
 class mail_smtp{
 	var $From='';
 	var $Host='';
@@ -63,7 +64,7 @@ class mail_smtp{
 				if($code != 235)throw new \Exception('Error Password');
 			}
 			$header="Date: ".date("D, j M Y G:i:s")." +0300\r\n";
-$header.="From: =?UTF-8?B?".base64_encode(input::iconv($this->UserName,true))."?= <".$this->From.">\r\n";
+$header.="From: =?UTF-8?B?".base64_encode(\c\input::iconv($this->UserName,true))."?= <".$this->From.">\r\n";
 $header.="X-Mailer: PHP Core mail\r\n";
 if ($this->replylist)$header.="Reply-To: ".implode(',',$this->replylist)."\r\n";
 $header.="X-Priority: 3 (Normal)\r\n";
@@ -81,13 +82,13 @@ Content-Transfer-Encoding: base64
 '.chunk_split(base64_encode($this->body)).'
 ';
 foreach ($this->filelist as $filename=>$content){
-	$type=filedata::mime_content_type($filename);
+	$type=\c\filedata::mime_content_type($filename);
     $this->body.='
 --'.$this->separator.'
 Content-Type: '.$type.'; name="=?UTF-8?Q?'.str_replace("+","_",str_replace("%","=",urlencode($filename))).'?="
 Content-transfer-encoding: base64'.($content['cid']?'
 Content-ID: <'.$content['cid'].'>':'').'
-Content-Disposition: '.($content['cid'] && substr($type,0,5)=='image'?'inline':'attachment').'; filename*="'.str_replace("+"," ",urlencode(input::iconv($filename,true))).'"
+Content-Disposition: '.($content['cid'] && substr($type,0,5)=='image'?'inline':'attachment').'; filename*="'.str_replace("+"," ",urlencode(\c\input::iconv($filename,true))).'"
 
 '.chunk_split(base64_encode($content['name'])).'
 ';
@@ -125,7 +126,7 @@ fputs($smtp_conn,"QUIT\r\n");
 			$success=1;
 		} catch (\Exception $e) {
 			fclose($smtp_conn);
-			error::add('SMTP Error:'.$e->getMessage());
+			\c\error::add('SMTP Error:'.$e->getMessage());
 			$success=0;
 		}
 

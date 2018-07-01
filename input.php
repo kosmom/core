@@ -867,4 +867,8 @@ class input{
             if ($number>1)return round($number,$precision);
             return round($number,-floor(log10($number)));
         }
+        static function file_get_content($filename){
+            if (substr($filename,0,7)=='http://' or substr($filename,0,8)=='https://')return curl::getContent($filename);
+            return file_get_contents($filename);
+        }
 }
