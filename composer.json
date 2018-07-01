@@ -8,8 +8,7 @@
             "email": "kosmom@kosmom.ru"
         }
 	],
-    "version": "3.5.3",
-	"homepage": "https://core.kosmom.ru",
+    "homepage": "https://core.kosmom.ru",
     "license": "MIT",
     "require": {
         "php": ">=5.3.0"
