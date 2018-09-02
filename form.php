@@ -22,6 +22,7 @@ class form implements \ArrayAccess{
 	var $classes=array();
 	var $target;
 	private $renderedFields=array();
+        private static $submitCount;
         
         static $fieldCounter=0;
 	
@@ -40,7 +41,7 @@ class form implements \ArrayAccess{
 
 	function offsetSet($offset, $value){
 		if (is_null($offset))throw new \Exception('can not add empty field to form');
-		if ($this->offsetExists($offset))unset($this->fields[$offset]);
+                if ($this->offsetExists($offset))unset($this->fields[$offset]);
 		$this->addField($offset,$value);
 	}
 
@@ -248,9 +249,10 @@ class form implements \ArrayAccess{
 		if (!$params)$params=array();
 		return $this->addField($fieldKey,$params+$this->fields[$asFieldKey]);
 	}
-	function addSubmitField($params=array(),$fieldKey='submit'){
+	function addSubmitField($params=array(),$fieldKey=null){
 		if (is_string($params))$params=array('value'=>$params);
-		return $this->addField($fieldKey,$params+array('type'=>'submit','value'=>'Submit','classes'=>'btn btn-primary'));
+                if (!$fieldKey)$fieldKey='submit'.(self::$submitCount++);
+		return $this->addField($fieldKey,$params+array('type'=>'submit','value'=>'Submit'));
 	}
 
 	function ajax($value=null){
@@ -418,7 +420,7 @@ class form implements \ArrayAccess{
 				if (core::$debug)debug::dir(array($key=>$value));
 			}
 		}else{ // array
-			if (core::$debug)debug::consoleLog('data is not array',error::ERROR);
+			if (core::$debug)debug::consoleLog('data is not array, data is '. gettype($data),error::ERROR);
 			if (core::$debug)debug::groupEnd();
 			if (core::$debug)debug::trace('Form set data error. Data is not array',error::ERROR);
 			return false;
@@ -524,6 +526,7 @@ class form implements \ArrayAccess{
 	function isValid($data=array(),$checkData=false){
 		$valid=true;
 		foreach ($this->fields as $key=>$item){
+                        if (@$item['disabled']) continue;
 			if (!@is_array($item['validate']) && @!$item['subform']) continue;
 			if (isset($item['subform'])){
 				$result=input::validate($value,$item['validate'],$item);
@@ -669,7 +672,7 @@ class form implements \ArrayAccess{
 		$partform=array();
 		foreach ($this->fields as $key=>$field){
 			if (!isset($field['position'])) continue;
-			$partform[$key]=$field;
+                        if ($field['position']>=$min && $field['position']<=$max)$partform[$key]=$field;
 		}
                 $htmlout='';
                 $out='';
@@ -778,7 +781,7 @@ class form implements \ArrayAccess{
 			if (isset($this->fields[$name])){
 				return $this->fields[$name];
 			}else{
-				if (core::$debug)debug::consoleLog('Form field '.$name.' not exists',error::ERROR);
+                        	if (core::$debug)debug::consoleLog('Form field '.$name.' not exists',error::ERROR);
 				throw new \Exception('Form field '.$name.' not exists');
 			}
 		}elseif (is_array($item)){

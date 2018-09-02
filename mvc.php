@@ -1296,10 +1296,10 @@ foreach (self::$meta as $name=>$content){?>
 		if ($showError!==false)render::showAlerts();
 		do {
 			$dir=array_shift(self::$next_dir);
-			if (!$dir)return false;
+			if (!$dir)return __DIR__.'/empty';
 			$nextPage=$dir.DIRECTORY_SEPARATOR.(request::isCmd()?'cli':'index').".phtml";
 		} while (!is_readable($nextPage));
-		return $nextPage;
+		return $nextPage?$nextPage:__DIR__.'/empty';
 	}
 	/**
 	 * @deprecated since version 3.4 use viewPageDefault

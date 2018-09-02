@@ -12,7 +12,7 @@ class model{
 	/**
 	 * @return static
 	 */
-	static function findOrFail($pk_value){
+	static function findOrFail($pk_value,$exception=null){
 
 	}
 	

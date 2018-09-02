@@ -106,14 +106,19 @@ class telegram{
 		if (!isset(core::$data['telegram']))throw new \Exception('need set c\\core::$data[\'telegram key\'] from BotFather');
 	}
 	private static function request($api,$post=null){
-		$url = 'https://api.telegram.org/bot' . core::$data['telegram'] . '/'.$api;
-		$proxy=array();
-		if (core::$data['telegram_proxy']){
-			$proxy[CURLOPT_PROXY]=core::$data['telegram_proxy']['host'];
-			$proxy[CURLOPT_PROXYUSERPWD]=core::$data['telegram_proxy']['auth'];
-			$proxy[CURLOPT_PROXYTYPE]=core::$data['telegram_proxy']['type'];
+		if (is_callable(core::$data['telegram_request'])){
+			$a=core::$data['telegram_request'];
+			return $a($api,$post);
+		}else{
+			$url = 'https://api.telegram.org/bot' . core::$data['telegram'] . '/'.$api;
+			$proxy=array();
+			if (core::$data['telegram_proxy']){
+				$proxy[CURLOPT_PROXY]=core::$data['telegram_proxy']['host'];
+				$proxy[CURLOPT_PROXYUSERPWD]=core::$data['telegram_proxy']['auth'];
+				$proxy[CURLOPT_PROXYTYPE]=core::$data['telegram_proxy']['type'];
+			}
+			$rs=curl::getContent ($url,$post,null,$proxy);
+			return json_decode($rs, true);
 		}
-		$rs=curl::getContent ($url,$post,null,$proxy);
-		return json_decode($rs, true);
 	}
 }

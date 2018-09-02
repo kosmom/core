@@ -32,8 +32,13 @@ class curl{
 			curl_setopt($c, CURLOPT_COOKIEJAR, $cookieFile);
 			curl_setopt($c, CURLOPT_COOKIEFILE, $cookieFile);
 		}
-		curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($c, CURLOPT_USERAGENT, 'Mozilla Firefox 3 (compatible; MSIE 6.0; LAS Linux)');
+curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt ($c, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt ($c, CURLOPT_SSL_VERIFYPEER, 0); 
+		curl_setopt($c, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17');
+		curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+   curl_setopt($c, CURLOPT_FOLLOWLOCATION, 1);
+   curl_setopt($c, CURLOPT_VERBOSE, 1);
 		if ($options)curl_setopt_array($c, $options);
 		$rs = curl_exec($c);
 		if ($rs===false)throw new \Exception(curl_error($c));
@@ -134,8 +139,8 @@ class curl{
 		var_dump(self::$contents);
 	}
 	
-	static function ping($host,$port=-1,$protocol='tcp'){
-		$fp = fsockopen(($protocol!='tcp'?$protocol.'://':'').$host,$port,$errCode,$errStr,1);
+	static function ping($host,$port=-1,$protocol='tcp',$timeout=1){
+		$fp = fsockopen(($protocol!='tcp'?$protocol.'://':'').$host,$port,$errCode,$errStr,$timeout);
 		$out=(bool)$fp;
 		fclose($fp);
 		return $out;

@@ -42,7 +42,11 @@ class request{
 	}
 
 	static function url(){
-		return self::protocol().$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].($_SERVER['QUERY_STRING']===''?'':$_SERVER['QUERY_STRING']);
+		return self::protocol().self::domain().$_SERVER['REQUEST_URI'].($_SERVER['QUERY_STRING']===''?'':$_SERVER['QUERY_STRING']);
+	}
+	
+	static function domain(){
+		return $_SERVER['SERVER_NAME'];
 	}
 	
 	static function protocol() {

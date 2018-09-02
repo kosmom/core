@@ -203,14 +203,18 @@ class model implements \Iterator{
 	}
 	function save(){
 		if ($this->readonly)throw new \Exception('Model is readonly');
+		// only for row mode
+		$mode=$this->mode;
+		$this->mode='row';
 		$this->on_before_save();
+		$this->mode=$mode;
 		$result=$values=$this->pk_value?storage::getChanged($this,$this->pk_value):$this->storage;
 		foreach ($this->fields as $fieldKey=>$fieldVal){
 			if (!@$fieldVal['dbname'])continue;
 			if ($values[$fieldKey])$result[$fieldVal['dbname']]=$values[$fieldKey];
 		}
                 $errors=array();
-	$this->pk_value=db::setData($this->getTableName(), $result,$this->sequence,$this->getConnectionsAlter(),$errors,$this->getSchemeName());
+		$this->pk_value=db::setData($this->getTableName(), $result,$this->sequence,$this->getConnectionsAlter(),$errors,$this->getSchemeName());
                 //storage::setData($this,$this->pk_value,$result);
 		$this->storage=null;
 		if ($this->mode!='row')$this->find($this->pk_value);
@@ -733,8 +737,15 @@ class model implements \Iterator{
 			return $obj;
 		}
 	}
-        function relationToOne($model,$foreign_key=null,$local_key=null){
-		return $this->relation($model,$foreign_key,$local_key,false,true);
+	/**
+	 * Get related row from model
+	 * @param string $model model name
+	 * @param string $foreignKey key of related model
+	 * @param string $localKey key self model
+	 * @return model
+	 */
+        function relationToOne($model,$foreignKey=null,$localKey=null){
+		return $this->relation($model,$foreignKey,$localKey,false,true);
 	}
 	function lister($onPage=10,$page=null){
 		if (!@$this){

@@ -238,7 +238,7 @@ class table{
 			$cb=$input['fill'][$key];
 			return $cb($row,$key);
 		}
-		return @$this->drawCellValue($row[$key],$key);
+                return @$this->drawCellValue($row instanceof model?$row->$key:$row[$key],$key);
 	}
 	
 	private function drawCell($key,$row,$input){
@@ -367,9 +367,7 @@ class table{
 		$row=array();
 		$out='<tbody>';
 		$lastrow=null;
-		if ($this->data instanceof model)$this->data=$this->data->get();
-		if ($this->data instanceof collection)$this->data=$this->data->toArray();
-		if (empty($this->data) or is_array($this->data)){
+		if (empty($this->data) or is_array($this->data) or $this->data instanceof model or $this->data instanceof collection){
 			if ($input['row_attributes']){
 				if ($input['fill']){
 					foreach($this->data as $key=>$row){

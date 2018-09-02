@@ -24,6 +24,7 @@ class db{
 	* @return array full bind
 	*/
 	static function autobind($sql,$bind=array()){
+		if ($bind instanceof \SimpleXMLElement)$bind=(array)$bind;
 		if (!is_array($bind))$bind=self::bindToArray($sql,$bind);
 		// bind to simple type
 		foreach ($bind as &$b){

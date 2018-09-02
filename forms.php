@@ -18,6 +18,10 @@ class forms{
 		if (!isset(self::$forms[$form]))self::$forms[$form]=new form();
 	}
 
+        /**
+         * Get form as object
+         * @return form
+         */
 	static function getForm($form=null){
 		if ($form===null)$form=self::$activeForm;
 		return self::$forms[$form];
@@ -396,7 +400,7 @@ class forms{
 		return self::$forms[$form]->renderOtherFields();
 	}
 
-	static function addSubmitField($params=array(),$fieldKey='submit',$form=null){
+	static function addSubmitField($params=array(),$fieldKey=null,$form=null){
 		if ($form===null)$form=self::$activeForm;
 		self::createForm($form);
 		return self::$forms[$form]->addSubmitField($params,$fieldKey);
