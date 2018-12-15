@@ -60,7 +60,7 @@ class pic{
 			$prop=getimagesize($filename);
 		}
 		if (empty($prop[2]))return false;
-		if (!in_array($prop[2],array(IMAGETYPE_JPEG,IMAGETYPE_GIF,IMAGETYPE_PNG,IMAGETYPE_BMP)))return false;
+		if (!in_array($prop[2],array(18, IMAGETYPE_JPEG,IMAGETYPE_GIF,IMAGETYPE_PNG,IMAGETYPE_BMP)))return false;
 		return true;
 	}
 
@@ -175,6 +175,9 @@ class pic{
 				break;
 			case IMAGETYPE_PNG:
 				if (!$fromString)$this->image = imagecreatefrompng($filename);
+				break;
+                        case 18: //IMAGETYPE_WEBP
+				if (!$fromString)$this->image = imagecreatefromwebp($filename);
 				break;
 		}
 	}

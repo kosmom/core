@@ -40,6 +40,10 @@ class db{
 		return $bind;
 	}
 
+	static function wrapper($object,$db=''){
+		$db=self::dbPrepare($db);
+		return self::$dbs[core::$env][$db]->wrapper($object);
+	}
 	private static function bindToArray($sql,$bind){
 		$matches=array();
 		$out=array();
@@ -72,10 +76,8 @@ class db{
 	 * Execute SQL
 	 */
 	static function e($sql=null,$bind=array(),$db='',$transaction=true){
-		if ($db=='')$db=core::$data['db'];
 		if ($sql==null)global $sql;
-		if (is_array($db))$db=self::autodb($db);
-		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
+		$db=self::dbPrepare($db);
 		if (is_array($sql)){
 			if ($transaction)self::beginTransaction($db);
 			$out=array();
@@ -108,31 +110,29 @@ class db{
 		}
 	}
 
-	static function query($sql=null,$bind=array(), $db=''){
+	static private function dbPrepare($db){
 		if ($db=='')$db=core::$data['db'];
-		if ($sql==null)global $sql;
 		if (is_array($db))$db=self::autodb($db);
 		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
+		return $db;
+	}
+	static function query($sql=null,$bind=array(), $db=''){
+		if ($sql==null)global $sql;
+		$db=self::dbPrepare($db);
 		self::$hydrators[++self::$lastHydrator]=array('link'=>self::$dbs[core::$env][$db]->query($sql,self::autobind($sql, $bind),$db),'db'=>$db);
 		return self::$lastHydrator;
 	}
 
 	static function beginTransaction($db=''){
-		if ($db=='')$db=core::$data['db'];
-		if (is_array($db))$db=self::autodb($db);
-		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
+		$db=self::dbPrepare($db);
 		self::$dbs[core::$env][$db]->beginTransaction();
 	}
 	static function commit($db=''){
-		if ($db=='')$db=core::$data['db'];
-		if (is_array($db))$db=self::autodb($db);
-		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
+		$db=self::dbPrepare($db);
 		self::$dbs[core::$env][$db]->commit();
 	}
 	static function rollback($db=''){
-		if ($db=='')$db=core::$data['db'];
-		if (is_array($db))$db=self::autodb($db);
-		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
+		$db=self::dbPrepare($db);
 		self::$dbs[core::$env][$db]->rollback();
 	}
 
@@ -177,10 +177,8 @@ class db{
 	 * @example $sql="update table set link=link where 1=1 returning link into :test";<br>$bind=array('test'=>'max column length');<br>c\db::e_ref($sql,$bind);
 	 */
 	static function eRef($sql=null,&$bind,$db=''){
-		if ($db=='')$db=core::$data['db'];
 		if ($sql==null)global $sql;
-		if (is_array($db))$db=self::autodb($db);
-		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
+		$db=self::dbPrepare($db);
 		return self::dbOutput(self::$dbs[core::$env][$db]->execute_ref($sql,$bind));
 	}
 
@@ -192,10 +190,8 @@ class db{
 	 * @return collection
 	 */
 	static function ea($sql=null,$bind=array(), $db=null){
-		if ($db==null)$db=core::$data['db'];
 		if ($sql==null)global $sql;
-		if (is_array($db))$db=self::autodb($db);
-		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
+		$db=self::dbPrepare($db);
 		return self::dbOutput(self::$dbs[core::$env][$db]->execute_assoc($sql,self::autobind($sql, $bind)));
 	}
 
@@ -207,10 +203,8 @@ class db{
 	 * @return collection|boolean
 	 */
 	static function eo($sql=null,$bind=array(), $db=''){
-		if ($db=='')$db=core::$data['db'];
 		if ($sql==null)global $sql;
-		if (is_array($db))$db=self::autodb($db);
-		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
+		$db=self::dbPrepare($db);
 		$rs=self::$dbs[core::$env][$db]->execute_assoc($sql,self::autobind($sql, $bind));
 		if ($rs)return new collection_object($rs);
 		return false;
@@ -219,20 +213,16 @@ class db{
 	 * Execute assoc 1 row SQL
 	 */
 	static function ea1($sql=null,$bind=array(),$db=''){
-		if ($db=='')$db=core::$data['db'];
 		if ($sql==null)global $sql;
-		if (is_array($db))$db=self::autodb($db);
-		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
+		$db=self::dbPrepare($db);
 		return self::$dbs[core::$env][$db]->ea1($sql,self::autobind($sql, $bind));
 	}
 	/**
 	 * Execute object 1 row SQL
 	 */
 	static function eo1($sql=null,$bind=array(),$db=''){
-		if ($db=='')$db=core::$data['db'];
 		if ($sql==null)global $sql;
-		if (is_array($db))$db=self::autodb($db);
-		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
+		$db=self::dbPrepare($db);
 		return (object)self::$dbs[core::$env][$db]->ea1($sql,self::autobind($sql, $bind));
 	}
 	/**
@@ -244,9 +234,7 @@ class db{
 		return false;
 	}
 	static function massExecute($sql,$beginSql='begin ',$repeatSql='',$endSql="end;",$bind=array(),$db=''){
-		if ($db=='')$db=core::$data['db'];
-		if (is_array($db))$db=self::autodb($db);
-		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
+		$db=self::dbPrepare($db);
 		return self::$dbs[core::$env][$db]->massExecute($sql,$beginSql,$repeatSql,$endSql,$bind);
 	}
 	/**
@@ -277,9 +265,7 @@ class db{
 	 * set limit for sql query
 	 */
 	static function limit($sql,$from=0,$count=0,$db=''){
-		if ($db=='')$db=core::$data['db'];
-		if (is_array($db))$db=self::autodb($db);
-		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
+		$db=self::dbPrepare($db);
 		return self::$dbs[core::$env][$db]->db_limit($sql,$from,$count);
 	}
 
@@ -378,9 +364,7 @@ class db{
 		return self::dateFromDb($field,$format,$db);
 	}
 	static function dateFromDb($field,$format='Y-m-d H:i:s',$db=''){
-		if ($db=='')$db=core::$data['db'];
-		if (is_array($db))$db=self::autodb($db);
-		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
+		$db=self::dbPrepare($db);
 		return self::$dbs[core::$env][$db]->date_from_db($field, $format);
 	}
 
@@ -391,9 +375,7 @@ class db{
 	   return self::dateToDb($timestamp,$format,$db);
 	}
 	static function dateToDb($timestamp=null,$format=null,$db=''){
-		if ($db=='')$db=core::$data['db'];
-		if (is_array($db))$db=self::autodb($db);
-		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
+		$db=self::dbPrepare($db);
 		if ($format===null && !is_numeric($timestamp))$timestamp=  strtotime($timestamp);
 		return self::$dbs[core::$env][$db]->date_to_db($timestamp,$format);
 	}
@@ -402,8 +384,8 @@ class db{
 	static function setData($tablename,$array_in='',$sequence=true,$db='',&$outErrors=true,$schema=''){
 		return dbwork::setData($tablename,$array_in,$sequence,$db,$outErrors,$schema);
 	}
-	static function setDataOrFail($tablename,$arrayIn='',$sequence='',$db=''){
-		return dbwork::setDataOrFail($tablename,$arrayIn,$sequence,$db);
+	static function setDataOrFail($tablename,$arrayIn='',$sequence='',$db='',$schema=''){
+		return dbwork::setDataOrFail($tablename,$arrayIn,$sequence,$db,$schema);
 	}
 	static function filterDiap($string,$field,&$bind,$bindPrefix=null,$blockDelimeter=',',$diapDilimeter='-'){
 		return dbwork::filterDiap($string,$field,$bind,$bindPrefix,$blockDelimeter,$diapDilimeter);
@@ -411,8 +393,8 @@ class db{
 	static function describeTable($tablename,$schema='',$db=''){
 		return dbwork::describeTable($tablename,$schema,$db);
 	}
-	static function setMassData($tableName,$arrayIn='',$parentArrayIn='',$clearBefore=true,$sequence='',$db=''){
-		return dbwork::setMassData($tableName,$arrayIn,$parentArrayIn,$clearBefore,$sequence,$db);
+	static function setMassData($tableName,$arrayIn=array(),$parentArrayIn=array(),$clearBefore=true,$sequence='',$db='',$schema=''){
+		return dbwork::setMassData($tableName,$arrayIn,$parentArrayIn,$clearBefore,$sequence,$db,$schema);
 	}
 	static function getConnectScheme($db=''){
 		if ($db=='')$db=core::$data['db'];

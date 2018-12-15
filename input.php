@@ -34,6 +34,16 @@ class input{
 		}
 		return true;
 	}
+	/**
+	 * Add http:// to string
+	 * @param string $url
+	 * @return string
+	 */
+	static function toUrl($url){
+		$lowerUrl=self::lower($url);
+		if (substr($lowerUrl,0,7)=='http://' or substr($lowerUrl,0,8)=='https://')return $url;
+		return 'http://'.$url;
+	}
 	static function clearArray($array){
 		if (is_array($array)){
 			foreach ($array as $key=>$value){
@@ -725,8 +735,8 @@ class input{
 	 */
 	static function jsonEncode($var,$charset=null){
 		if ($charset==null)$charset=core::$charset;
-		if ($charset==core::UTF8)return json_encode ($var);
-		return json_encode(self::jsonFixCharset($var,$charset));
+		if ($charset==core::UTF8)return json_encode ($var,JSON_UNESCAPED_UNICODE);
+		return json_encode(self::jsonFixCharset($var,$charset),JSON_UNESCAPED_UNICODE);
 	}
 	private static function jsonFixCharset($var,$charset,$fromUtf=true){
 		if (is_array($var)){

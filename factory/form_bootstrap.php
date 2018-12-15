@@ -15,7 +15,7 @@ class form_bootstrap{
         $out=$this->renderFieldFormGroupBegin($item);
         if (@!$item['range'] && isset($item['ico']) && $this->form->prop['type']=='md-form')$out.= '<i class="'.$item['ico'].' prefix grey-text"></i>';
         if ($this->form->prop['type']=='md-form'){
-                return $out.$this->renderFieldField($item).$this->renderFieldLabel($item,$renderName).$this->renderFieldFormGroupEnd($item);
+                return $out.$this->renderFieldField($item,$renderName).$this->renderFieldLabel($item,$renderName).$this->renderFieldFormGroupEnd($item);
         }else{
                 return $out.$this->renderFieldLabel($item).$this->renderFieldField($item,$renderName).$this->renderFieldFormGroupEnd($item);
         }
@@ -24,9 +24,13 @@ class form_bootstrap{
     function renderFieldFormGroupBegin($item){
 		if (@$item['type']=='hidden')return '';
 		if ($this->form->prop['type']=='form-inline' && $item['type']=='submit')return '';
-		$base_group='form-group';
-		if ($this->form->prop['type']=='md-form')$base_group='md-form';
-		if (\c\core::$data['render']=='bootstrap4' && in_array($item['type'],array('checkbox','boolean','radio')))$base_group='form-check';
+		$baseGroup='form-group';
+		if ($this->form->prop['type']=='md-form'){
+			$baseGroup='md-form';
+		}elseif (\c\core::$data['render']=='bootstrap4'){
+			$baseGroup.=' row';
+		}
+		if (\c\core::$data['render']=='bootstrap4' && in_array($item['type'],array('checkbox','boolean','radio')))$baseGroup='form-check';
 		if (isset($item['group_classes'])){
 			if (is_callable($item['group_classes'])){
 				$classes=$item['group_classes']($item,$this->form->getData());
@@ -36,9 +40,9 @@ class form_bootstrap{
 
 			if (is_string($classes))$classes=explode(' ',$classes);
 			//array only
-			$classes=array_merge(array($base_group),$classes);
+			$classes=array_merge(array($baseGroup),$classes);
 		}else{
-			$classes=array($base_group);
+			$classes=array($baseGroup);
 		}
 		if (isset($item['ico']) && $this->form->prop['type']!='md-form')$classes[]='has-feedback';
 
@@ -78,7 +82,11 @@ class form_bootstrap{
         
         private function horizontalGetLabelClass(){
 		if (@$this->form->prop['type']!='form-horizontal')return '';
-		$out=' class="control-label';
+		if (\c\core::$data['render']=='bootstrap4'){
+			$out=' class="col-form-label';
+		}else{
+			$out=' class="control-label';
+		}
 		foreach ($this->form->prop['label_classes_array'] as $key=>$val){
 			$out.=' col-'.$key.'-'.$val;
 		}
@@ -128,7 +136,7 @@ class form_bootstrap{
 			$value['min']=(isset($renderValue['min'])?'value="'.\c\input::htmlspecialchars($renderValue['min']).'" ':'');
 			$value['max']=(isset($renderValue['max'])?'value="'.\c\input::htmlspecialchars($renderValue['max']).'" ':'');
 		}else{
-			$value=($renderValue!=='')?'value="'.\c\input::htmlspecialchars($renderValue).'" ':'';
+			$value=($renderValue!=='' && is_string($renderValue))?'value="'.\c\input::htmlspecialchars($renderValue).'" ':'';
 		}
 		$placeholder='';
 		if (isset($item['placeholder'])){
@@ -276,11 +284,11 @@ class form_bootstrap{
 					case 'check':
 						if ($multiple){
 							foreach ($item['values'] as $key=>$val){
-								$out.='<div class="checkbox"><label><input '.$attributes.' name="'.$renderName.'[]"'.(isset($valArr[$key])?' checked':'').' type="checkbox" value="'.\c\input::htmlspecialchars($key).'">'.($item['html']?$val:\c\input::htmlspecialchars($val)).'</label></div>';
+								$out.='<div class="checkbox"><label><input '.$attributes.' name="'.$renderName.'[]"'.(isset($valArr[$key])?' checked':'').' type="checkbox" value="'.\c\input::htmlspecialchars($key).'">'.(@$item['html']?$val:\c\input::htmlspecialchars($val)).'</label></div>';
 							}
 						}else{
 							foreach ($item['values'] as $key=>$val){
-								$out.='<div class="checkbox"><label><input '.$attributes.' name="'.$renderName.'"'.($renderValue==$key?' checked':'').' type="checkbox" value="'.\c\input::htmlspecialchars($key).'">'.($item['html']?$val:\c\input::htmlspecialchars($val)).'</label></div>';
+								$out.='<div class="checkbox"><label><input '.$attributes.' name="'.$renderName.'"'.($renderValue==$key?' checked':'').' type="checkbox" value="'.\c\input::htmlspecialchars($key).'">'.(@$item['html']?$val:\c\input::htmlspecialchars($val)).'</label></div>';
 							}
 						}
 						break;
@@ -294,11 +302,11 @@ class form_bootstrap{
 					$out.='<div>';
 					if ($multiple){
 						foreach ($item['values'] as $key=>$val){
-							$out.='<label class="checkbox-inline"><input '.$attributes.' name="'.$renderName.'[]"'.(isset($valArr[$key])?' checked':'').' type="checkbox" value="'.\c\input::htmlspecialchars($key).'">'.($item['html']?$val:\c\input::htmlspecialchars($val)).'</label>';
+							$out.='<label class="checkbox-inline"><input '.$attributes.' name="'.$renderName.'[]"'.(isset($valArr[$key])?' checked':'').' type="checkbox" value="'.\c\input::htmlspecialchars($key).'">'.(@$item['html']?$val:\c\input::htmlspecialchars($val)).'</label>';
 						}
 					}else{
 						foreach ($item['values'] as $key=>$val){
-							$out.='<label class="checkbox-inline"><input '.$attributes.' name="'.$renderName.'"'.($renderValue==$key?' checked':'').' type="checkbox" value="'.\c\input::htmlspecialchars($key).'">'.($item['html']?$val:\c\input::htmlspecialchars($val)).'</label>';
+							$out.='<label class="checkbox-inline"><input '.$attributes.' name="'.$renderName.'"'.($renderValue==$key?' checked':'').' type="checkbox" value="'.\c\input::htmlspecialchars($key).'">'.(@$item['html']?$val:\c\input::htmlspecialchars($val)).'</label>';
 						}
 					}
 					$out.='</div>';

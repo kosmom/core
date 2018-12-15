@@ -14,7 +14,7 @@ class db_oracle {
 		);
 	var $data;
 	var $cn;
-	var $m_connect;
+	private $connect;
 	var $m_result=false;
 
 	function __construct($data,$connection_name=''){
@@ -22,6 +22,10 @@ class db_oracle {
 		$this->cn=$connection_name;
 	}
 
+	function wrapper($object){
+		return '"'.$object.'"';
+	}
+	
 	private function charset_mastmach(){
 		switch (strtoupper(\c\core::$charset)){
 			case \c\core::UTF8:return 'UTF8';
@@ -34,19 +38,19 @@ class db_oracle {
 	}
 
 	function commit(){
-		oci_commit($this -> m_connect);
+		oci_commit($this -> connect);
 		$this->execute_mode=OCI_COMMIT_ON_SUCCESS;
 		if (\c\core::$debug)\c\debug::trace('Transaction commit',\c\error::SUCCESS);
 	}
 	function rollback(){
-		oci_rollback($this -> m_connect);
+		oci_rollback($this -> connect);
 		$this->execute_mode=OCI_COMMIT_ON_SUCCESS;
 		if (\c\core::$debug)\c\debug::trace('Transaction rollback',\c\error::SUCCESS);
 	}
 
 	function connect(){
-		$this->m_connect = oci_pconnect($this->data['login'], $this->data['password'], $this->data['host'],$this->charset_mastmach());
-		if (!$this -> m_connect){
+		$this->connect = oci_pconnect($this->data['login'], $this->data['password'], $this->data['host'],$this->charset_mastmach());
+		if (!$this -> connect){
 			$error=oci_error();
 			if (\c\core::$debug)\c\debug::trace('Oracle connection error: '.$error['message'],\c\error::ERROR);
 			if (empty(\c\core::$data['db_exception']))return false;
@@ -57,7 +61,7 @@ class db_oracle {
 			@\c\core::$data['stat']['db_connections']++;
 		}
 		$sql="ALTER SESSION SET NLS_TERRITORY='CIS' nls_date_format='yyyy-mm-dd hh24:mi:ss'";
-		$stmt = oci_parse($this -> m_connect, $sql);
+		$stmt = oci_parse($this -> connect, $sql);
 		oci_execute($stmt,$this->execute_mode);
 		oci_free_statement($stmt);
 		return true;
@@ -80,9 +84,9 @@ class db_oracle {
 			}
 			$start=microtime(true);
 		}
-		$stmt = oci_parse($this -> m_connect, $sql);
+		$stmt = oci_parse($this -> connect, $sql);
 		if(!$stmt){
-			$error=oci_error($this -> m_connect);
+			$error=oci_error($this -> connect);
 			if (\c\core::$debug){
 				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
 				\c\debug::groupEnd();
@@ -200,9 +204,9 @@ class db_oracle {
 		}
 		$sql=$begin_sql. implode($repeat_sql,$total_sql).$end_sql;
 		\c\debug::trace('SQL:'.$sql,false);
-		$stmt = oci_parse($this -> m_connect, $sql);
+		$stmt = oci_parse($this -> connect, $sql);
 		if(!$stmt){
-			$error=oci_error($this -> m_connect);
+			$error=oci_error($this -> connect);
 			if (\c\core::$debug){
 				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
 				\c\debug::groupEnd();
@@ -248,9 +252,9 @@ class db_oracle {
 			$start=microtime(true);
 		}
 
-		$stmt = oci_parse($this -> m_connect, $sql);
+		$stmt = oci_parse($this -> connect, $sql);
                 if(!$stmt){
-			$error=oci_error($this -> m_connect);
+			$error=oci_error($this -> connect);
 			if (\c\core::$debug){
 				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
 				\c\debug::groupEnd();
@@ -266,7 +270,7 @@ class db_oracle {
                 }
                 $result=oci_execute($stmt);
                 if (!$result){
-                    $error=oci_error($this -> m_connect);
+                    $error=oci_error($this -> connect);
                     if (\c\core::$debug){
                         \c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
                         \c\debug::groupEnd();
@@ -334,15 +338,15 @@ class db_oracle {
 		return (isset($rs[0]['LAST'])?$rs[0]['LAST']:0);
 	}
 	function explain($sql){
-		$stmt = oci_parse($this -> m_connect,"delete from plan_table where statement_id='core_sql'");
+		$stmt = oci_parse($this -> connect,"delete from plan_table where statement_id='core_sql'");
 		if(!$stmt)return false;
 		oci_execute($stmt,$this->execute_mode);
 
-		$stmt = oci_parse($this -> m_connect,"explain plan set statement_id='core_sql' for ".$sql);
+		$stmt = oci_parse($this -> connect,"explain plan set statement_id='core_sql' for ".$sql);
 		if(!$stmt)return false;
 		@oci_execute($stmt,$this->execute_mode);
 
-		$stmt = oci_parse($this -> m_connect, "select lpad(' ',depth)||operation operation,options,case when object_owner is null then '' else object_owner||'.' end||object_name object,filter_predicates||access_predicates predicates,cost from PLAN_TABLE where statement_id='core_sql' order by plan_id desc,ID");
+		$stmt = oci_parse($this -> connect, "select lpad(' ',depth)||operation operation,options,case when object_owner is null then '' else object_owner||'.' end||object_name object,filter_predicates||access_predicates predicates,cost from PLAN_TABLE where statement_id='core_sql' order by plan_id desc,ID");
 		$result=oci_execute($stmt,$this->execute_mode);
 		$data=array();
 		oci_fetch_all($stmt,$_data,0,-1,OCI_FETCHSTATEMENT_BY_ROW+OCI_ASSOC+OCI_RETURN_NULLS);
@@ -368,9 +372,9 @@ function execute_assoc_1($sql, $bind = array()){
 			}
 			$start=microtime(true);
 		}
-		$stmt = oci_parse($this -> m_connect, $sql);
+		$stmt = oci_parse($this -> connect, $sql);
                 if(!$stmt){
-			$error=oci_error($this -> m_connect);
+			$error=oci_error($this -> connect);
 			if (\c\core::$debug){
 				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
 				\c\debug::groupEnd();

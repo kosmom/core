@@ -95,6 +95,17 @@ class dbwork{
 			}
 			return self::$describeStorage[$db][$defaultScheme][$tablename];
 		}
+                if (core::$data['db_describe_cache']){
+			$f=core::$data['db_describe_cache'];
+			$cache_file=$f($tablename,$schema,$db);
+			if (file_exists($cache_file)){
+				if (core::$debug){
+				debug::consoleLog('table was described early from cache');
+				debug::groupEnd();
+				}
+				return self::$describeStorage[$db][$defaultScheme][$tablename]=filedata::loaddata($cache_file);
+			}
+		}
 		$primaryKey=array();
 		$uniqueKey=array();
                 $data=array();
@@ -233,7 +244,9 @@ class dbwork{
 			debug::dir(array('result'=>array('data'=>$data,'primary_key'=>$primaryKey,'unique_key'=>$uniqueKey)));
 			debug::groupEnd();
 		}
-		return self::$describeStorage[$db][$defaultScheme][$tablename]=array('data'=>$data,'primary_key'=>$primaryKey,'unique_key'=>$uniqueKey);
+		$rs=array('data'=>$data,'primary_key'=>$primaryKey,'unique_key'=>$uniqueKey);
+		if (isset($cache_file))filedata::savedata ($cache_file, $rs);
+		return self::$describeStorage[$db][$defaultScheme][$tablename]=$rs;
 	}
 	/**
 	 * @deprecated since version 3.4
@@ -317,13 +330,18 @@ class dbwork{
 		if ($notIsset){
 			$strcolname[]=$notIsset;
 			if ($sequence === true or $sequence ===''){
-				// try find next val of numberic vals
-				// if sequence not set - find max value of key + 1
-				$sql='SELECT MAX('.$notIsset.') FROM '.($schema?$schema.'.':'').$tablename.($sqlPkVals?' WHERE '.implode(' AND ',$sqlPkVals):'');
-				$rs=(int)db::ea11($sql,$pkVals,$db);
-				$bind[$notIsset]=$pkVals[$notIsset]=$rs+1;
-				$strvalues[]=':'.$notIsset;
-				$sqlPkVals[]=$notIsset.' = :'.$notIsset;
+				if (!empty($desc['data'][$notIsset]['autoincrement'])){
+					$bind[$notIsset]='';
+					$strvalues[]=':'.$notIsset;
+				}else{
+					// try find next val of numberic vals
+					// if sequence not set - find max value of key + 1
+					$sql='SELECT MAX('.$notIsset.') FROM '.($schema?$schema.'.':'').$tablename.($sqlPkVals?' WHERE '.implode(' AND ',$sqlPkVals):'');
+					$rs=(int)db::ea11($sql,$pkVals,$db);
+					$bind[$notIsset]=$pkVals[$notIsset]=$rs+1;
+					$strvalues[]=':'.$notIsset;
+					$sqlPkVals[]=$notIsset.' = :'.$notIsset;
+				}
 			}else{
 				$strvalues[]=$sequence.'.nextval';
 			}
@@ -520,7 +538,7 @@ class dbwork{
 			}
 			db::e($sql,$bind,$db);
 			if ($opType == 1){ // insert
-				if (isset($bind[$notIsset])){
+				if (isset($bind[$notIsset]) && $bind[$notIsset]!==''){
 					$return=(int)$bind[$notIsset];
 				}else{
 					$return=db::lastId($db);
@@ -584,17 +602,17 @@ class dbwork{
 	 * @param string $db
 	 * @return boolean or inserted ID
 	 */
-	static function setDataOrFail($tablename,$arrayIn='',$sequence='',$db=''){
+	static function setDataOrFail($tablename,$arrayIn='',$sequence='',$db='',$schema=''){
 		$errors=array();
-		$rs=self::setData($tablename,$arrayIn,$sequence,$db,$errors);
+		$rs=self::setData($tablename,$arrayIn,$sequence,$db,$errors,$schema);
 		if ($errors)  throw new \Exception(translate::t('Errors during record').': '.implode(',',$errors));
 		return $rs;
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function set_mass_data($tablename,$arrayIn='',$parentArrayIn='',$clearbefore=true,$sequence='',$db=''){
-		return self::setMassData($tablename,$arrayIn,$parentArrayIn,$clearbefore,$sequence,$db);
+	static function set_mass_data($tablename,$arrayIn=array(),$parentArrayIn=array(),$clearbefore=true,$sequence='',$db='',$schema=''){
+		return self::setMassData($tablename,$arrayIn,$parentArrayIn,$clearbefore,$sequence,$db,$schema);
 	}
 	/**
 	 * Set mass data to table
@@ -606,7 +624,7 @@ class dbwork{
 	 * @param string $db connection name
 	 * @return array ids of key fields
 	 */
-	static function setMassData($tablename,$arrayIn='',$parentArrayIn='',$clearbefore=true,$sequence='',$db=''){
+	static function setMassData($tablename,$arrayIn=array(),$parentArrayIn=array(),$clearbefore=true,$sequence='',$db='',$schema=''){
 		//$tablename=strtoupper($tablename);
 		if (core::$debug) debug::group('DBWork SetMassData start');
 		if ($clearbefore) self::delData($tablename,$parentArrayIn,$db);
@@ -619,7 +637,8 @@ class dbwork{
 				debug::dir($merge);
 			}
 			// for each element need set data. Get struct once
-			$out[]=self::setData($tablename,$merge,$sequence,$db);
+			$error=true;
+			$out[]=self::setData($tablename,$merge,$sequence,$db,$error,$schema);
 			if (core::$debug) debug::groupEnd();
 		}
 		if (core::$debug) debug::groupEnd();
@@ -752,7 +771,7 @@ class dbwork{
 			$bind[$key]=$value;
 			$strToDel[]=$key.'=:'.$key;
 		}
-		$sql='DELETE FROM '.$tablename.' WHERE '.implode(' AND ',$strToDel);
+		$sql='DELETE FROM '.$tablename.($strToDel?' WHERE '.implode(' AND ',$strToDel):'');
 		return db::e($sql,$bind,$db);
 	}
 }

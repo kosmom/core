@@ -90,6 +90,7 @@ class ajax {
 	static function addAction($type,$data=null) {
 		if (core::$debug)debug::trace('Add ajax action '.$type,error::INFO,$data);
 		if (core::$ajax){ // && !core::$partition
+			if ($data instanceof model or $data instanceof collection)$data=$data->toArray();
 			if (!is_array($data))$data=array('_val'=>$data);
 			$data['_type']=$type;
 			self::$answer[] = $data;

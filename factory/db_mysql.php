@@ -16,7 +16,7 @@ class db_mysql {
 	private $insert_id;
 	private $num_rows;
 	private $affected_rows;
-	var $m_connect;
+	private $connect;
 	var $m_result=false; // have last query result
 	var $error_resume=false;
 	private $result_array=array('sele'=>true,'desc'=>true,'show'=>true);
@@ -25,7 +25,9 @@ class db_mysql {
 		$this->data=$data;
 		$this->cn=$connectionName;
 	}
-
+	function wrapper($object){
+		return '`'.$object.'`';
+	}
 	private function charset_mastmach(){
 		switch (strtoupper(\c\core::$charset)){
 			case \c\core::UTF8:return 'utf8';
@@ -34,12 +36,12 @@ class db_mysql {
 	}
 
 	function connect(){
-		@$this->m_connect = mysqli_connect('p:'.$this->data['host'], $this->data['login'], $this->data['password'],$this->data['name']);
-		if (!$this->m_connect)throw new \Exception('MySQL connection error '.mysqli_connect_errno());
+		@$this->connect = mysqli_connect('p:'.$this->data['host'], $this->data['login'], $this->data['password'],$this->data['name']);
+		if (!$this->connect)throw new \Exception('MySQL connection error '.mysqli_connect_errno());
 		if (\c\core::$debug){
 			\c\debug::group('Connection to '.($this->cn?$this->cn:'MySQL'),\c\error::SUCCESS);
 			@\c\core::$data['stat']['db_connections']++;
-			$stat=explode('  ',mysqli_stat($this->m_connect));
+			$stat=explode('  ',mysqli_stat($this->connect));
 			$out=array();
 			foreach ($stat as $item){
 				$out[substr($item,0,strpos($item,':') )]=substr($item,strpos($item,':')+2 );
@@ -47,25 +49,25 @@ class db_mysql {
 			\c\debug::dir($out);
 			\c\debug::groupEnd();
 		}
-		mysqli_query($this->m_connect,'set names '.$this->charset_mastmach());
+		mysqli_query($this->connect,'set names '.$this->charset_mastmach());
 	}
 	function disconnect(){
-		mysqli_close($this->m_connect);
+		mysqli_close($this->connect);
 	}
 	function beginTransaction(){
-		mysqli_begin_transaction($this->m_connect);
+		mysqli_begin_transaction($this->connect);
 	}
 	function commit(){
-		mysqli_commit($this->m_connect);
+		mysqli_commit($this->connect);
 	}
 	function rollback(){
-		mysqli_rollback($this->m_connect);
+		mysqli_rollback($this->connect);
 	}
 	function bind($sql,$bind=array()){
 		if (sizeof($bind)==0 or !is_array($bind))return $sql;
 		$bind2=array();
 		foreach ($bind as $key=>$value){
-			$bind2[':'.$key]=($value==='' || $value===\c\db::NULL || $value===NULL?'NULL':"'".mysqli_real_escape_string($this->m_connect,$value)."'");
+			$bind2[':'.$key]=($value==='' || $value===\c\db::NULL || $value===NULL?'NULL':"'".mysqli_real_escape_string($this->connect,$value)."'");
 		}
 		return strtr($sql,$bind2);
 	}
@@ -80,7 +82,7 @@ class db_mysql {
 				\c\debug::trace('clear whitespaces at begin of query for correct work. Autocorrect in debug mode',\c\error::ERROR);
 				$sql=ltrim($sql);
 			}
-                        \c\debug::trace('Connection: '.$this->cn,false);
+            \c\debug::trace('Connection: '.$this->cn,false);
 			\c\debug::trace('SQL: '.$sql,false);
 			if ($bind){
 				\c\debug::dir(array('BIND:'=>$bind));
@@ -91,13 +93,11 @@ class db_mysql {
 		}
 		$sql=$this->bind($sql,$bind);
 		//echo $sql;
-		@$_result = mysqli_query($this->m_connect,$sql,MYSQLI_USE_RESULT);
-		if (!$_result){
-			if (mysqli_error($this->m_connect)=='MySQL server has gone away'){
-				$this->disconnect();
-				$this->connect();
-				$_result = mysqli_query($this->m_connect,$sql,MYSQLI_USE_RESULT);
-			}
+		@$_result = mysqli_query($this->connect,$sql,MYSQLI_USE_RESULT);
+		if (!$_result && mysqli_error($this->connect)=='MySQL server has gone away'){
+			$this->disconnect();
+			$this->connect();
+			$_result = mysqli_query($this->connect,$sql,MYSQLI_USE_RESULT);
 		}
 		if (\c\core::$debug){
 			\c\debug::consoleLog('Query execute for '.round((microtime(true)-$start)*1000,2).' ms');
@@ -105,9 +105,9 @@ class db_mysql {
 		}
 		if(!$_result){
 			if (\c\core::$debug){
-				\c\debug::trace('Query error: '.mysqli_error($this->m_connect),\c\error::ERROR);
+				\c\debug::trace('Query error: '.mysqli_error($this->connect),\c\error::ERROR);
 				\c\debug::groupEnd();
-				\c\debug::trace('MySQL error: '.mysqli_error($this->m_connect),\c\error::ERROR);
+				\c\debug::trace('MySQL error: '.mysqli_error($this->connect),\c\error::ERROR);
 			}
                         if (empty(\c\core::$data['db_exception']))return false;
                         throw new \Exception('SQL execute error');
@@ -160,9 +160,9 @@ class db_mysql {
 			}
 			// explain
 			\c\debug::group('Explain select');
-			$this->affected_rows=mysqli_affected_rows($this->m_connect);
+			$this->affected_rows=mysqli_affected_rows($this->connect);
 			$this->num_rows=@mysqli_num_rows($_result);
-			$this->insert_id=mysqli_insert_id($this->m_connect);
+			$this->insert_id=mysqli_insert_id($this->connect);
 			@mysqli_free_result($_result);
 			\c\debug::table($this->explain($sql));
 			\c\debug::groupEnd();
@@ -185,15 +185,15 @@ class db_mysql {
 	}
 	function insertId(){
 		if (\c\core::$debug)return $this->insert_id;
-		return mysqli_insert_id( $this -> m_connect);
+		return mysqli_insert_id( $this -> connect);
 	}
 	function rows(){
 		if (\c\core::$debug)return $this->affected_rows;
-		return mysqli_affected_rows( $this -> m_connect);
+		return mysqli_affected_rows( $this -> connect);
 	}
 	function explain($sql,$bind=array()){
 		$sql='explain '.$this->bind($sql,$bind);
-		$_result = mysqli_query($this->m_connect,$sql,MYSQLI_USE_RESULT);
+		$_result = mysqli_query($this->connect,$sql,MYSQLI_USE_RESULT);
 		if(!$_result)return false;
 		if (function_exists('mysqli_fetch_all')){
 			$_data=mysqli_fetch_all($_result,MYSQLI_ASSOC);
@@ -206,7 +206,7 @@ class db_mysql {
 	}
 	function query($sql,$bind){
 		$sql=$this->bind($sql,$bind);
-		return mysqli_query($this->m_connect,$sql,MYSQLI_USE_RESULT);
+		return mysqli_query($this->connect,$sql,MYSQLI_USE_RESULT);
 	}
 	function fa($_result){
 		$row=mysqli_fetch_assoc($_result);

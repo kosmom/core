@@ -4,7 +4,7 @@ namespace c\factory;
 class db_mssql{
 	var $data;
 	var $cn;
-	var $m_connect;
+	private $connect;
 	var $m_result=false;
 	var $error_resume=true;
 	private $result_array=array('sele'=>true,'show'=>true);
@@ -12,18 +12,20 @@ class db_mssql{
 		$this->data=$data;
 		$this->cn=$connection_name;
 	}
-
+	function wrapper($object){
+		return $object;
+	}
 	function connect(){
-		$this->m_connect=mssql_pconnect($this->data['host'],$this->data['login'],$this->data['password']);
-		if (!$this -> m_connect){
+		$this->connect=mssql_pconnect($this->data['host'],$this->data['login'],$this->data['password']);
+		if (!$this -> connect){
 			if (\c\core::$debug){
 				\c\debug::trace('Mssql connection error',\c\error::ERROR);
 				return false;
 			}
-			trigger_error("Error connection to mssql");
+			throw new \Exception('Error connection to mssql');
 		}
 
-		if (!$this->m_connect)trigger_error("Mssql Connection Error");
+		if (!$this->connect)throw new \Exception('Mssql Connection Error');
 		if (\c\core::$debug){
 			\c\debug::group('Connection to '.($this->cn?$this->cn:'MsSql'),\c\error::SUCCESS);
 			\c\core::$data['stat']['db_connections']++;
@@ -32,7 +34,7 @@ class db_mssql{
 		return true;
 	}
 	function disconnect(){
-		mssql_close($this->m_connect);
+		mssql_close($this->connect);
 	}
 	function bind($sql,$bind=array()){
 		if (sizeof($bind)==0 or !is_array($bind))return $sql;
@@ -61,7 +63,7 @@ class db_mssql{
 		}
 		$sql=$this->bind($sql,$bind);
 		if (\c\core::$debug)\c\debug::consoleLog('Full query: '.$sql);
-		$_result=mssql_query($sql,$this->m_connect);
+		$_result=mssql_query($sql,$this->connect);
 		if (\c\core::$debug){
 			\c\debug::consoleLog('Query get '.round((microtime(true)-$start)*1000,2).' ms');
 			$start=microtime(true);
@@ -146,7 +148,7 @@ class db_mssql{
 	}
 
 	function rows(){
-		return mssql_rows_affected( $this -> m_connect);
+		return mssql_rows_affected( $this -> connect);
 	}
 
 	function db_limit($sql,$from=0,$count=0,$_order_fild='1',$_order_dir='DESC'){

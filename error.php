@@ -24,16 +24,19 @@ class error{
 	 * @param int $type error type
 	 * @param string|boolean $redirect redirect after error
 	 * @param int $header redirect type after error
+	 * @return super
 	 */
-	static function add($text,$type=self::ERROR,$redirect=false,$header=''){
+	static function add($text,$type=self::ERROR,$redirect=false,$header='',$key=null){
 		if (core::$debug){
 			debug::trace('Error message added to stack',error::SUCCESS,array('text'=>$text,'type'=>$type));
 			if (is_string($type))debug::trace('Error added without use const. Please, use error type as c\\error::ERROR const',error::WARNING);
 		}
 		if (isset(core::$data['error_callback'])){
 			call_user_func(core::$data['error_callback'],$text,$type);
-		}else{
+		}elseif ($key===null){
 			$_SESSION['errors'][self::toType($type)][]=$text;
+		}else{
+			$_SESSION['errors'][self::toType($type)][$key]=$text;
 		}
 		if (core::$debug && session_id() === '')debug::trace('Probably you forget start session session_start()',error::WARNING);
 		if ($redirect!==false)self::redirect($redirect,$header);
@@ -58,18 +61,58 @@ class error{
 		return self::addWarning($text, $redirect, $header);
 	}
 	static function addSuccess($text,$redirect=false,$header=''){
-		self::add($text,self::SUCCESS,$redirect,$header);
-		return new super();
+		return self::add($text,self::SUCCESS,$redirect,$header);
 	}
 	static function addError($text,$redirect=false,$header=''){
-		self::add($text,self::ERROR,$redirect,$header);
-		return new super();
+		return self::add($text,self::ERROR,$redirect,$header);
 	}
 	static function addWarning($text,$redirect=false,$header=''){
-		self::add($text,self::WARNING,$redirect,$header);
-		return new super();
+		return self::add($text,self::WARNING,$redirect,$header);
 	}
 
+	static function setSuccess($key, $text,$redirect=false,$header=''){
+		return self::add($text,self::SUCCESS,$redirect,$header,$key);
+	}
+	static function setError($key, $text,$redirect=false,$header=''){
+		return self::add($text,self::ERROR,$redirect,$header,$key);
+	}
+	static function setWarning($key, $text,$redirect=false,$header=''){
+		return self::add($text,self::WARNING,$redirect,$header,$key);
+	}
+	
+	static function getError($key){
+		return $_SESSION['errors'][self::ERROR][$key];
+	}
+	static function getSuccess($key){
+		return $_SESSION['errors'][self::SUCCESS][$key];
+	}
+	static function getWarning($key){
+		return $_SESSION['errors'][self::WARNING][$key];
+	}
+	static function getErrorAndClean($key){
+		$rs=$_SESSION['errors'][self::ERROR][$key];
+		unset($_SESSION['errors'][self::ERROR][$key]);
+		return $rs;
+	}
+	static function getSuccessAndClean($key){
+		$rs=$_SESSION['errors'][self::SUCCESS][$key];
+		unset($_SESSION['errors'][self::SUCCESS][$key]);
+		return $rs;
+	}
+	static function getWarningAndClean($key){
+		$rs=$_SESSION['errors'][self::WARNING][$key];
+		unset($_SESSION['errors'][self::WARNING][$key]);
+		return $rs;
+	}
+	static function getKeyMessages($key){
+		return [
+			'errors'=>self::getError($key),
+			'warnings'=>self::getWarning($key),
+			'success'=>self::getSuccess($key),
+		];
+	}
+	
+	
 	/**
 	 * Buffere error count
 	 * @param int $type error type
@@ -135,10 +178,11 @@ class error{
 	/**
 	 * Log in file
 	 * @param string $filename log filename
-	 * @param string $string string
+	 * @param string|integer|array $string string
 	 */
 	static function log($filename,$string){
-		if (!file_put_contents($filename, "\n".$string, FILE_APPEND | LOCK_EX))file_put_contents($filename, "\n".$string);
-		return new super();
+            if (is_array($string))$string= print_r ($string,true);
+            if (!file_put_contents($filename, "\n".$string, FILE_APPEND | LOCK_EX))file_put_contents($filename, "\n".$string);
+            return new super();
 	}
 }

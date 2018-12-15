@@ -23,6 +23,7 @@ class request{
 	private static $files=array();
 	private static $counter=array();
 	private static $isCMD;
+	private static $manyfilesfile;
 	
 	static function isCmd(){
 		if (self::$isCMD!==null)return self::$isCMD;
@@ -75,7 +76,7 @@ class request{
 		return $default;
 	}
 	static function file($parameter='CoreEachFile',$default=null){
-		if ($parameter=='CoreEachFile')return self::$files[$file][self::$counter];
+		if ($parameter=='CoreEachFile')return self::$files[self::$manyfilesfile][self::$counter[self::$manyfilesfile]];
 		if (isset($_FILES[$parameter]))return $_FILES[$parameter];
 		return $default;
 	}
@@ -88,22 +89,22 @@ class request{
 		return move_uploaded_file (self::fileTmpName(),$destination);
 	}
 	static function fileTmpName($parameter='CoreEachFile',$default=null){
-		if ($parameter=='CoreEachFile')return self::$files[$file][self::$counter]['tmp_name'];
+		if ($parameter=='CoreEachFile')return self::$files[self::$manyfilesfile][self::$counter[self::$manyfilesfile]]['tmp_name'];
 		if (isset($_FILES[$parameter]))return $_FILES[$parameter]['tmp_name'];
 		return $default;
 	}
 	static function fileName($parameter='CoreEachFile',$default=null){
-		if ($parameter=='CoreEachFile')return self::$files[$file][self::$counter]['name'];
+		if ($parameter=='CoreEachFile')return self::$files[self::$manyfilesfile][self::$counter[self::$manyfilesfile]]['name'];
 		if (isset($_FILES[$parameter]))return $_FILES[$parameter]['name'];
 		return $default;
 	}
 	static function fileSize($parameter='CoreEachFile',$default=null){
-		if ($parameter=='CoreEachFile')return self::$files[$file][self::$counter]['size'];
+		if ($parameter=='CoreEachFile')return self::$files[self::$manyfilesfile][self::$counter[self::$manyfilesfile]]['size'];
 		if (isset($_FILES[$parameter]))return $_FILES[$parameter]['size'];
 		return $default;
 	}
 	static function fileError($parameter='CoreEachFile',$default=null){
-		if ($parameter=='CoreEachFile')return self::$files[$file][self::$counter]['error'];
+		if ($parameter=='CoreEachFile')return self::$files[self::$manyfilesfile][self::$counter[self::$manyfilesfile]]['error'];
 		if (isset($_FILES[$parameter]))return $_FILES[$parameter]['error'];
 		return $default;
 	}
@@ -118,7 +119,7 @@ class request{
 		return false;
 	}
 	static function fileType($parameter='CoreEachFile',$default=null){
-		if ($parameter=='CoreEachFile')return self::$files[$file][self::$counter]['type'];
+		if ($parameter=='CoreEachFile')return self::$files[self::$manyfilesfile][self::$counter[self::$manyfilesfile]]['type'];
 		if (isset($_FILES[$parameter]))return $_FILES[$parameter]['type'];
 		return $default;
 	}
@@ -129,6 +130,7 @@ class request{
 		return new pic(self::fileTmpName($parameter));
 	}
 	private static function manyFiles($file){
+		self::$manyfilesfile=$file;
 		self::$files[$file]=array();
 		if (empty($_FILES[$file]['tmp_name'][0])){
 			if (isset($_FILES[$file]['tmp_name'])){
@@ -144,14 +146,18 @@ class request{
 		return true;
 	}
 	static function eachFile($file){
-		if (!isset(self::$files[$file]))self::manyFiles($file);
+		if (isset(self::$files[$file])){
+			self::$counter[$file]++;
+		}else{
+			self::manyFiles($file);
+		}
 		if (!self::$files[$file])return false;
 		if (self::$counter[$file]>=sizeof(self::$files[$file])){
 			self::$counter[$file]=0;
 			return false;
 		}
-                if (!isset(self::$counter[$file]))self::$counter[$file]=0;
-		return self::$files[$file][self::$counter[$file]++];
+		if (!isset(self::$counter[$file]))self::$counter[$file]=0;
+		return self::$files[$file][self::$counter[$file]];
 	}
 
 	/**

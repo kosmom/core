@@ -26,6 +26,7 @@ class mvc{
 	private static $isConfig;
 	static $slashAtEnd='/';
 	static $appFolder='app';
+        private static $realHost;
 	/**
 	 * counter - __DIR__
 	 * @var array
@@ -240,7 +241,7 @@ class mvc{
 		if (isset($route['is_ajax']) && $route['is_ajax']!==self::isAjax())return false;
 		if (isset($route['scheme']) && $route['scheme']!=$_SERVER['REQUEST_SCHEME'])return false;
 		if (isset($route['method']) && !in_array(strtolower($_SERVER['REQUEST_METHOD']), $route['method']))return false;
-		if (isset($route['domain']) && $route['domain']!=$_SERVER['HTTP_HOST'])return false;
+		if (isset($route['domain']) && $route['domain']!=self::$realHost)return false;
 		//middleware
 		$url=self::getParamAsString();
 		if (strpos($route['url'],'{')===false && $route['url']!==$url)return false;
@@ -396,6 +397,10 @@ class mvc{
 			self::$base__DIR__=$__DIR__;
 			self::$next_dir=array($__DIR__.DIRECTORY_SEPARATOR.self::$appFolder);
 		}
+                if (!isset($_SERVER['REDIRECT_URL'])){
+                    $q=strpos($_SERVER['REQUEST_URI'], '?');
+                    $_SERVER['REDIRECT_URL']=$q===false?$_SERVER['REQUEST_URI']:substr($_SERVER['REQUEST_URI'],0, $q);
+                }
 		if (request::isCmd()){
 			global $argv;
 			if (@strpos($argv[1], '?')!==false){ //parse get params
@@ -408,6 +413,7 @@ class mvc{
 		}else{
 			self::$links_string=substr(ltrim(@$_SERVER['REDIRECT_URL'],'\\/'), strlen(self::$basefolder));
 		}
+                self::$realHost=isset($_SERVER['HTTP_X_FORWARDED_HOST'])?$_SERVER['HTTP_X_FORWARDED_HOST']:$_SERVER['HTTP_HOST'];
 		if (core::$charset!=core::UTF8)self::$links_string=iconv('utf-8',core::$charset,self::$links_string);
 		self::$links=explode('/',self::$links_string);
 		self::getConfig();
@@ -563,7 +569,7 @@ class mvc{
 	}
 	static function getAbsoluteUrl($__DIR__=null){
 		if ($__DIR__===null)$__DIR__=self::$current__DIR__;
-		return request::protocol().$_SERVER['HTTP_HOST'].'/'.self::$basefolder.self::getUrl($__DIR__);
+		return request::protocol().self::$realHost.'/'.self::$basefolder.self::getUrl($__DIR__);
 	}
 
 	/**
@@ -610,18 +616,22 @@ class mvc{
 	static function addJs($js,$isComponent=false){
 		if (core::$ajax)return new super();
 		self::getConfig();
+		$version='';
 		if (empty(self::$js_dict[$js])){
 			// not in dictionary
 			if (isset(self::$required_js[$js]))return new super(); //already in use
-			if (substr($js,0,4)!='http' && substr($js,0,2)!='//' && !file_exists($js)){
-				if (core::$debug && !isset(self::$debugMessages[$js])){
-					self::$debugMessages[$js]=true;
-					debug::trace('Js '.$js.' not exists',error::ERROR);
+			if (substr($js,0,4)!='http' && substr($js,0,2)!='//'){
+				$version=(core::$version?'?v='.core::$version:'');
+				if (!file_exists($js)){
+					if (core::$debug && !isset(self::$debugMessages[$js])){
+						self::$debugMessages[$js]=true;
+						debug::trace('Js '.$js.' not exists',error::ERROR);
+					}
+					return new super();
 				}
-				return new super();
 			}
 			self::$required_js[$js]=self::$jsHard;
-			self::$js[]=array($js.(core::$version?'?v='.core::$version:''),self::$jsHard,1,false);
+			self::$js[]=array($js.$version,self::$jsHard,1,false);
 		}elseif (is_array(self::$js_dict[$js])){
 			$jslink=self::$js_dict[$js]['url'];
 			if (isset(self::$required_js[$jslink]))return new super(); //already in use
@@ -738,6 +748,17 @@ class mvc{
 	}
 
 	static function header(){
+		if (headers_sent()){
+			if (core::$debug){
+				$file='';
+				$line='';
+				headers_sent($file,$line);
+				debug::consoleLog ('header was sended, in '.$file.':'.$line.' templates are ignored',error::ERROR);
+			}
+			//echo self::drawJs();
+			self::$next_dir=array();
+			return false;
+		}
 		if (self::$routeLazyCallback){
 			call_user_func_array(self::$routeLazyCallback[0],self::routeFill(self::$routeLazyCallback[0],self::$routeLazyCallback[1]));
 			self::$routeLazyCallback=null;
@@ -759,12 +780,12 @@ class mvc{
 	<head>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta charset="<?=core::$charset?>">
-		<link rel="canonical" href='//<?=$_SERVER['HTTP_HOST']?>/<?=self::$basefolder.htmlspecialchars(rtrim(@implode('/',self::$url_links).'/'.@self::$canonical_links,'/')).self::$slashAtEnd?>'>
+		<link rel="canonical" href='//<?=self::$realHost?>/<?=self::$basefolder.htmlspecialchars(rtrim(@implode('/',self::$url_links).'/'.@self::$canonical_links,'/')).self::$slashAtEnd?>'>
 	<title><?=self::drawTitle();?></title><?
 foreach (self::$meta as $name=>$content){?>
 <meta name="<?=$name?>" content="<?=input::htmlspecialchars($content)?>">
 <?php }?>	
-		<base href="//<?=$_SERVER['HTTP_HOST']?>/<?=self::$basefolder?>" />
+		<base href="//<?=self::$realHost?>/<?=self::$basefolder?>" />
 		<?=self::drawCss().(self::$js_first?self::drawJs():'');if (self::$favicon){?><link href="<?=self::$favicon?><?=core::$version?'?v='.core::$version:''?>" rel="icon" type="image/x-icon" /><?php }?>
 	</head>
 		<?php }
@@ -976,7 +997,14 @@ foreach (self::$meta as $name=>$content){?>
 			unset(self::$url_links[self::$page_counter]);
 		}
 		$result=null;
-		if ($exception===null)$exception=$default;
+		$default=self::relativeFilePath($default, $__DIR__);
+		if ($exception===null){
+			if (empty(core::$data['controller_exception_page'])){
+				$exception=$default;
+			}else{
+				$exception=$core::$data['controller_exception_page'];
+			}
+		}
 		if (is_array($exception) && $routes===null){
 			$routes=$exception;
 			$exception=$default;
@@ -1026,6 +1054,7 @@ foreach (self::$meta as $name=>$content){?>
 				}
 				if ($result===null){
 					// if page not exists - not set links
+					$exception=self::relativeFilePath($exception,$__DIR__);
 					if (is_dir($__DIR__.DIRECTORY_SEPARATOR.$exception)){
 						self::$file_links[self::$page_counter]=$exception;
 					}else{
@@ -1048,6 +1077,18 @@ foreach (self::$meta as $name=>$content){?>
 	}
 
 	
+		private static function relativeFilePath($segment,$__DIR__){
+		if (substr($segment,0,1)!='/')return $segment;
+		// add .. in path to main folder
+		$path=self::$base__DIR__.DIRECTORY_SEPARATOR.self::$appFolder;
+		if (!is_dir($path.DIRECTORY_SEPARATOR.substr($segment,1)))return $segment;
+		$addon='';
+		for ($i=0;$i<10;$i++){
+			if (realpath($__DIR__.DIRECTORY_SEPARATOR.$addon)==$path)return $addon.substr($segment,1);
+			$addon.='../';
+		}
+		return $segment;
+	}
 
 	/**
 	 * @deprecated since version 3.4

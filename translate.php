@@ -7,7 +7,7 @@ namespace c;
  */
 class translate{
 	static $charset=core::UTF8;
-	private static $tDict=array();
+	static $tDict=array();
 	private static $isdictLoaded=false;
 
 		static function reloadLocate($locate){
@@ -16,15 +16,18 @@ class translate{
 		if (!core::$lang)return true;
 		if (file_exists($file=__DIR__.'/global-config/translate_'.core::$lang.'.php'))include $file;
 		if (file_exists($file='config/translate_'.core::$lang.'.php'))include $file;
+		self::$isdictLoaded=true;
 		foreach (mvc::$url as $url=>$v){
 			if (file_exists($file=$url.'/translate_'.core::$lang.'.php'))include $file;
 		}
 		return true;
 	}
-
-	static function dict($source,$translate,$lower_priority=false){
-		if ($lower_priority)self::$isdictLoaded=true;
-		if ($lower_priority && isset(self::$tDict[$source]))return false;
+	static function dictLP($source,$translate){
+		return self::dict($source, $translate, true);
+	}
+	static function dict($source,$translate,$lowerPriority=false){
+		if ($translate=='')return true;
+		if ($lowerPriority && isset(self::$tDict[$source]))return false;
 		if (self::$charset==core::UTF8){
 			self::$tDict[$source]=$translate;
 			return true;
@@ -32,7 +35,11 @@ class translate{
 		self::$tDict[$source]=iconv(self::$charset,core::UTF8,$translate);
 	}
 	static function t($text,$vars=array()){
-		if (core::$lang && !self::$isdictLoaded && file_exists($file=__DIR__.DIRECTORY_SEPARATOR.'global-config'.DIRECTORY_SEPARATOR.'translate_'.core::$lang.'.php'))include $file;
+		if (core::$lang && !self::$isdictLoaded){
+			if (file_exists($file=__DIR__.'/global-config/translate_'.core::$lang.'.php'))include $file;
+			if (file_exists($file='config/translate_'.core::$lang.'.php'))include $file;
+			self::$isdictLoaded=true;
+		}
 		$magicvar=null;
 		if (!is_array($vars))$magicvar=$vars;
 		if (isset(self::$tDict[$text])){

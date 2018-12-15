@@ -29,6 +29,7 @@ class collection_object extends collection{
 		foreach ($this->_c as $item){
 			return (new $this->generator($this->_c[0],$this));
 		}
+		
 	}
 	function table($header=array()){
 		$attrs=array();
@@ -49,7 +50,7 @@ class collection_object extends collection{
 	function toArray(){
 		$out=array();
 		foreach ($this->_c as $key=>$item){
-			$out[$key]= storage::getData($this->generator, $item);
+			$out[$key]= model::getData($this->generator, $item);
 		}
 		return $out;
 	}

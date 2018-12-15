@@ -66,6 +66,8 @@ class core {
 	 * @param roles
 	 * @param db_autobind
 	 * @param db_exception
+	 * @param controller_exception_page
+	 * @param table_header_render_callback
 	 * @param render
 	 */
 	static $data=array('db_autobind'=>array(),'render'=>'bootstrap3');
@@ -157,4 +159,14 @@ class super{
 	function thrownException($message,$code=0){
 		throw new \Exception($message,$code);
 	}
+}
+
+function translate($text,$vars=array()){
+	return translate::t($text,$vars);
+}
+function t($text,$vars=array()){
+	return translate::t($text,$vars);
+}
+function curl($URL,$post=null,$cookieFile=null,$options=array()){
+	return curl::getContent($URL, $post, $cookieFile, $options);
 }

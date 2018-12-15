@@ -120,10 +120,10 @@ class datawork{
 	 * @return array
 	 */
 	static function group($array,$key,$val=false){
-		if (core::$debug)debug::group('Datawork key group operation');
 		if ($array instanceof \SplFixedArray)$array=$array->toArray();
 		if (!is_array($array)){
 			if (core::$debug){
+                                debug::group('Datawork key group operation');
 				debug::trace('Array is not array',error::WARNING);
 				debug::groupEnd();
 				debug::trace('Datawork key group operation - array is not array',error::WARNING);
@@ -136,25 +136,13 @@ class datawork{
 			foreach ($key as $item){
 				if (is_string($item)) continue;
 				if (is_bool($item)) continue;
-				if (core::$debug){
-					debug::trace('Hard group operation');
-					debug::groupEnd();
-				}
 				return self::key2($array,$key,$val);
 			}
 		}
 		if (PHP_VERSION_ID>=50500 && $k0=='[]' && !is_object($val) && !is_array($val) && $val!==true && $val!==false){
-			if (core::$debug){
-				debug::trace('array_column fast group');
-				debug::groupEnd();
-			}
 			return array_column($array,$val);
 		}
 		if (PHP_VERSION_ID>=50500 && empty($key[1]) && $val!=self::KEY && $key[0]!=self::KEY && !is_object($val) && !is_array($val) && !is_object($k0) && !is_array($k0) && $val!==true && $val!==false){
-			if (core::$debug){
-				debug::trace('array_column fast group');
-				debug::groupEnd();
-			}
 			return array_column($array,$val,$k0);
 		}
 		$out=array();
@@ -464,10 +452,6 @@ class datawork{
 					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]][$item[$key[3]]]=$item[$val];
 				}
 			}
-		}
-		if (core::$debug){
-			debug::trace('Standart group operation');
-			debug::groupEnd();
 		}
 		return $out;
 	}

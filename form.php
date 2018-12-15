@@ -124,12 +124,11 @@ class form implements \ArrayAccess{
 	function getSubform($name,$counter=null){
 		if (!isset($this->fields[$name]))throw new \Exception('form element is miss');
 		if (!isset($this->fields[$name]['subform']))throw new \Exception('form element is not subform state');
-		if ($counter==null)return $this->fields[$name]['value'];
+		if ($counter==null)return isset($this->fields[$name]['value'])?$this->fields[$name]['value']:array();
 		if (isset($this->fields[$name]['value'][$counter])){
 			return $this->fields[$name]['value'][$counter];
 		}else{
 			$this->fields[$name]['value'][$counter]=clone $this->fields[$name]['subform'];
-			//input::filter($this->forms[$name]['value'][$counter]->forms,'iconv');
 			$this->fields[$name]['value'][$counter]->subform=$name;
 			$this->fields[$name]['value'][$counter]->counter=$counter;
 		}
@@ -532,7 +531,7 @@ class form implements \ArrayAccess{
 				$result=input::validate($value,$item['validate'],$item);
 				if ($result===false)$valid=false;
 				foreach ($item['value'] as $value){
-					$result=$value->isValid($data[$key],$checkData);
+					$result=$value->isValid($data[$key],$checkData); //$result=$item['subform']->isValid($data[$key],$checkData);
 					if ($result===false)$valid=false;
 				}
 			}else{
@@ -610,6 +609,7 @@ class form implements \ArrayAccess{
 <?=$form->renderField(\''.$name.'\')?>';
 			$out.=$this->renderField($name,$item);
 		}
+		
 		if (core::$debug){
 			$htmlout.='
 <?=$form->renderEndTag()?>';
@@ -629,7 +629,7 @@ class form implements \ArrayAccess{
 
 		if ($this->needSort)datawork::stable_uasort($sort_form,array('c\\datawork','positionCompare'));
 		foreach ($sort_form as $name=>$item){
-			if ($this->renderedFields[$name])continue;
+			if (@$this->renderedFields[$name])continue;
 			if ($item['type']=='subform')continue;
 			$out.=$this->renderField($name,$item);
 		}
@@ -708,8 +708,7 @@ class form implements \ArrayAccess{
 			$attributes=implode(' ',$attributes).' ';
 		}else{
 			$attributes='';
-		}
-
+		}		
 		return '<form '.$attributes.($this->target?'target="'.input::htmlspecialchars($this->target).'" ':'').'method='.(@$this->prop['method']?$this->prop['method']:'POST').($this->fileForm?' enctype="multipart/form-data"':'').($classes?' class="'.(implode(' ',$classes)).'"':'').'>';
 	}
 	function renderEndTag(){

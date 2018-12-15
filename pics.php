@@ -81,7 +81,7 @@ class pics{
 				}
 			}
 			if (empty($prop[2]))return false;
-			if (!in_array($prop[2],array(IMAGETYPE_JPEG,IMAGETYPE_GIF,IMAGETYPE_PNG,IMAGETYPE_BMP)))return false;
+			if (!in_array($prop[2],array(18,IMAGETYPE_JPEG,IMAGETYPE_GIF,IMAGETYPE_PNG,IMAGETYPE_BMP)))return false;
 			return true;
 	}
 	/**
@@ -125,6 +125,9 @@ class pics{
 				return true;
 			case IMAGETYPE_PNG:
 				self::$image = imagecreatefrompng($filename);
+				return true;
+                        case 18: //IMAGETYPE_WEBP 
+				self::$image = imagecreatefromwebp($filename);
 				return true;
 		}
 	}

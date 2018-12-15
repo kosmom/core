@@ -19,7 +19,7 @@ class responce{
                     header($code.': '.$value);
                     return new super();
                 }
-                if (isset($http_status_codes[$code])){
+                if (isset(self::$http_status_codes[$code])){
                     header($_SERVER['SERVER_PROTOCOL'].' '.$code.' '.self::$http_status_codes[$code]);
                 }elseif (core::$debug){
                     debug::trace('Redirect header mistmatch in dictionary',error::WARNING,$code);
