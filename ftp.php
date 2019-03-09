@@ -53,10 +53,6 @@ class ftp{
 		}
 	}
 	/**
-	* Recursivety copy directory
-	* @param string $srcDir source directory
-	* @param string $dstDir destitation directory
-	* @param object $connId ftp connect handle
 	* @deprecated since version 3.4
 	*/
 	static function copy_to_ftp($srcDir, $dstDir,$connId) {
@@ -86,5 +82,4 @@ class ftp{
 		}
 		$d->close();
 	}
-
 }

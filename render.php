@@ -24,14 +24,14 @@ class render{
  * @deprecated since version 3.4
  */
 	static function show_errors($type='html'){
-            return self::showAlerts($type);
-        }
+		return self::showAlerts($type);
+	}
 /**
  * @deprecated since version 3.5 use showAlerts method
  */
-        static function showErrors($type='html'){
-            return self::showAlerts($type);
-        }
+	static function showErrors($type='html'){
+		return self::showAlerts($type);
+	}
 	static function showAlerts($type='html'){
 		switch($type){
 			case 'html':
@@ -57,9 +57,9 @@ class render{
 					}
 				}
 				return $answer;
-                        default:
-                            if (file_exists($type))return include $type;
-                            throw new \Exception('not set render template');
+			default:
+				if (file_exists($type))return include $type;
+				throw new \Exception('not set render template');
 		}
 	}
 

@@ -7,7 +7,6 @@ namespace c;
  */
 class filedata{
 	static $mime_types = array(
-
 		'txt' => 'text/plain',
 		'htm' => 'text/html',
 		'html' => 'text/html',

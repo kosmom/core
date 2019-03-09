@@ -10,7 +10,6 @@ class pic{
 	private $x;
 	private $y;
 
-	
 	/**
 	 * memory test before picture loading
 	 * @param integer $x width
@@ -27,7 +26,7 @@ class pic{
 			$val *= 1024;
 		case 'K':
 			$val *= 1024;
-	}
+		}
 		$limit=$val;
 		$m=memory_get_usage();
 		$usage=($x*$y*5.07)+7900+($y*112)+$m;
@@ -49,7 +48,7 @@ class pic{
 	 * @param string $filename filename of image or inline string
 	 * @return boolean
 	 */
-	function isPic($filename){
+	static function isPic($filename){
 		if (!file_exists($filename)){
 			$prop=getimagesizefromstring($filename);
 			if (!$prop){
@@ -64,8 +63,8 @@ class pic{
 		return true;
 	}
 
-	function rotate($angle_clockwise,$bgd_color=0){
-		$new=imagerotate($this->image,-intval($angle_clockwise),$bgd_color);
+	function rotate($angleClockwise,$bgdColor=0){
+		$new=imagerotate($this->image,-intval($angleClockwise),$bgdColor);
 		imagesavealpha($new,true);
 		imagealphablending($new,true);
 		$this->x=imagesx($new);
@@ -79,7 +78,7 @@ class pic{
 		imagealphablending($new, false);
 		imagesavealpha($new, true);
 		$dirs=array(
-			'xy'=>3, //IMG_FLIP_BOTH,
+			'xy'=>3,//IMG_FLIP_BOTH,
 			'y'=>2,//IMG_FLIP_VERTICAL,
 			'x'=>1//IMG_FLIP_HORIZONTAL
 		);
@@ -87,50 +86,47 @@ class pic{
 		return $this;
 	}
 
-	function imageflip($image, $mode) {
-		if (function_exists('imageflip')){
-			imageflip($image,$mode);
-			return true;
-		}
+	private function imageflip($image, $mode) {
+		if (function_exists('imageflip'))return imageflip($image,$mode);
 		switch ($mode) {
-	  case 1:
+			case 1:
 		$max_x = imagesx($image) - 1;
 		$half_x = $max_x / 2;
 		$sy = imagesy($image);
 		$temp_image = imageistruecolor($image)? imagecreatetruecolor(1, $sy): imagecreate(1, $sy);
 		for ($x = 0; $x < $half_x; ++$x) {
-		  imagecopy($temp_image, $image, 0, 0, $x, 0, 1, $sy);
-		  imagecopy($image, $image, $x, 0, $max_x - $x, 0, 1, $sy);
-		  imagecopy($image, $temp_image, $max_x - $x, 0, 0, 0, 1, $sy);
+			imagecopy($temp_image, $image, 0, 0, $x, 0, 1, $sy);
+			imagecopy($image, $image, $x, 0, $max_x - $x, 0, 1, $sy);
+			imagecopy($image, $temp_image, $max_x - $x, 0, 0, 0, 1, $sy);
 		}
 		break;
 
-	  case 2:
+			case 2:
 		$sx = imagesx($image);
 		$max_y = imagesy($image) - 1;
 		$half_y = $max_y / 2;
 		$temp_image = imageistruecolor($image)? imagecreatetruecolor($sx, 1): imagecreate($sx, 1);
 		for ($y = 0; $y < $half_y; ++$y) {
-		  imagecopy($temp_image, $image, 0, 0, 0, $y, $sx, 1);
-		  imagecopy($image, $image, 0, $y, 0, $max_y - $y, $sx, 1);
-		  imagecopy($image, $temp_image, 0, $max_y - $y, 0, 0, $sx, 1);
+			imagecopy($temp_image, $image, 0, 0, 0, $y, $sx, 1);
+			imagecopy($image, $image, 0, $y, 0, $max_y - $y, $sx, 1);
+			imagecopy($image, $temp_image, 0, $max_y - $y, 0, 0, $sx, 1);
 		}
 		break;
 
-	  case 3:
+			case 3:
 		$sx = imagesx($image);
 		$sy = imagesy($image);
 		$temp_image = imagerotate($image, 180, 0);
 		imagecopy($image, $temp_image, 0, 0, 0, 0, $sx, $sy);
 		break;
 
-	default: return;
+	default: return ;
 	}
 	imagedestroy($temp_image);
 	}
 
 	function load($filename,$autorotate=true){
-	  return new $this($filename,$autorotate);
+		return new $this($filename,$autorotate);
 	}
 
 	/**
@@ -142,9 +138,15 @@ class pic{
 			$fromString=false;
 			$prop=getimagesize($filename);
 		}else{
+			if (function_exists('getimagesizefromstring')){
+				$prop=getimagesizefromstring($filename);
+			}else{
+				$tempresult=ini_get('upload_tmp_dir').(ini_get('upload_tmp_dir')==''?'':'/').'temp.pic';
+				unlink($tempresult);
+				file_put_contents($tempresult, $filename);
+				$prop=getimagesize($tempresult);
+			}
 			$fromString=true;
-			if (!function_exists('getimagesizefromstring'))throw new \Exception('PHP 5.4 is required to create image from string');
-			$prop=getimagesizefromstring($filename);
 		}
 		if (!$prop) throw new \Exception('Image not recognized',3);
 		if (!$this->memoryTest($prop[0],$prop[1]))throw new \Exception('Need more memory',4);
@@ -176,7 +178,7 @@ class pic{
 			case IMAGETYPE_PNG:
 				if (!$fromString)$this->image = imagecreatefrompng($filename);
 				break;
-                        case 18: //IMAGETYPE_WEBP
+			case 18: //IMAGETYPE_WEBP
 				if (!$fromString)$this->image = imagecreatefromwebp($filename);
 				break;
 		}
@@ -186,10 +188,11 @@ class pic{
 	 * Resize buffer image into prop
 	 * @param integer $x width
 	 * @param integer $y height
+	 * @return pic
 	 */
-	function resize($x,$y=false){
-		if (!$y)$y=$x;
-		if (!$this->memoryTest($x,$y))  throw new \Exception('Need more memory');
+	function resize($x,$y=null){
+		if ($y===null)$y=$x;
+		if (!$this->memoryTest($x,$y))throw new \Exception('Need more memory');
 		$new = imagecreatetruecolor($x, $y);
 		imagealphablending($new, false);
 		imagesavealpha($new, true);
@@ -198,6 +201,7 @@ class pic{
 		$this->y=$y;
 		imagedestroy($this->image);
 		$this->image=$new;
+		return $this;
 	}
 
 	function sepia() {
@@ -220,9 +224,10 @@ class pic{
 	 * Resize pic with fix rate to max of params
 	 * @param int $x width
 	 * @param int $y height
+	 * @return pic
 	 */
-	function resizeBox($x,$y=false){
-		if (!$y)$y=$x;
+	function resizeBox($x,$y=null){
+		if ($y===null)$y=$x;
 		if ($x<1 or $y<1)  throw new \Exception('wrong x or y values on resize');
 		if (($x>$this->x) && ($y>$this->y))return $this;
 		if (($this->x/$x)<($this->y/$y)){
@@ -240,19 +245,19 @@ class pic{
 		$this->image=$copy;
 		return $this;
 	}
-        function resizeMaxWidth($x){
-            if ($this->x<$x)return $this;
-            return $this->resizeBox($x,99999);
-        }
-        function resizeMaxHeight($y){
-            if ($this->y<$y)return $this;
-            return $this->resizeBox(99999,$y);
-        }
+	function resizeMaxWidth($x){
+		if ($this->x<=$x)return $this;
+		return $this->resizeBox($x,99999);
+	}
+	function resizeMaxHeight($y){
+		if ($this->y<=$y)return $this;
+		return $this->resizeBox(99999,$y);
+	}
 	/**
 	 * Change size with save dimensions for max of values
 	 */
-	function resizeBoxFit($x,$y=false){
-		if ($y==false)$y=$x;
+	function resizeBoxFit($x,$y=null){
+		if ($y===null)$y=$x;
 		if ($x<1 or $y<1)  throw new \Exception('wrong x or y values on resize');
 		if (($x>$this->x) && ($y>$this->y))return $this;
 		if ($this->x/$x<$this->y/$y){
@@ -284,10 +289,10 @@ class pic{
 	 * @param number|null $width width
 	 * @param number|null $height height
 	 */
-	function crop($x,$y,$width=false,$height=false){
+	function crop($x,$y,$width=null,$height=null){
 		if (($x>$this->x) && ($y>$$this->y))return $this;
-		if (!$height)$height=$width?$width:$this->y-$y;
-		if (!$width)$width=$this->x-$x;
+		if ($height===null)$height=$width?$width:$this->y-$y;
+		if ($width===null)$width=$this->x-$x;
 		$copy = imagecreatetruecolor($width, $height);
 		imagesavealpha($copy,true);
 		$transparent = imagecolorallocatealpha($copy,255,255,255,127);
@@ -300,8 +305,8 @@ class pic{
 		return $this;
 	}
 
-	function resizeFit($x,$y=false){
-		if (!$y)$y=$x;
+	function resizeFit($x,$y=null){
+		if ($y===null)$y=$x;
 		if ($x<1 or $y<1)  throw new \Exception('wrong x or y values on resize');
 		if ($this->x/$x<$this->y/$y){
 			$reduce=$this->x/$x;
@@ -321,7 +326,6 @@ class pic{
 		imagedestroy($this->image);
 		$this->image=$copy;
 		return $this;
-
 	}
 
 	/**
@@ -329,8 +333,8 @@ class pic{
 	 * @param number $x width
 	 * @param number $y height
 	 */
-	function cropCenter($x,$y=false){
-		if (!$y)$y=$x;
+	function cropCenter($x,$y=null){
+		if ($y===null)$y=$x;
 		if ($x<1 or $y<1)  throw new \Exception('wrong x or y values on resize');
 		$copy = imagecreatetruecolor($x, $y);
 		imagesavealpha($copy,true);
@@ -418,7 +422,6 @@ class pic{
 		return $this;
 	}
 
-
 	function desaturate($percentage = 100) {
 		// Determine percentage
 		if( $percentage === 100 ) {
@@ -457,8 +460,8 @@ class pic{
 		return $this;
 	}
 
-	function pixelate($block_size = 10) {
-		imagefilter($this->image, IMG_FILTER_PIXELATE, $block_size, true);
+	function pixelate($blockSize = 10) {
+		imagefilter($this->image, IMG_FILTER_PIXELATE, $blockSize, true);
 		return $this;
 	}
 

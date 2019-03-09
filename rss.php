@@ -3,24 +3,24 @@ namespace c;
 
 class rss{
 	static $title;
-	static $link;           // Link to main page
-	// var $copyright='';      // copyright
-	static $description;    // canal description
+	static $link; // Link to main page
+	// var $copyright=''; // copyright
+	static $description; // canal description
 	static $LastBuildDate='';  // date of last document
-	static $language='ru';        // language
+	static $language='ru'; // language
 	static $generator;
-	static $PubDate;        // publication date
+	static $PubDate; // publication date
 	static $ManagingEditor;  // E-mail
 	//	var $Category;
 	static $image_link;
 	static $image_url;
 	static $image_title;
-    /**
-     * @deprecated since version 3.4
-     */
+	/**
+	 * @deprecated since version 3.4
+	 */
 	static function get_out($data){
-        return self::getOut($data);
-    }
+		return self::getOut($data);
+	}
 	static function getOut($data){
 		//$Date=date("r");   // date in format Mon, 25 Dec 2006 10:23:37 +0400
 		$out='<?xml version="1.0" encoding="UTF-8" ?>

@@ -34,8 +34,8 @@ class math{
 	static function roundSd($array, $digits = 1){
 		return round(self::sd($array), $digits);
 	}
-        static function factorial($n){
-            if ($n <= 1)return 1;
-            return $n * self::factorial($n - 1);
-        }
+	static function factorial($n){
+		if ($n <= 1)return 1;
+		return $n * self::factorial($n - 1);
+	}
 }

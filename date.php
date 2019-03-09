@@ -7,29 +7,34 @@ namespace c;
  */
 class date{
 	private static $format='d.m.Y';
-    /**
-     * @deprecated since version 3.4
-     */
+	/**
+	 * @deprecated since version 3.4
+	 */
 	static function set_format($format){
-		if ($format!='')self::$format=$format;
+		return self::setFormat($format);
 	}
 	static function setFormat($format){
 		if ($format!='')self::$format=$format;
+	}
+	static function smartdate($ddmmyy_hhmi){
+		if (date('Y-m-d')==substr($ddmmyy_hhmi,0,10))return input::iconv('Сегодня').' '.substr($ddmmyy_hhmi,11,5);
+		if (date('Y-m-d',time()-60*60*24)==substr($ddmmyy_hhmi,0,10))return input::iconv('Вчера').' '.substr($ddmmyy_hhmi,11,5);
+		return substr($ddmmyy_hhmi,8,2).'.'.substr($ddmmyy_hhmi,5,2).'.'.substr($ddmmyy_hhmi,0,4);
 	}
 	static function showdate($parameter='now',$from="now"){
 		return date(self::$format,strtotime($parameter,strtotime($from)));
 	}
 	static function weekday($from='now'){
-            $date=strtotime($from);
-            if ($date===false)throw new \Exception('date recognize error');
-            return date('N',$date);
+		$date=strtotime($from);
+		if ($date===false)throw new \Exception('date recognize error');
+		return date('N',$date);
 	}
-        static function is_weekend($from='now'){
-            return self::weekday($from)>5;
-        }
-    static function to_date($val){
-        return new \DateTime($val);
-    }
+	static function is_weekend($from='now'){
+		return self::weekday($from)>5;
+	}
+	static function to_date($val){
+		return new \DateTime($val);
+	}
 	/**
 	 * Pretty russian date formatter support Д,д,л,Ф,ф,М output formats
 	 * @param string $outFormat output format support Д,д,л,Ф,ф,М
@@ -37,8 +42,8 @@ class date{
 	 * @param null|string $inputFormat input format of datetime
 	 * @return string
 	 */
-		static function date($outFormat='d.m.Y',$time=null,$inputFormat=null){
-			if (core::$charset!=core::UTF8)$outFormat=iconv(core::$charset,core::UTF8,$outFormat);
+	static function date($outFormat='d.m.Y',$time=null,$inputFormat=null){
+		if (core::$charset!=core::UTF8)$outFormat=iconv(core::$charset,core::UTF8,$outFormat);
 		if ($inputFormat===null){
 			if ($time===null)$time=time();
 		}else{
@@ -50,7 +55,7 @@ class date{
 			$d=(($pos=strpos($inputFormat,'DD'))!==false)?(int)substr($time,$pos,2):date('j');
 			$m=(($pos=strpos($inputFormat,'MM'))!==false)?(int)substr($time,$pos,2):date('n');
 			$Y=(($pos=strpos($inputFormat,'YYYY'))!==false)?(int)substr($time,$pos,4):date('Y');
-            if ($m){
+			if ($m){
 				$days=cal_days_in_month(CAL_GREGORIAN,$m,$Y);
 				if ($d>$days)$d=$days;
 			}
@@ -150,15 +155,15 @@ class date{
 		if ($count)return str_replace('{{````}}','\\'.$letter,$out,$count);
 		return $out;
 	}
-    /**
-     * @deprecated since version 3.4
-     */
+	/**
+	 * @deprecated since version 3.4
+	 */
 	static function rus_month($number=null){
-        return self::rusMonth($number);
-    }
-    /**
-     * @deprecated since version 3.4
-     */
+		return self::rusMonth($number);
+	}
+	/**
+	 * @deprecated since version 3.4
+	 */
 	static function rusMonth($number=null){
 		if ($number===null)$number=date('n');
 		$number=(int)$number;

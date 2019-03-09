@@ -175,8 +175,6 @@ class u{
 		return $_FILES[self::$file]['tmp_name'];
 	}
 	/**
-	 * Replace method if file already exists in folder
-	 * @param string $replace 'number','random',''
 	 * @deprecated since version 3.4
 	 */
 	static function rename_if_exist($replace){

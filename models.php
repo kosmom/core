@@ -338,7 +338,7 @@ class models{
 				$final_fields=array($field);
 			}
 			foreach ($final_fields as $final_field){
-	//              $final_field=strtolower($final_field);
+	//$final_field=strtolower($final_field);
 	//				echo $final_field;
 				if (!$func && !isset($modelFields[$final_field]) && !isset($modelExpressions[$final_field]) )throw new \Exception('field "'.$final_field.'" not exist in "'.$this->queryJoins[$tableAlias]['class'].'" model');
 				if ($final_field=='*'){
@@ -684,7 +684,7 @@ class models{
 	}
 	//function getFields(){
 		// todo: make total field description as in class for sql builder
-	//    }
+	//}
 	function lister($onPage=10,$page=null){
 		if (is_null($page))$page=(int)$_GET['page'];
 		$limitCount=$this->limitCount;

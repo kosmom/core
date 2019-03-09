@@ -7,7 +7,7 @@ namespace c;
  */
 class form implements \ArrayAccess{
 	const FIELD_KEY='{FIELD_KEY}';
-        var $defaultResolver='c\\factory\\form_bootstrap';
+	var $defaultResolver='c\\factory\\form_bootstrap';
 	var $prop=array('type'=>'normal');
 	private $data;
 	private $ajax=false;
@@ -22,9 +22,9 @@ class form implements \ArrayAccess{
 	var $classes=array();
 	var $target;
 	private $renderedFields=array();
-        private static $submitCount;
-        
-        static $fieldCounter=0;
+	private static $submitCount;
+
+	static $fieldCounter=0;
 	
 	function offsetExists($offset){
 		return isset($this->fields[$offset]);
@@ -41,7 +41,7 @@ class form implements \ArrayAccess{
 
 	function offsetSet($offset, $value){
 		if (is_null($offset))throw new \Exception('can not add empty field to form');
-                if ($this->offsetExists($offset))unset($this->fields[$offset]);
+		if ($this->offsetExists($offset))unset($this->fields[$offset]);
 		$this->addField($offset,$value);
 	}
 
@@ -194,15 +194,14 @@ class form implements \ArrayAccess{
 	/**
 	 * Add field to form
 	 * @param string $key
-	 * @param array $params params of field
+	 * @param array|null $params params of field
 	 * @return form
 	 */
 	function addField($key,$params=null){
-		if ($params instanceof arrayaccess){
-			$params=(array)$params;
-		}
+		if ($params instanceof arrayaccess)$params=(array)$params;
 		if (is_array($key))return $this->addFields($key);
 		if (!$params)throw new \Exception('Form addField not set parameters');
+		if (is_string($params))throw new \Exception('Form addField error in fields');
 		
 		if (!isset($params['type']))$params['type']='text';
 			if ($params['type']=='submit'){
@@ -250,7 +249,7 @@ class form implements \ArrayAccess{
 	}
 	function addSubmitField($params=array(),$fieldKey=null){
 		if (is_string($params))$params=array('value'=>$params);
-                if (!$fieldKey)$fieldKey='submit'.(self::$submitCount++);
+		if (!$fieldKey)$fieldKey='submit'.(self::$submitCount++);
 		return $this->addField($fieldKey,$params+array('type'=>'submit','value'=>'Submit'));
 	}
 
@@ -450,20 +449,20 @@ class form implements \ArrayAccess{
 	function get_data(){
 		return $this->getData();
 	}
-        function getFieldValue($fieldName){
-            if ($this->data!==null)return $this->data[$fieldName];
-            foreach ($this->fields as $name=>$item){
-                if (isset($item['name'])){
-                    if ($item['name']!=$fieldName)continue;
-                }else{
-                    if ($fieldName!=$name)continue;
-                }
-                if ($item['type']=='check' || $item['type']=='checkbox' || $item['type']=='boolean')return (bool)$item['value'];
-                if (!isset($item['value']) && !isset($item['default']))return null;
-                if (isset($item['value']))return $item['value'];
-                return $item['default'];
-            }
-        }
+	function getFieldValue($fieldName){
+		if ($this->data!==null)return $this->data[$fieldName];
+		foreach ($this->fields as $name=>$item){
+			if (isset($item['name'])){
+				if ($item['name']!=$fieldName)continue;
+			}else{
+				if ($fieldName!=$name)continue;
+			}
+			if ($item['type']=='check' || $item['type']=='checkbox' || $item['type']=='boolean')return (bool)$item['value'];
+			if (!isset($item['value']) && !isset($item['default']))return null;
+			if (isset($item['value']))return $item['value'];
+			return $item['default'];
+		}
+	}
 	/**
 	 * Get key-val data from form
 	 * @param string $form
@@ -525,7 +524,7 @@ class form implements \ArrayAccess{
 	function isValid($data=array(),$checkData=false){
 		$valid=true;
 		foreach ($this->fields as $key=>$item){
-                        if (@$item['disabled']) continue;
+			if (@$item['disabled']) continue;
 			if (!@is_array($item['validate']) && @!$item['subform']) continue;
 			if (isset($item['subform'])){
 				$result=input::validate($value,$item['validate'],$item);
@@ -602,7 +601,14 @@ class form implements \ArrayAccess{
 		if (!$this->subform)$out=$this->renderBeginTag();
 		if (!is_array($this->fields))return false;
 		$sort_form=$this->fields;
-
+		if (!$this->needSort){
+			foreach ($this->fields as $field){
+				if (isset($field['position'])){
+					$this->needSort=true;
+					break;
+				}
+			}
+		}
 		if ($this->needSort)datawork::stable_uasort($sort_form,array('c\\datawork','positionCompare'));
 		foreach ($sort_form as $name=>$item){
 			if (core::$debug)$htmlout.='
@@ -628,10 +634,20 @@ class form implements \ArrayAccess{
 		$sort_form=$this->fields;
 
 		if ($this->needSort)datawork::stable_uasort($sort_form,array('c\\datawork','positionCompare'));
+		if (core::$debug){
+			debug::group('Form OtherFields render collapse:');
+			$htmlout='';
+		}
 		foreach ($sort_form as $name=>$item){
 			if (@$this->renderedFields[$name])continue;
 			if ($item['type']=='subform')continue;
 			$out.=$this->renderField($name,$item);
+			if (core::$debug)$htmlout.='<?=$form->renderField(\''.$name.'\')?>
+';
+		}
+		if (core::$debug){
+			debug::consoleLog($htmlout);
+			debug::groupEnd();
 		}
 		return $out;
 	}
@@ -650,8 +666,8 @@ class form implements \ArrayAccess{
 		}
 		if ($this->needSort)datawork::stable_uasort($partform,array('c\\datawork','positionCompare'));
 		$htmlout='';
-                $out='';
-                foreach ($partform as $key=>$field){
+		$out='';
+		foreach ($partform as $key=>$field){
 			if (core::$debug)$htmlout.='
 <?=$form->renderField(\''.$key.'\')?>';
 			$out.=$this->renderField($key);
@@ -672,10 +688,10 @@ class form implements \ArrayAccess{
 		$partform=array();
 		foreach ($this->fields as $key=>$field){
 			if (!isset($field['position'])) continue;
-                        if ($field['position']>=$min && $field['position']<=$max)$partform[$key]=$field;
+			if ($field['position']>=$min && $field['position']<=$max)$partform[$key]=$field;
 		}
-                $htmlout='';
-                $out='';
+		$htmlout='';
+		$out='';
 		if ($this->needSort)datawork::stable_uasort($partform,array('c\\datawork','positionCompare'));
 		foreach ($partform as $key=>$field){
 			if (core::$debug)$htmlout.='
@@ -749,38 +765,38 @@ class form implements \ArrayAccess{
 	function render_field($name,$item=null){
 		return $this->renderField($name,$item);
 	}
-        function getResolver($name,$item){
-            $resolver=empty($item['resolver'])?$this->defaultResolver:$item['resolver'];
-            if (is_string($resolver))return new $resolver($this,$name);
-            return $resolver;
-        }
+	function getResolver($name,$item){
+		$resolver=empty($item['resolver'])?$this->defaultResolver:$item['resolver'];
+		if (is_string($resolver))return new $resolver($this,$name);
+		return $resolver;
+	}
 	function renderField($name,$item=null){
 		$item=$this->mergeItem($name,$item);
-                $resolver=$this->getResolver($name,$item);
-                $this->renderedFields[$name]=true;
-                
-                //subform prepare
-            $renderName=$name;
-            if (!isset($item['name']))$item['name']=$renderName;
-            if (is_string($item['name']))$item['name']=array($item['name']);
-            if ($this->counter!==null)array_unshift($item['name'],$this->counter);
-            if ($this->subform!==null)array_unshift($item['name'],$this->subform);
-            if (is_array($item['name'])){
-                   $renderName= array_shift($item['name']);
-                    foreach ($item['name'] as $subitem){
-                            $renderName.='['.$subitem.']';
-                    }
-            }elseif (is_callable($item['name'])){
-                    $renderName=$item['name']($item);
-            }
-                return $resolver->renderField($item,$renderName);
+		$resolver=$this->getResolver($name,$item);
+		$this->renderedFields[$name]=true;
+
+		//subform prepare
+		$renderName=$name;
+		if (!isset($item['name']))$item['name']=$renderName;
+		if (is_string($item['name']))$item['name']=array($item['name']);
+		if ($this->counter!==null)array_unshift($item['name'],$this->counter);
+		if ($this->subform!==null)array_unshift($item['name'],$this->subform);
+		if (is_array($item['name'])){
+			   $renderName= array_shift($item['name']);
+				foreach ($item['name'] as $subitem){
+						$renderName.='['.$subitem.']';
+				}
+		}elseif (is_callable($item['name'])){
+				$renderName=$item['name']($item);
+		}
+			return $resolver->renderField($item,$renderName);
 	}
 	private function mergeItem($name,$item){
 		if ($item===null){
 			if (isset($this->fields[$name])){
 				return $this->fields[$name];
 			}else{
-                        	if (core::$debug)debug::consoleLog('Form field '.$name.' not exists',error::ERROR);
+				if (core::$debug)debug::consoleLog('Form field '.$name.' not exists',error::ERROR);
 				throw new \Exception('Form field '.$name.' not exists');
 			}
 		}elseif (is_array($item)){
@@ -796,8 +812,8 @@ class form implements \ArrayAccess{
 	}
 	function renderFieldFormGroupBegin($name,$item=null){
 		if ($name)$item=$this->mergeItem($name,$item);
-                $resolver=$this->getResolver($name,$item);
-                return $resolver->renderFieldFormGroupBegin($item);
+		$resolver=$this->getResolver($name,$item);
+		return $resolver->renderFieldFormGroupBegin($item);
 	}
 
 	/**
@@ -807,9 +823,9 @@ class form implements \ArrayAccess{
 		return $this->renderFieldFormGroupEnd($name,$item);
 	}
 	function renderFieldFormGroupEnd($name,$item=null){
-            if ($name)$item=$this->mergeItem($name,$item);
-            $resolver=$this->getResolver($name,$item);
-            return $resolver->renderFieldFormGroupEnd($item);
+		if ($name)$item=$this->mergeItem($name,$item);
+		$resolver=$this->getResolver($name,$item);
+		return $resolver->renderFieldFormGroupEnd($item);
 	}
 	/**
 	 * @deprecated since version 3.4
@@ -818,9 +834,9 @@ class form implements \ArrayAccess{
 		return $this->renderFieldLabel($name,$item);
 	}
 	function renderFieldLabel($name,$item=null){
-            if ($name)$item=$this->mergeItem($name,$item);
-            $resolver=$this->getResolver($name,$item);
-            return $resolver->renderFieldLabel($item);
+		if ($name)$item=$this->mergeItem($name,$item);
+		$resolver=$this->getResolver($name,$item);
+		return $resolver->renderFieldLabel($item);
 	}
 	/**
 	 * @deprecated since version 3.4
@@ -830,26 +846,26 @@ class form implements \ArrayAccess{
 
 	}
 	function renderFieldField($name,$item=null){
-            $item=$this->mergeItem($name,$item);
-            $resolver=$this->getResolver($name,$item);
-            $this->renderedFields[$name]=true;
-            
-            //subform prepare
-            $renderName=$name;
-            
-            if (!isset($item['name']))$item['name']=$renderName;
-            if (is_string($item['name']))$item['name']=array($item['name']);
-            if ($this->counter!==null)array_unshift($item['name'],$this->counter);
-            if ($this->subform!==null)array_unshift($item['name'],$this->subform);
-            if (is_array($item['name'])){
-                    $renderName=array_shift($item['name']);
-                    foreach ($item['name'] as $subitem){
-                            $renderName.='['.$subitem.']';
-                    }
-            }elseif (is_callable($item['name'])){
-                    $renderName=$item['name']($item);
-            }
-            return $resolver->renderFieldField($item,$renderName);
+		$item=$this->mergeItem($name,$item);
+		$resolver=$this->getResolver($name,$item);
+		$this->renderedFields[$name]=true;
+
+		//subform prepare
+		$renderName=$name;
+
+		if (!isset($item['name']))$item['name']=$renderName;
+		if (is_string($item['name']))$item['name']=array($item['name']);
+		if ($this->counter!==null)array_unshift($item['name'],$this->counter);
+		if ($this->subform!==null)array_unshift($item['name'],$this->subform);
+		if (is_array($item['name'])){
+				$renderName=array_shift($item['name']);
+				foreach ($item['name'] as $subitem){
+						$renderName.='['.$subitem.']';
+				}
+		}elseif (is_callable($item['name'])){
+				$renderName=$item['name']($item);
+		}
+		return $resolver->renderFieldField($item,$renderName);
 	}
 	function getFormDescription($key=''){
 		$listfields=array();

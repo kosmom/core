@@ -139,10 +139,15 @@ class debug{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function console_log($message,$type=false){
+	static function console_log($message,$type=null){
 		return self::consoleLog($message,$type);
 	}
-	static function consoleLog($message,$type=false){
+	/**
+	 * Draw console.log debug info
+	 * @param string $message console message
+	 * @param int $type error::TYPE type of message
+	 */
+	static function consoleLog($message,$type=null){
 		if (core::$ajax && !core::$partition)return ajax::consoleLog($message,$type);
 
 			switch ($type){
@@ -178,17 +183,17 @@ class debug{
 	/**
 	 * Zaeb. Echo variable with pre tags and exit
 	 * @param mixed $var
-	 * @param boolean $exit
+	 * @param boolean $isDie
 	 */
-	static function z($var,$exit=true){
+	static function z($var,$isDie=true){
 		if (core::$ajax && !core::$partition){
-			if ($exit)ajax::clearAnswers();
+			if ($isDie)ajax::clearAnswers();
 			error::addWarning("<pre>".print_r($var,true)."</pre>");
-			if ($exit)ajax::render();
+			if ($isDie)ajax::render();
 			return;
 		}
 		echo "<pre>",var_dump($var),"</pre>";
-		if($exit)die;
+		if($isDie)die;
 	}
 
 	static function dump($var,$exit=false){

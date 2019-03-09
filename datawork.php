@@ -123,7 +123,7 @@ class datawork{
 		if ($array instanceof \SplFixedArray)$array=$array->toArray();
 		if (!is_array($array)){
 			if (core::$debug){
-                                debug::group('Datawork key group operation');
+				debug::group('Datawork key group operation');
 				debug::trace('Array is not array',error::WARNING);
 				debug::groupEnd();
 				debug::trace('Datawork key group operation - array is not array',error::WARNING);
@@ -534,7 +534,7 @@ class datawork{
 				case 'VARCHAR2':
 					$out[$name]['type']='text';
 					break;
-                                case 'float':
+				case 'float':
 				case 'double':
 				case 'NUMBER':
 					$out[$name]['type']='float';
@@ -599,7 +599,7 @@ class datawork{
 			}
 			if ($item['notnull'] && !$item['autoincrement'])$out[$name]['validate'][]=array('type'=>'required','text'=>input::VALIDATE_AUTO_TEXT);
 		}
-                return $out;
+		return $out;
 	}
 
 	/**
@@ -715,7 +715,7 @@ class datawork{
 	}
 	/**
 	 * Transform array with only vals to array with keys==vals
-         * @param mixed ...$vals_array
+	 * @param mixed ...$vals_array
 	 * @return array
 	 */
 	static function valsToKeyVals(){

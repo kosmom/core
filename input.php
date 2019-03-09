@@ -132,36 +132,11 @@ class input{
 			}
 			return new super();
 	}
-	/**
-	 * @deprecated use filter method
-	 */
-	static function setPost($var,$func=array(),$cannull=true){
-		if (empty($_POST[$var]))$_POST[$var]='';
-		if ($_POST[$var]=='' && $cannull)return false;
-		if (is_string($func))$func=array($func);
-		foreach ($func as $value){
-			switch ($value){
-				case 'intval':
-				case 'int': $_POST[$var]=intval($_POST[$var]);break;
-				case 'float': $_POST[$var]=floatval($_POST[$var]);break;
-				case 'abs': $_POST[$var]=abs($_POST[$var]);break;
-				case 'iconv': $_POST[$var]=iconv('utf-8', 'windows-1251', $_POST[$var]);break;
-				case 'trim': $_POST[$var]=trim($_POST[$var]);break;
-				case 'strip_tags': $_POST[$var]=strip_tags($_POST[$var]);break;
-				case 'ucfirst': $_POST[$var]=mb_strtoupper(mb_substr($_POST[$var],0,1,core::$charset),core::$charset).mb_substr($_POST[$var],1,mb_strlen($_POST[$var],core::$charset)-1,core::$charset);break;
-				case 'ucwords': $_POST[$var]=mb_convert_case($_POST[$var], MB_CASE_TITLE, core::$charset);break;
-				case 'date_exist': if (!$time=strtotime($_POST[$var]))$_POST[$var]=''; else $_POST[$var]=date('d.m.Y',$time);break;
-				case 'slash': if (get_magic_quotes_gpc())$_POST[$var]=stripslashes($_POST[$var]);break;
-				case 'decode': $_POST[$var]=urldecode($_POST[$var]);break;
-				case 'phone':$_POST[$var]=self::phone($_POST[$var]);break;
-			}
-		}
-	}
 	private static function valid($validator,$val,$formKey){
 		if ($validator['type']=='required' || $validator['type']=='require')return ($val!=='' && $val!==null);
 		if ($val==='' or $val===null)return true;
 		if (empty($validator['inverse']))$validator['inverse']=false;
-                $i=$validator['inverse'];
+		$i=$validator['inverse'];
 		switch ($validator['type']){
 				case 'int':
 				case 'number':
@@ -266,9 +241,6 @@ class input{
 		return $finish;
 	}
 	/**
-	 * Transform string from equated symbol. String trimmed with transforming
-	 * @param string $string equsted string, for example "'o''realy' and some else text"
-	 * @return string normal out
 	 * @deprecated since version 3.4
 	 */
 	static function find_first_prepare(&$string){
@@ -287,33 +259,6 @@ class input{
 		return str_replace($symbol.$symbol,$symbol,$out);
 	}
 	/**
-	 * @deprecated use filter method
-	 */
-	static function setGet($var,$func=array(),$cannull=true){
-		if (empty($_GET[$var]))$_GET[$var]='';
-		if ($_GET[$var]=='' && $cannull)return false;
-		if (is_string($func))$func=array($func);
-		foreach ($func as $value){
-			switch ($value){
-				case 'intval':
-				case 'int': $_GET[$var]=intval($_GET[$var]);break;
-				case 'float': $_GET[$var]=floatval($_GET[$var]);break;
-				case 'abs': $_GET[$var]=abs($_GET[$var]);break;
-				case 'iconv': $_GET[$var]=@iconv('utf-8', 'windows-1251', $_GET[$var]);break;
-				case 'trim': $_GET[$var]=trim($_GET[$var]);break;
-				case 'strip_tags': $_GET[$var]=strip_tags($_GET[$var]);break;
-				case 'html': $_GET[$var]=htmlentities($_GET[$var]);break;
-				case 'date_exist': if (!$time=strtotime($_GET[$var]))$_GET[$var]=''; else $_GET[$var]=date('d.m.Y',$time);break;
-				case 'slash': if (get_magic_quotes_gpc())$_GET[$var]=stripslashes($_GET[$var]);break;
-				case 'decode': $_GET[$var]=urldecode($_GET[$var]);break;
-				case 'phone':$_GET[$var]=self::phone($_GET[$var]);break;
-			}
-		}
-	}
-	/**
-	 * Check real mail with domen mail port exists
-	 * @param string $email
-	 * @return boolean
 	 * @deprecated since version 3.4
 	 */
 	static function check_mail($email){
@@ -336,24 +281,29 @@ class input{
 	/**
 	 * @deprecated use filter method
 	 */
+	static function setPost($var,$func=array(),$cannull=true){
+		if (empty($_POST[$var]))$_POST[$var]=null;
+		if ($_POST[$var]==null && $cannull)return false;
+		$v=$_POST[$var];
+		self::filter($v,$func);
+		$_POST[$var]=$v;
+	}
+	/**
+	 * @deprecated use filter method
+	 */
+	static function setGet($var,$func=array(),$cannull=true){
+		if (empty($_GET[$var]))$_GET[$var]='';
+		if ($_GET[$var]==null && $cannull)return false;
+		$v=$_POST[$var];
+		self::filter($v,$func);
+		$_GET[$var]=$v;
+	}
+	/**
+	 * @deprecated use filter method
+	 */
 	static function setVal($var,$func=array(),$cannull=true){
 		if ($var=='' && $cannull)return;
-		if (is_string($func))$func=array($func);
-		foreach ($func as $value){
-			switch ($value){
-				case 'intval':
-				case 'int': $var=intval($var);break;
-				case 'float': $var=floatval($var);break;
-				case 'abs': $var=abs($var);break;
-				case 'iconv': $vars=iconv('utf-8', 'windows-1251', $var);$var=$vars; break;
-				case 'trim': $var=trim($var);break;
-				case 'strip_tags': $var=strip_tags($var);break;
-				case 'date_exist': if (!$time=strtotime($var))$var=''; else $var=date('d.m.Y',$time);break;
-				case 'slash': $var=stripslashes($var);break;
-				case 'decode': $var=urldecode($var);break;
-				case 'phone':$var=self::phone($var);break;
-			}
-		}
+		self::filter($var,$func);
 		return $var;
 	}
 	/**
@@ -585,9 +535,7 @@ class input{
 		return self::textTransform($text);
 	}
 	static function textTransform($text){
-		$text=trim($text);
-
-		$text=strtr($text,array(
+		$text=strtr(trim($text),array(
 		'ё'=>'е',
 		'Ё'=>'Е',
 		','=>' ',
@@ -614,11 +562,11 @@ class input{
 		return str_replace('""','',$text);
 	}
 	static function phone($number){
-		$number=trim($number);
-		if (substr($number,0,2)=='+7')$number='8'.substr($number,2);
-		if (substr($number,0,1)=='9')$number='8'.$number;
-		if (strlen($number)==11 && preg_match ("/^([0-9]+)$/", $number))$number=substr($number,0,1).'-'.substr($number,1,3).'-'.substr($number,4,3).'-'.substr($number,7,2).'-'.substr($number,9);
-		return $number;
+		$n=trim($number);
+		if (substr($n,0,2)=='+7')$n='8'.substr($n,2);
+		if (substr($n,0,1)=='9')$n='8'.$n;
+		if (strlen($n)==11 && preg_match ("/^([0-9]+)$/", $n))$n=substr($n,0,1).'-'.substr($n,1,3).'-'.substr($n,4,3).'-'.substr($n,7,2).'-'.substr($n,9);
+		return $n;
 	}
 	/**
 	 * Transform numbers in text field with delimeters "-" and "," in array
@@ -870,15 +818,15 @@ class input{
 		}
 		return strtotime($time);
 	}
-        static function number_format($number,$decimals=0,$dec_point='.',$thousands_sep=','){
-            return strtr(number_format($number,$decimals,'d','t'),array('d'=>$dec_point,'t'=>$thousands_sep));
-        }
-        static function roundFirstNumber($number,$precision=0){
-            if ($number>1)return round($number,$precision);
-            return round($number,-floor(log10($number)));
-        }
-        static function file_get_content($filename){
-            if (substr($filename,0,7)=='http://' or substr($filename,0,8)=='https://')return curl::getContent($filename);
-            return file_get_contents($filename);
-        }
+	static function number_format($number,$decimals=0,$dec_point='.',$thousands_sep=','){
+		return strtr(number_format($number,$decimals,'d','t'),array('d'=>$dec_point,'t'=>$thousands_sep));
+	}
+	static function roundFirstNumber($number,$precision=0){
+		if ($number>1)return round($number,$precision);
+		return round($number,-floor(log10($number)));
+	}
+	static function file_get_content($filename){
+		if (substr($filename,0,7)=='http://' or substr($filename,0,8)=='https://')return curl::getContent($filename);
+		return file_get_contents($filename);
+	}
 }

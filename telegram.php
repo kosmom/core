@@ -16,7 +16,7 @@ class telegram{
 	const SEND_CHAT_ACTION_FIND_LOCATION='find_location';
 
 	const EMOJI_THUMBS_UP="\xF0\x9F\x91\x8D";
-	const EMOJI_FIREWORKS="\xF0\x9F\x8E\x86"; 
+	const EMOJI_FIREWORKS="\xF0\x9F\x8E\x86";
 	
 	static function getMe(){
 		self::check();
@@ -83,7 +83,7 @@ class telegram{
 	}
 	static function sendMessageOrFault($chat_id,$text,$reply_markup=null){
 		$rs=self::sendMessage($chat_id,$text,$reply_markup);
-		if (!$rs['ok'])  throw new \Exception($rs['description'],$rs['error_code']);
+		if (!$rs['ok'])throw new \Exception($rs['description'],$rs['error_code']);
 		return $rs;
 	}
 	static function setWebhook($url,$certificateKey=''){
@@ -93,7 +93,7 @@ class telegram{
 		return self::request('setWebhook',$data);
 	}
 	static function getWebhookInfo(){
-	    return self::request('getWebhookInfo');
+		return self::request('getWebhookInfo');
 	}
 	/**
 	 * get Webhook data
@@ -110,7 +110,7 @@ class telegram{
 			$a=core::$data['telegram_request'];
 			return $a($api,$post);
 		}else{
-			$url = 'https://api.telegram.org/bot' . core::$data['telegram'] . '/'.$api;
+			$url = 'https://api.telegram.org/bot'.core::$data['telegram'].'/'.$api;
 			$proxy=array();
 			if (core::$data['telegram_proxy']){
 				$proxy[CURLOPT_PROXY]=core::$data['telegram_proxy']['host'];

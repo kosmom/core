@@ -11,21 +11,33 @@ namespace c;
  *  }
  */
 class pics{
-	private static $image;
-	private static $prop;
+	static $pics=array();
+	private static $activePic='default';
+	private static function checkObject($pic){
+		if ($pic===null)$pic=self::$activePic;
+		if (!isset(self::$pics[$pic]))throw new \Exception('need create picture object first');
+		return $pic;
+	}
+	/**
+	 * Load picture into memory
+	 * @param string $filename
+	 * @param string $autorotate
+	 * @return pic
+	 */
+	static function createPic($filename,$autorotate=true, $pic=null){
+		if ($pic===null)$pic=self::$activePic;
+		return self::$pics[$pic]=new pic($filename,$autorotate);
+	}
+
 	function __construct() {
 		if (core::$debug)debug::trace('Create pic with static class pics',error::WARNING);
 	}
 	/**
-	 * memory test before picture loading
-	 * @param integer $x width
-	 * @param integer $y height
-	 * @return boolean
 	 * @deprecated since version 3.4
 	 */
 	static function memory_test($x,$y){
-			return self::memoryTest($x,$y);
-		}
+		return pic::memoryTest($x,$y);
+	}
 	/**
 	 * memory test before picture loading
 	 * @param integer $x width
@@ -33,37 +45,13 @@ class pics{
 	 * @return boolean
 	 */
 	static function memoryTest($x,$y){
-		$val=trim(ini_get('memory_limit'));
-		$last = $val[strlen($val)-1];
-		switch($last){
-		case 'G':
-			$val *= 1024;
-		case 'M':
-			$val *= 1024;
-		case 'K':
-			$val *= 1024;
-	}
-		$limit=$val;
-		$m=memory_get_usage();
-		$usage=($x*$y*5.07)+7900+($y*112)+$m;
-		if (core::$debug){
-			debug::group('Pic memory test',$usage>$limit?error::ERROR:error::INFO);
-			debug::consoleLog('Pic '.$x.'x'.$y.' will get '.round(($usage-$m)/1000).'Kb of memory');
-			debug::consoleLog('Free memory is '.round(($val-$m)/1000).'Kb');
-		}
-		if ($usage>$limit){
-			error::add(translate::t('Image is too large to be loaded'),error::WARNING);
-			if (core::$debug)debug::groupEnd();
-			return false;
-		}
-		if (core::$debug)debug::groupEnd();
-		return true;
+		return pic::memoryTest($x,$y);
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
 	static function is_pic($filename){
-		return self::isPic($filename);
+		return pic::isPic($filename);
 	}
 	/**
 	 * is pic filename or not
@@ -71,161 +59,65 @@ class pics{
 	 * @return boolean
 	 */
 	static function isPic($filename){
-			if (file_exists($filename)){
-				$prop=getimagesize($filename);
-			}else{
-				$prop=getimagesizefromstring($filename);
-				if (!$prop){
-					if (core::$debug)debug::consoleLog('Filename '.$filename.' not found',error::WARNING);
-					return false;
-				}
-			}
-			if (empty($prop[2]))return false;
-			if (!in_array($prop[2],array(18,IMAGETYPE_JPEG,IMAGETYPE_GIF,IMAGETYPE_PNG,IMAGETYPE_BMP)))return false;
-			return true;
+		return pic::isPic($filename);
 	}
 	/**
 	 * Load picture into memory
 	 * @param string $filename
-	 * @return boolean result
+	 * @return pic
 	 */
-	static function getpic($filename){
-		if (file_exists($filename)){
-			$fromString=false;
-			self::$prop=getimagesize($filename);
-		}else{
-			$fromString=true;
-			self::$prop=getimagesizefromstring($filename);
-		}
-		if (!self::memoryTest(self::$prop[0],self::$prop[1]))return false;
-		if (self::$image)imagedestroy(self::$image);
-		if ($fromString)self::$image =imagecreatefromstring($filename);
-		switch(self::$prop[2]){
-			case IMAGETYPE_JPEG:
-				self::$image = imagecreatefromjpeg($filename);
-				$exif = read_exif_data($filename);
-				if (isset($exif['Orientation'])){
-					switch($exif['Orientation']){
-						case 3: self::$image=imagerotate(self::$image,180,0);
-							break;
-						case 6: self::$image=imagerotate(self::$image,270,0);
-							$temp=self::$prop[0];
-							self::$prop[0]=self::$prop[1];
-							self::$prop[1]=$temp;
-							break;
-						case 8:self::$image=imagerotate(self::$image,90,0);
-							$temp=self::$prop[0];
-							self::$prop[0]=self::$prop[1];
-							self::$prop[1]=$temp;
-					}
-				}
-				return true;
-			case IMAGETYPE_GIF:
-				self::$image = imagecreatefromgif($filename);
-				return true;
-			case IMAGETYPE_PNG:
-				self::$image = imagecreatefrompng($filename);
-				return true;
-                        case 18: //IMAGETYPE_WEBP 
-				self::$image = imagecreatefromwebp($filename);
-				return true;
-		}
+	static function getpic($filename,$autorotate=true,$pic=null){
+		return self::createPic($filename, $autorotate,$pic);
 	}
 
 	/**
 	 * Resize buffer image into prop
 	 * @param integer $x width
 	 * @param integer $y height
-	 * @return boolean result of operation
+	 * @return pic
 	 */
-	static function resize($x,$y=false){
-		if (!$y)$y=$x;
-		if (!self::$image)return false;
-		if (!self::memoryTest($x,$y))return false;
-		$copy = imagecreatetruecolor($x, $y);
-		imagecopyresampled($copy,self::$image,0,0,0,0,$x,$y,self::$prop[0],self::$prop[1]);
-		self::$prop[0]=$x;
-		self::$prop[1]=$y;
-		imagedestroy(self::$image);
-		self::$image=$copy;
+	static function resize($x,$y=null,$pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->resize($x,$y);
 	}
 
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function resize_box($x,$y=false){
-		return self::resizeBox($x,$y);
+	static function resize_box($x,$y=null,$pic=null){
+		return self::resizeBox($x,$y,$pic);
 	}
 	/**
 	 * Resize pic with fix rate to max of params
 	 * @param int $x width
 	 * @param int $y height
-	 * @return boolean operation result
+	 * @return pic
 	 */
-	static function resizeBox($x,$y=false){
-		if (!$y)$y=$x;
-		if ($x<1 or $y<1)return false;
-		if (!self::$image)return false;
-		if (($x>self::$prop[0]) && ($y>self::$prop[1]))return true;
-		if ((self::$prop[0]/$x)<(self::$prop[1]/$y)){
-			$reduce=self::$prop[1]/$y;
-		}else{
-			$reduce=self::$prop[0]/$x;
-		}
-		if ($reduce==0)return false;
-		if (!self::memoryTest(self::$prop[0]/$reduce,self::$prop[1]/$reduce))return false;
-		$copy = imagecreatetruecolor(self::$prop[0]/$reduce, self::$prop[1]/$reduce);
-		imagecopyresampled($copy,self::$image,0,0,0,0,self::$prop[0]/$reduce,self::$prop[1]/$reduce,self::$prop[0],self::$prop[1]);
-		self::$prop[0]=self::$prop[0]/$reduce;
-		self::$prop[1]=self::$prop[1]/$reduce;
-		imagedestroy(self::$image);
-		self::$image=$copy;
-		return true;
+	static function resizeBox($x,$y=null,$pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->resizeBox($x,$y);
 	}
-        static function resizeMaxWidth($x){
-            if (self::$prop[0]<$x)return false;
-            return self::resizeBox($x,99999);
-        }
-        static function resizeMaxHeight($y){
-            if (self::$prop[1]<$y)return false;
-            return self::resizeBox(99999,$y);
-        }
+	static function resizeMaxWidth($x,$pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->resizeMaxWidth($x);
+	}
+	static function resizeMaxHeight($y,$pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->resizeMaxHeight($x);
+	}
 	/**
 	 * Change size with save dimensions for max of values
 	 * @deprecated since version 3.4
 	 */
-	static function resize_box_fit($x,$y=false){
-		return self::resizeBoxFit($x,$y);
+	static function resize_box_fit($x,$y=null,$pic=null){
+		return self::resizeBoxFit($x,$y,$pic);
 	}
 	/**
 	 * Change size with save dimensions for max of values
 	 */
-	static function resizeBoxFit($x,$y=false){
-		if ($y==false)$y=$x;
-		if ($x<1 or $y<1)return false;
-		if (!self::$image)return false;
-		if (($x>self::$prop[0]) && ($y>self::$prop[1]))return true;
-		if (self::$prop[0]/$x<self::$prop[1]/$y){
-			$reduce=self::$prop[1]/$x;
-			$width=($x-self::$prop[0]/$reduce)*.5;
-			$height=0;
-		}else{
-			$reduce=self::$prop[0]/$x;
-			$width=0;
-			$height=($y-self::$prop[1]/$reduce)*.5;
-		}
-		if ($reduce==0)return false;
-		if (!self::memoryTest($x,$y))return false;
-		$copy = imagecreatetruecolor($x, $y);
-		imagesavealpha($copy,true);
-		$transparent = imagecolorallocatealpha($copy,255,255,255,127);
-		imagefill($copy, 0, 0, $transparent);
-		imagecopyresampled($copy,self::$image,$width,$height,0,0,self::$prop[0]/$reduce,self::$prop[1]/$reduce,self::$prop[0],self::$prop[1]);
-		self::$prop[0]=self::$prop[0]/$reduce;
-		self::$prop[1]=self::$prop[1]/$reduce;
-		imagedestroy(self::$image);
-		self::$image=$copy;
-		return true;
+	static function resizeBoxFit($x,$y=null,$pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->resizeBoxFit($x,$y);
 	}
 	/**
 	 * crop picture
@@ -233,88 +125,119 @@ class pics{
 	 * @param number $y top position
 	 * @param number|null $width width
 	 * @param number|null $height height
-	 * @return boolean operation result
+	 * @return pic
 	 */
-	static function crop($x,$y,$width=false,$height=false){
-		if (!self::$image)return false;
-		if (($x>self::$prop[0]) && ($y>self::$prop[1]))return false;
-		if (!$height)$height=$width?$width:self::$prop[1]-$y;
-				if (!$width)$width=self::$prop[0]-$x;
-		$copy = imagecreatetruecolor($width, $height);
-		imagesavealpha($copy,true);
-		$transparent = imagecolorallocatealpha($copy,255,255,255,127);
-		imagefill($copy, 0, 0, $transparent);
-		imagecopyresampled($copy,self::$image,0,0,$x,$y,$width,$height,$width,$height);
-		self::$prop[0]=$width;
-		self::$prop[1]=$height;
-		imagedestroy(self::$image);
-		self::$image=$copy;
-		return true;
+	static function crop($x,$y,$width=null,$height=null,$pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->crop($x,$y,$width,$height);
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function resize_fit($x,$y=false){
-	   return self::resizeFit($x,$y);
+	static function resize_fit($x,$y=null,$pic=null){
+	   return self::resizeFit($x,$y,$pic);
 	}
-	static function resizeFit($x,$y=false){
-		if (!$y)$y=$x;
-		if ($x<1 or $y<1)return false;
-		if (!self::$image)return false;
-		if (self::$prop[0]/$x<self::$prop[1]/$y){
-			$reduce=self::$prop[0]/$x;
-			$height=$y*.5-self::$prop[1]/$reduce*.5;
-			$width=0;
-		}else{
-			$reduce=self::$prop[1]/$y;
-			$height=0;
-			$width=$x*.5-self::$prop[0]/$reduce*.5;
-		}
-		if ($reduce==0)return false;
-		if (!self::memoryTest($x,$y))return false;
-		$copy = imagecreatetruecolor($x, $y);
-		imagecopyresampled($copy,self::$image,$width,$height,0,0,self::$prop[0]/$reduce,self::$prop[1]/$reduce,self::$prop[0],self::$prop[1]);
-		self::$prop[0]=self::$prop[0]/$reduce;
-		self::$prop[1]=self::$prop[1]/$reduce;
-		imagedestroy(self::$image);
-		self::$image=$copy;
-		return true;
-
+	static function resizeFit($x,$y=null,$pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->resizeFit($x,$y);
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function crop_center($x,$y=false){
-		return self::cropCenter($x,$y);
+	static function crop_center($x,$y=null,$pic=null){
+		return self::cropCenter($x,$y,$pic);
 	}
 	/**
 	 * crop center frame of picture
 	 * @param number $x width
 	 * @param number $y height
-	 * @return boolean operaiotn result
+	 * @return pic
 	 */
-	static function cropCenter($x,$y=false){
-		if (!$y)$y=$x;
-		if ($x<1 or $y<1)return false;
-		if (!self::$image)return false;
-		$copy = imagecreatetruecolor($x, $y);
-		imagesavealpha($copy,true);
-		$transparent = imagecolorallocatealpha($copy,0,0,0,127);
-		imagefill($copy, 0, 0, $transparent);
-		$width=($x-self::$prop[0])/2;
-		$height=($y-self::$prop[1])/2;
-		imagecopyresampled($copy,self::$image,$width,$height,0,0,self::$prop[0],self::$prop[1],self::$prop[0],self::$prop[1]);
-		self::$prop[0]=$x;
-		self::$prop[1]=$y;
-		imagedestroy(self::$image);
-		self::$image=$copy;
-		return true;
+	static function cropCenter($x,$y=null,$pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->cropCenter($x,$y);
+	}
+	static function flip($direction='xy',$pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->flip($direction);
+	}
+	static function getImage($pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->getImage();
+	}
+	static function getWidth($pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->getWidth();
+	}
+	static function getHeight($pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->getHeight();
+	}
+	static function blurSelective($passes=1, $pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->blurSelective($passes);
+	}
+	static function blurGaussian($passes=1, $pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->blurGaussian($passes);
+	}
+	static function brightness($level, $pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->brightness($level);
+	}
+	static function contrast($level, $pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->contrast($level);
+	}
+	static function desaturate($percentage, $pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->desaturate($percentage);
+	}
+	static function rotate($angleClockwise,$bgdColor=0,$pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->rotate($angleClockwise,$bgdColor=0);
+	}
+	static function edges($pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->edges();
+	}
+	static function emboss($pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->emboss();
+	}
+	static function invert($pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->invert();
+	}
+	static function meanRemove($pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->meanRemove();
+	}
+	static function pixelate($blockSize=10, $pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->pixelate($blockSize);
+	}
+	static function sepia($pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->sepia();
+	}
+	static function output($quality=50,$pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->output($quality);
+	}
+	static function sketch($pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->sketch();
+	}
+	static function smooth($level,$pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->smooth($level);
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function add_watermark($x,$y,$watermarkFile,$opacity=100){
-		return self::addWatermark($x,$y,$watermarkFile,$opacity);
+	static function add_watermark($x,$y,$watermarkFile,$opacity=100,$pic=null){
+		return self::addWatermark($x,$y,$watermarkFile,$opacity,$pin=null);
 	}
 	/**
 	 * add watermart to picture
@@ -322,31 +245,11 @@ class pics{
 	 * @param int $y % height position
 	 * @param string $watermarkFile watermark file
 	 * @param float $opacity watermart opacity
-	 * @return boolean operation result
+	 * @return pic
 	 */
-	static function addWatermark($x,$y,$watermarkFile,$opacity=100){
-		if (!self::$image)return false;
-		if (!is_readable($watermarkFile))return false;
-		$prop=getimagesize($watermarkFile);
-		if (!self::memoryTest($prop[0],$prop[1]))return false;
-		switch($prop[2]){
-			case IMAGETYPE_JPEG:
-				$watermark = imagecreatefromjpeg($watermarkFile);
-				break;
-			case IMAGETYPE_GIF:
-				$watermark = imagecreatefromgif($watermarkFile);
-				break;
-			case IMAGETYPE_PNG:
-				$watermark = imagecreatefrompng($watermarkFile);
-				break;
-			default: return false;
-		}
-		imagealphablending(self::$image, true);
-		imagealphablending($watermark, true);
-		//imagesavealpha(self::$image, true);
-		//imagesavealpha($watermark, true);
-		imagecopymerge(self::$image, $watermark,(self::$prop[0]-$prop[0])*.01*$x, (self::$prop[1]-$prop[1])*.01*$y, 0, 0, $prop[0], $prop[1],$opacity);
-		imagedestroy($watermark);
+	static function addWatermark($x,$y,$watermarkFile,$opacity=100,$pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->addWatermark($x,$y,$watermarkFile,$opacity);
 	}
 
 	/**
@@ -354,37 +257,31 @@ class pics{
 	 * @param string $filename filename
 	 * @param float $quality quality for some formats. Quality must be between 0 - 100
 	 */
-	static function save($filename,$quality=50){
-		$quality=(int)$quality;
-		if (core::$debug){
-			if ($quality<0)debug::trace('Save image quality must be between 0 and 100. Current val is: '.$quality);
-		}
-		$extension=substr($filename,strripos($filename,'.')+1);
-		switch(strtolower($extension)){
-			case 'jpg':
-			case 'jpeg':
-				imagejpeg(self::$image,$filename,$quality);
-				break;
-			case 'gif':
-				imagegif(self::$image,$filename);
-				break;
-			case 'png':
-								imagesavealpha(self::$image, true);
-				imagepng(self::$image,$filename,9-floor($quality/11));
-				break;
-		}
+	static function save($filename,$quality=50,$pic=null){
+		$pic=self::checkObject($pic);
+		return self::$pics[$pic]->save($filename,$quality);
 	}
 	/**
-	 * Clear buffer image and release memory
 	 * @deprecated since version 3.4
 	 */
-	static function free_image(){
-		imagedestroy(self::$image);
+	static function free_image($pic=null){
+		self::freeImage($pic);
 	}
 	/**
 	 * Clear buffer image and release memory
 	 */
 	static function freeImage(){
-		imagedestroy(self::$image);
+		$pic=self::checkObject($pic);
+		unset(self::$pics[$pic]);
+	}
+	
+	/**
+	 * Set or return active pic
+	 * @param string|null $form
+	 * @return null|string
+	 */
+	static function activePic($pic=null){
+		if ($pic===null)return self::$activePic;
+		self::$activePic=(string)$pic;
 	}
 }

@@ -73,7 +73,7 @@ class core {
 	static $data=array('db_autobind'=>array(),'render'=>'bootstrap3');
 
 	static function load($class){
-            	if (substr($class,0,2)=='c\\'){
+			if (substr($class,0,2)=='c\\'){
 			$f= str_replace('\\','/',substr($class,2)).'.php';
 			if (isset(self::$data['include_dir']) && file_exists(self::$data['include_dir'].'/'.$f)){
 				include self::$data['include_dir'].'/'.$f;
@@ -84,7 +84,7 @@ class core {
 				return true;
 			}
 			if (file_exists(__DIR__.'/'.$f)){
-                            	include __DIR__.'/'.$f;
+				include __DIR__.'/'.$f;
 				return true;
 			}
 			if (file_exists(__DIR__.'/model/'.$f)){
@@ -169,4 +169,7 @@ function t($text,$vars=array()){
 }
 function curl($URL,$post=null,$cookieFile=null,$options=array()){
 	return curl::getContent($URL, $post, $cookieFile, $options);
+}
+function config(){
+	return new config('app');
 }

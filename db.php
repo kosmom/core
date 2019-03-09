@@ -320,8 +320,8 @@ class db{
 		self::getConfig();
 		$class='db_'.self::$db_config[core::$env][$db]['type'];
 		if (!file_exists(__DIR__.'/factory/'.$class.'.php'))throw new \Exception('Connection type of '.$db.' in env '.core::$env.' dont recognized');
-                $class='c\\factory\\'.$class;
-                self::$dbs[core::$env][$db]=new $class(self::$db_config[core::$env][$db],$db);
+		$class='c\\factory\\'.$class;
+		self::$dbs[core::$env][$db]=new $class(self::$db_config[core::$env][$db],$db);
 		if (!self::$dbs[core::$env][$db]->connect())return false;
 	}
 	/**

@@ -10,7 +10,7 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	protected $_p=0; // position
 
 	function __construct($array=null){
-		if ( is_array($array))$this->_c= \SplFixedArray::fromArray($array);
+		if (is_array($array))$this->_c= \SplFixedArray::fromArray($array);
 	}
 
 	function offsetExists($offset){
@@ -42,7 +42,6 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	}
 
 	/**
-	 *
 	 * @return array
 	 */
 	function current(){
@@ -85,9 +84,9 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 		$this->_c=$data;
 	}
 
-		function toArray(){
-			return $this->_c->toArray();
-		}
+	function toArray(){
+		return $this->_c->toArray();
+	}
 
 	function group($key, $val=false){
 		return datawork::group($this->toArray(), $key, $val);
@@ -98,9 +97,7 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	}
 
 	function first(){
-		foreach ($this->_c as $item){
-			return $item;
-		}
+		foreach ($this->_c as $item)return $item;
 	}
 
 	function table($header=array()){

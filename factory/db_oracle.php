@@ -54,7 +54,7 @@ class db_oracle {
 			$error=oci_error();
 			if (\c\core::$debug)\c\debug::trace('Oracle connection error: '.$error['message'],\c\error::ERROR);
 			if (empty(\c\core::$data['db_exception']))return false;
-                        throw new \Exception("Error connection to oracle: .".$error['message']);
+			throw new \Exception("Error connection to oracle: .".$error['message']);
 		}
 		if (\c\core::$debug){
 			\c\debug::trace('Connection to '.($this->cn?$this->cn:'Oracle'),\c\error::SUCCESS);
@@ -92,8 +92,8 @@ class db_oracle {
 				\c\debug::groupEnd();
 				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
 			}
-                        if (empty(\c\core::$data['db_exception']))return false;
-                        throw new \Exception('SQL parsing error');
+			if (empty(\c\core::$data['db_exception']))return false;
+			throw new \Exception('SQL parsing error');
 		}
 		if(is_array($bind)) {
 			foreach($bind as $key => &$value){
@@ -110,9 +110,9 @@ class db_oracle {
 				\c\debug::consoleLog('Query error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
 				\c\debug::groupEnd();
 				\c\debug::consoleLog('Oracle error: '.$error['code'].' - '.$error['message'],\c\error::ERROR);
-                        }
+			}
 			if (empty(\c\core::$data['db_exception']))return false;
-                        throw new \Exception('SQL execute error');
+			throw new \Exception('SQL execute error');
 		}
 		if (!$result){
 			if (\c\core::$debug)\c\debug::trace('No results found',\c\error::WARNING);
@@ -122,27 +122,27 @@ class db_oracle {
 		}
 
 		$subsql=strtolower(substr($sql,0,5));
-                $isResult=$subsql == 'selec' || $subsql=='with ';
+		$isResult=$subsql == 'selec' || $subsql=='with ';
 		if($isResult){
-                    $_data = array();
-                    switch ($mode){
-                            case 'ea':
-                                    oci_fetch_all($stmt,$_data,0,-1,OCI_FETCHSTATEMENT_BY_ROW+OCI_ASSOC+OCI_RETURN_LOBS+OCI_RETURN_NULLS);
-//                    while ($_row = oci_fetch_array($stmt,OCI_ASSOC+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$_data[] = $_row;
-                                    break;
-                            case 'e':
-                                    oci_fetch_all($stmt,$_data,0,-1,OCI_FETCHSTATEMENT_BY_ROW+OCI_BOTH+OCI_RETURN_LOBS+OCI_RETURN_NULLS);
-                                    //while ($_row = oci_fetch_array($stmt,OCI_BOTH+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$_data[] = $_row;
-                                    break;
-                            case 'ea1':
-                                    $_data=oci_fetch_array($stmt,OCI_ASSOC+OCI_RETURN_LOBS+OCI_RETURN_NULLS);
-                                    break;
-                    }
-                    oci_free_statement($stmt);
-                    if (\c\core::$debug)\c\debug::trace('Result fetch get '.round((microtime(true)-$start)*1000,2).' ms');
+			$_data = array();
+			switch ($mode){
+				case 'ea':
+						oci_fetch_all($stmt,$_data,0,-1,OCI_FETCHSTATEMENT_BY_ROW+OCI_ASSOC+OCI_RETURN_LOBS+OCI_RETURN_NULLS);
+	//while ($_row = oci_fetch_array($stmt,OCI_ASSOC+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$_data[] = $_row;
+						break;
+				case 'e':
+						oci_fetch_all($stmt,$_data,0,-1,OCI_FETCHSTATEMENT_BY_ROW+OCI_BOTH+OCI_RETURN_LOBS+OCI_RETURN_NULLS);
+						//while ($_row = oci_fetch_array($stmt,OCI_BOTH+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$_data[] = $_row;
+						break;
+				case 'ea1':
+						$_data=oci_fetch_array($stmt,OCI_ASSOC+OCI_RETURN_LOBS+OCI_RETURN_NULLS);
+						break;
+			}
+			oci_free_statement($stmt);
+			if (\c\core::$debug)\c\debug::trace('Result fetch get '.round((microtime(true)-$start)*1000,2).' ms');
 		}else {
-                    $_data = true;
-                    if (\c\core::$debug)\c\debug::trace('Affected '.$this->rows().' rows',false);
+		$_data = true;
+		if (\c\core::$debug)\c\debug::trace('Affected '.$this->rows().' rows',false);
 		}
 		if (\c\core::$debug){
 		if (!$isResult && $mode!='e')\c\debug::trace('ea function used without result. Better use e function',\c\error::WARNING);
@@ -186,7 +186,7 @@ class db_oracle {
 				$sql=ltrim($sql);
 			}
 			\c\debug::trace('SQL: '.$sql,false);
-                        \c\debug::trace('Connection: '.$this->cn,false);
+			\c\debug::trace('Connection: '.$this->cn,false);
 			if ($binds){
 				\c\debug::dir(array('BIND:'=>$binds));
 			}else{
@@ -212,8 +212,8 @@ class db_oracle {
 				\c\debug::groupEnd();
 				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
 			}
-                        if (empty(\c\core::$data['db_exception']))return false;
-                        throw new \Exception('SQL parsing error');
+			if (empty(\c\core::$data['db_exception']))return false;
+			throw new \Exception('SQL parsing error');
 		}
 		$result=oci_execute($stmt,$this->execute_mode);
 		if (\c\core::$debug){
@@ -226,8 +226,8 @@ class db_oracle {
 				\c\debug::groupEnd();
 				\c\debug::consoleLog('Oracle error: '.$error['code'].' - '.$error['message'],\c\error::ERROR);
 			}
-                        if (empty(\c\core::$data['db_exception']))return false;
-                        throw new \Exception('SQL execute error');
+			if (empty(\c\core::$data['db_exception']))return false;
+			throw new \Exception('SQL execute error');
 		}
 		\c\debug::groupEnd();
 		oci_free_statement($stmt);
@@ -242,7 +242,7 @@ class db_oracle {
 				\c\debug::trace('clear whitespaces at begin of query for correct work. Autocorrect in debug mode',\c\error::ERROR);
 				$sql=ltrim($sql);
 			}
-                        \c\debug::trace('Connection: '.$this->cn,false);
+			\c\debug::trace('Connection: '.$this->cn,false);
 			\c\debug::trace('SQL: '.$sql,false);
 			if ($bind){
 				\c\debug::dir(array('BIND:'=>$bind));
@@ -253,35 +253,35 @@ class db_oracle {
 		}
 
 		$stmt = oci_parse($this -> connect, $sql);
-                if(!$stmt){
+		if(!$stmt){
 			$error=oci_error($this -> connect);
 			if (\c\core::$debug){
 				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
 				\c\debug::groupEnd();
 				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
 			}
-                        if (empty(\c\core::$data['db_exception']))return false;
-                        throw new \Exception('SQL parsing error');
+			if (empty(\c\core::$data['db_exception']))return false;
+			throw new \Exception('SQL parsing error');
 		}
-                if(is_array($bind) && count($bind)) {
-                    foreach($bind as $key => &$value) {
-                            oci_bind_by_name($stmt,  ":".$key, $value, -1);
-                    }
-                }
-                $result=oci_execute($stmt);
-                if (!$result){
-                    $error=oci_error($this -> connect);
-                    if (\c\core::$debug){
-                        \c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
-                        \c\debug::groupEnd();
-                        \c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
-                    }
-                    if (empty(\c\core::$data['db_exception']))return false;
-                    throw new \Exception('SQL execute error');
-                }
+		if(is_array($bind) && count($bind)) {
+			foreach($bind as $key => &$value) {
+					oci_bind_by_name($stmt,  ":".$key, $value, -1);
+			}
+		}
+		$result=oci_execute($stmt);
+		if (!$result){
+			$error=oci_error($this -> connect);
+			if (\c\core::$debug){
+				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
+				\c\debug::groupEnd();
+				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
+			}
+			if (empty(\c\core::$data['db_exception']))return false;
+			throw new \Exception('SQL execute error');
+		}
 		
 		$subsql=strtolower(substr($sql,0,5));
-                $isResult=$subsql == 'selec' || $subsql=='with ';
+		$isResult=$subsql == 'selec' || $subsql=='with ';
 		if($isResult){
 			$_data = array();
 			if ($assoc){
@@ -296,14 +296,14 @@ class db_oracle {
 		}
 		if (\c\core::$debug){
 			if ($isResult){
-                            if ($_data){
-                                \c\debug::group('Query result. Count: '.sizeof($_data),\c\error::INFO,sizeof($_data)>10);
-                                \c\debug::table(array_slice($_data,0,30));
-                                if (sizeof($_data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
-                                \c\debug::groupEnd();
-                            }else{
-                                \c\debug::trace('No results found',\c\error::WARNING);
-                            }
+				if ($_data){
+					\c\debug::group('Query result. Count: '.sizeof($_data),\c\error::INFO,sizeof($_data)>10);
+					\c\debug::table(array_slice($_data,0,30));
+					if (sizeof($_data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
+					\c\debug::groupEnd();
+				}else{
+					\c\debug::trace('No results found',\c\error::WARNING);
+				}
 			}else{
 				\c\debug::trace('Affected '.$this->rows().' rows',false);
 			}
@@ -373,15 +373,15 @@ function execute_assoc_1($sql, $bind = array()){
 			$start=microtime(true);
 		}
 		$stmt = oci_parse($this -> connect, $sql);
-                if(!$stmt){
+		if(!$stmt){
 			$error=oci_error($this -> connect);
 			if (\c\core::$debug){
 				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
 				\c\debug::groupEnd();
 				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
 			}
-                        if (empty(\c\core::$data['db_exception']))return false;
-                        throw new \Exception('SQL parsing error');
+			if (empty(\c\core::$data['db_exception']))return false;
+			throw new \Exception('SQL parsing error');
 		}
 		if(is_array($bind)) {
 			foreach($bind as $key => &$value){

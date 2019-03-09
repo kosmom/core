@@ -11,7 +11,7 @@ class collection_object extends collection{
 	var $connection;
 	var $is_full;
 	function __construct($array,$generator=null,$pk_field=null,$is_full=false){
-                parent::__construct($array);
+		parent::__construct($array);
 		$this->generator=$generator;
 		$this->pk_field=$pk_field;
 		$this->is_full=$is_full;
@@ -34,11 +34,11 @@ class collection_object extends collection{
 	function table($header=array()){
 		$attrs=array();
 		/*
-                foreach ($this->fieldAttributes as $key=>$attr){
+			foreach ($this->fieldAttributes as $key=>$attr){
 			$attrs[$key]=$attr['field_prop'];
 			if (isset($attr['field_prop']['label']))$attrs[$key]['name']=$attr['field_prop']['label'];
 		}
-                 */
+		 */
 		return new table($this->_c->toArray(),$attrs);
 	}
 	function save(){

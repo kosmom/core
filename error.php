@@ -125,9 +125,9 @@ class error{
 	static function size($type=self::ERROR){
 		return self::count($type);
 	}
-        static function countMessages(){
-            return self::size()+self::size(self::WARNING)+self::size(self::SUCCESS);
-        }
+	static function countMessages(){
+		return self::size()+self::size(self::WARNING)+self::size(self::SUCCESS);
+	}
 
 	static function thrownException($message,$code=0){
 		throw new \Exception($message,$code);
@@ -165,7 +165,7 @@ class error{
 	 * @return super|false
 	 */
 	static function header($code){
-            return responce::header($code);
+		return responce::header($code);
 	}
 	/**
 	 * Redirect
@@ -173,7 +173,7 @@ class error{
 	 * @param integer $header redirect with header
 	 */
 	static function redirect($url=null,$header=''){
-            return responce::redirect($url,$header);
+		return responce::redirect($url,$header);
 	}
 	/**
 	 * Log in file
@@ -181,8 +181,8 @@ class error{
 	 * @param string|integer|array $string string
 	 */
 	static function log($filename,$string){
-            if (is_array($string))$string= print_r ($string,true);
-            if (!file_put_contents($filename, "\n".$string, FILE_APPEND | LOCK_EX))file_put_contents($filename, "\n".$string);
-            return new super();
+		if (is_array($string))$string= print_r ($string,true);
+		if (!file_put_contents($filename, "\n".$string, FILE_APPEND | LOCK_EX))file_put_contents($filename, "\n".$string);
+		return new super();
 	}
 }

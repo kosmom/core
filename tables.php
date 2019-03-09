@@ -25,14 +25,14 @@ class tables{
 	static $show_header=true; // false true or 'join'
 	static $draw_if_empty=false; // false true
 
-        function addClass($class){
+	static function addClass($class){
 		if (is_string(self::$classes)){
 			self::$classes.=' '.$class;
 		}elseif (is_array(self::$classes)){
 			self::$classes[]=$class;
 		}
 	}
-        
+
 	function __construct() {
 		if (core::$debug)debug::trace('Create table with static class tables',error::WARNING);
 	}
@@ -57,15 +57,15 @@ class tables{
 		if (!isset($input['draw_if_empty']))$input['draw_if_empty']=self::$draw_if_empty;
 		if (!isset($input['responsive']))$input['responsive']=self::$responsive;
 		if (!isset($input['sticky']))$input['sticky']=self::$sticky;
-        if (!isset($input['fill'])) $input['fill']=self::$fill;
-        if (!isset($input['group'])) $input['group']=self::$group;
-        if (!isset($input['groupFooter'])) $input['groupFooter']=self::$groupFooter;
-        if (!isset($input['header_render_callback'])) $input['header_render_callback']=self::$header_render_callback;
+		if (!isset($input['fill'])) $input['fill']=self::$fill;
+		if (!isset($input['group'])) $input['group']=self::$group;
+		if (!isset($input['groupFooter'])) $input['groupFooter']=self::$groupFooter;
+		if (!isset($input['header_render_callback'])) $input['header_render_callback']=self::$header_render_callback;
 		if (isset($input['row_attributes']) && is_array(self::$row_attributes)){
-            $input['row_attributes']+=self::$row_attributes;
-        }elseif (!isset($input['row_attributes'])){
-            $input['row_attributes']=self::$row_attributes;
-        }
+			$input['row_attributes']+=self::$row_attributes;
+		}elseif (!isset($input['row_attributes'])){
+			$input['row_attributes']=self::$row_attributes;
+		}
 		if (!$input['draw_if_empty'] && !self::$data){
 			if (is_callable($emptyCallback))return $emptyCallback();
 			return $emptyCallback;
@@ -94,22 +94,22 @@ class tables{
 		$table->data=self::$data;
 		return $table->renderAsText($delimeterRow,$delimeterCol,$delimeterKeyVal, $input);
 	}
-    static function getTableObject(){
-        $table=new table(self::$data,self::$header);
-        $table->fill=self::$fill;
-        $table->attributes=self::$attributes;
-        $table->classes=self::$classes;
-        $table->row_attributes=self::$row_attributes;
-        $table->cell_attributes=self::$cell_attributes;
-        return $table;
-    }
-    static function writesheetXlsx($input=array()){
-        xlsx::writesheetFromTable($input);
-    }
-    /**
-     * @deprecated since version 3.4
-     */
-    static function writesheet_xlsx($input=array()){
-        xlsx::writesheetFromTable($input);
-    }
+	static function getTableObject(){
+		$table=new table(self::$data,self::$header);
+		$table->fill=self::$fill;
+		$table->attributes=self::$attributes;
+		$table->classes=self::$classes;
+		$table->row_attributes=self::$row_attributes;
+		$table->cell_attributes=self::$cell_attributes;
+		return $table;
+	}
+	static function writesheetXlsx($input=array()){
+		xlsx::writesheetFromTable($input);
+	}
+	/**
+	 * @deprecated since version 3.4
+	 */
+	static function writesheet_xlsx($input=array()){
+		xlsx::writesheetFromTable($input);
+	}
 }

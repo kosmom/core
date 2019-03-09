@@ -6,8 +6,8 @@ namespace c;
  * @author Kosmom <Kosmom.ru>
  */
 class mail{
-        private static $time;
-    	private static $mails=array();
+	private static $time;
+	private static $mails=array();
 	private static $mail_config;
 	private static $testAdress=array();
 	static function test($adress=array()){
@@ -54,7 +54,7 @@ class mail{
 	 * @deprecated since version 3.4
 	 */
 	static function set_bcc($adress=array(),$db=''){
-	   return self::setBcc($adress,$db);
+		return self::setBcc($adress,$db);
 	}
 	static function setBcc($adress=array(),$db=''){
 		if (empty($adress))return false;
@@ -87,26 +87,26 @@ class mail{
 		self::$mails[$db]->AddAttachment($sourceFilename,$totalFilename,$cid);
 	}
 
-        static function embedAttachment($text,$cacheFolder=null,$db=''){
-            $files=array();
-            if (!self::$time)self::$time=time();
-        $text=preg_replace_callback('|<img src="([^"]*\.([^"]*))"|s', function($phrase) use(&$files,$db){
-            if (empty($files[$phrase[1]])){
-                $counter=$files[$phrase[1]]= sizeof($files);
-                if ($cacheFolder){
-                    if (!file_exists($cacheFolder.'/'.md5($phrase[1])))file_put_contents($cacheFolder.'/'.md5($phrase[1]), input::file_get_content($phrase[1]));
-                    self::AddAttachment($cacheFolder.'/'.md5($phrase[1]), 'file'.$counter.'.'.$phrase[2], 'file'.$counter.self::$time,$db);
-                }else{
-                    self::AddStringAttachment(input::file_get_content($phrase[1]), 'file'.$counter.'.'.$phrase[2], 'file'.$counter.self::$time,$db);
-                }
-            }else{
-                $counter=$files[$phrase[1]];
-            }
-            return '<img src="cid:file'.($counter.self::$time).'"';
-        }, $text);
-            return $text;
-        }
-        
+	static function embedAttachment($text,$cacheFolder=null,$db=''){
+		$files=array();
+		if (!self::$time)self::$time=time();
+	$text=preg_replace_callback('|<img src="([^"]*\.([^"]*))"|s', function($phrase) use(&$files,$db){
+		if (empty($files[$phrase[1]])){
+			$counter=$files[$phrase[1]]= sizeof($files);
+			if ($cacheFolder){
+				if (!file_exists($cacheFolder.'/'.md5($phrase[1])))file_put_contents($cacheFolder.'/'.md5($phrase[1]), input::file_get_content($phrase[1]));
+				self::AddAttachment($cacheFolder.'/'.md5($phrase[1]), 'file'.$counter.'.'.$phrase[2], 'file'.$counter.self::$time,$db);
+			}else{
+				self::AddStringAttachment(input::file_get_content($phrase[1]), 'file'.$counter.'.'.$phrase[2], 'file'.$counter.self::$time,$db);
+			}
+		}else{
+			$counter=$files[$phrase[1]];
+		}
+		return '<img src="cid:file'.($counter.self::$time).'"';
+	}, $text);
+		return $text;
+	}
+
 	/**
 	 * @deprecated since version 3.4
 	 */
@@ -184,18 +184,18 @@ class mail{
 			if (file_exists(__DIR__.'/global-config/mail.php'))include __DIR__.'/global-config/mail.php';
 			if (file_exists('config/mail.php'))include 'config/mail.php';
 		}
-                if (!$db)throw new \Exception('not set mail connection c\\core::$data["mail"]');
-                if (!self::$mail_config[$db])throw new \Exception('mail connection "'.$db.'" not exists');
-                
-                $class='mail_'.self::$mail_config[$db]['type'];
+		if (!$db)throw new \Exception('not set mail connection c\\core::$data["mail"]');
+		if (!self::$mail_config[$db])throw new \Exception('mail connection "'.$db.'" not exists');
+
+		$class='mail_'.self::$mail_config[$db]['type'];
 		if (!file_exists(__DIR__.'/factory/'.$class.'.php'))throw new \Exception('Connection mail type of '.$db.' dont recognized');
-                $class='c\\factory\\'.$class;
-                self::$mails[$db]=new $class();
-                self::$mails[$db]->From=self::$mail_config[$db]['from'];
-                self::$mails[$db]->Host=self::$mail_config[$db]['host'];
-                self::$mails[$db]->UserName=self::$mail_config[$db]['username'];
-                self::$mails[$db]->Password=self::$mail_config[$db]['password'];
-                if (isset(self::$mail_config[$db]['port']))self::$mails[$db]->port=self::$mail_config[$db]['port'];
-                if (isset(self::$mail_config[$db]['auth']))self::$mails[$db]->auth=self::$mail_config[$db]['auth'];
+		$class='c\\factory\\'.$class;
+		self::$mails[$db]=new $class();
+		self::$mails[$db]->From=self::$mail_config[$db]['from'];
+		self::$mails[$db]->Host=self::$mail_config[$db]['host'];
+		self::$mails[$db]->UserName=self::$mail_config[$db]['username'];
+		self::$mails[$db]->Password=self::$mail_config[$db]['password'];
+		if (isset(self::$mail_config[$db]['port']))self::$mails[$db]->port=self::$mail_config[$db]['port'];
+		if (isset(self::$mail_config[$db]['auth']))self::$mails[$db]->auth=self::$mail_config[$db]['auth'];
 	}
 }

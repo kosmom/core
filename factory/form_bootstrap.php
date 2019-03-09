@@ -2,26 +2,26 @@
 namespace c\factory;
 
 class form_bootstrap{
-    private $form;
-    private $name;
-    
-    function __construct($form,$name) {
-        $this->form=$form;
-        $this->name=$name;
-    }
-    function renderField($item,$renderName){
-        if ($item['type']=='none')return '';
-        if (!isset($item['attributes']['id']))$item['attributes']['id']='core_form_field_'.\c\form::$fieldCounter++;
-        $out=$this->renderFieldFormGroupBegin($item);
-        if (@!$item['range'] && isset($item['ico']) && $this->form->prop['type']=='md-form')$out.= '<i class="'.$item['ico'].' prefix grey-text"></i>';
-        if ($this->form->prop['type']=='md-form'){
-                return $out.$this->renderFieldField($item,$renderName).$this->renderFieldLabel($item,$renderName).$this->renderFieldFormGroupEnd($item);
-        }else{
-                return $out.$this->renderFieldLabel($item).$this->renderFieldField($item,$renderName).$this->renderFieldFormGroupEnd($item);
-        }
-    }
-    
-    function renderFieldFormGroupBegin($item){
+	private $form;
+	private $name;
+
+	function __construct($form,$name) {
+		$this->form=$form;
+		$this->name=$name;
+	}
+	function renderField($item,$renderName){
+		if ($item['type']=='none')return '';
+		if (!isset($item['attributes']['id']))$item['attributes']['id']='core_form_field_'.\c\form::$fieldCounter++;
+		$out=$this->renderFieldFormGroupBegin($item);
+		if (@!$item['range'] && isset($item['ico']) && $this->form->prop['type']=='md-form')$out.= '<i class="'.$item['ico'].' prefix grey-text"></i>';
+		if ($this->form->prop['type']=='md-form'){
+				return $out.$this->renderFieldField($item,$renderName).$this->renderFieldLabel($item,$renderName).$this->renderFieldFormGroupEnd($item);
+		}else{
+				return $out.$this->renderFieldLabel($item).$this->renderFieldField($item,$renderName).$this->renderFieldFormGroupEnd($item);
+		}
+	}
+
+	function renderFieldFormGroupBegin($item){
 		if (@$item['type']=='hidden')return '';
 		if ($this->form->prop['type']=='form-inline' && $item['type']=='submit')return '';
 		$baseGroup='form-group';
@@ -70,17 +70,17 @@ class form_bootstrap{
 
 		return ' <div class="'.implode(' ',$classes).'" '.(@$attr? implode(' ', $attr):'').'>';
 	}
-    function renderFieldFormGroupEnd($item){
+	function renderFieldFormGroupEnd($item){
 		if ($item['type']=='hidden')return '';
 		return (($this->form->prop['type']!='form-inline' || $item['type']!='submit')?'</div>':'').($this->form->prop['type']=='form-horizontal'?'</div>':'');
 	}
-        function renderFieldLabel($item){
+	function renderFieldLabel($item){
 		if (@$item['type']=='hidden')return '';
 		if ($this->form->prop['type']!='form-inline' || @$item['type']!='submit')return (!empty($item['label']) && @$item['type']!='check' && @$item['type']!='boolean' && @$item['type']!='checkbox'?'<label for="'.$item['attributes']['id'].'" '.$this->horizontalGetLabelClass().'>'.(@$item['label_html']?$item['label']:\c\input::htmlspecialchars($item['label'])).'</label> ':'').$this->horizontalGetColDiv($item);
 		return '';
 	}
-        
-        private function horizontalGetLabelClass(){
+
+	private function horizontalGetLabelClass(){
 		if (@$this->form->prop['type']!='form-horizontal')return '';
 		if (\c\core::$data['render']=='bootstrap4'){
 			$out=' class="col-form-label';
@@ -116,8 +116,8 @@ class form_bootstrap{
 		return (!empty($item['postfix'])?'<span class="'.(\c\core::$data['render']=='bootstrap4'?'input-group-text':'input-group-addon').'">'.$item['postfix'].'</span>':'').'</div>';
 	}
 
-        function renderFieldField($item,$renderName){
-            	$required='';
+	function renderFieldField($item,$renderName){
+		$required='';
 		if (@$item['validate'])foreach($item['validate'] as $validate){
 			if ($validate['type']=='required' || $validate['type']=='require'){
 				$required='required ';
@@ -126,11 +126,11 @@ class form_bootstrap{
 			if ($validate['type']=='maxlength')$item['attributes']['maxlength']=$validate['value'];
 		}
 		if (empty($item['render']))$item['render']='auto';
-                if ($item['type']=='float'){
-                    $item['type']='number';
-                    if (!isset($item['attributes']['step']))$item['attributes']['step']='.0000001';
-                    $item['value']= str_replace(',', '.', @$item['value']);
-                }
+		if ($item['type']=='float'){
+			$item['type']='number';
+			if (!isset($item['attributes']['step']))$item['attributes']['step']='.0000001';
+			$item['value']= str_replace(',', '.', @$item['value']);
+		}
 		$renderValue=isset($item['value'])?is_callable($item['value'])?$item['value']($item):$item['value']:@$item['default'];
 		if (@$item['range']){
 			$value['min']=(isset($renderValue['min'])?'value="'.\c\input::htmlspecialchars($renderValue['min']).'" ':'');
@@ -145,7 +145,7 @@ class form_bootstrap{
 		}
 
 		if (isset($item['inputmask'])){
-                    $mask=$item['inputmask'];
+			$mask=$item['inputmask'];
 			if (is_array($item['inputmask'])){
 				$masks=array();
 				foreach ($item['inputmask'] as $maskKey=>$mask){
@@ -167,7 +167,7 @@ class form_bootstrap{
 			}
 			\c\mvc::addJs('inputmask');
 		}
-                
+
 		if (@$item['disabled'])$item['attributes']['disabled']='disabled';
 		if (@$item['readonly'])$item['attributes']['readonly']='readonly';
 		$attributes='';
@@ -203,7 +203,7 @@ class form_bootstrap{
 			}
 		}
 		if (is_callable($item['render']))return $item['render']($item,$arg);
-		if (@$item['type']=='hidden')return '<input'.($classes?'class="'.$classes.'"':'').' name="'.$renderName.'" type="'.$item['type'].'" '.$attributes.$value.'/>';
+		if (@$item['type']=='hidden')return '<input'.($classes?' class="'.$classes.'"':'').' name="'.$renderName.'" type="'.$item['type'].'" '.$attributes.$value.'/>';
 		
 		$out=$this->inputGroupPrefix($item);
 		
@@ -478,6 +478,4 @@ class form_bootstrap{
 		if (isset($item['helper']))$datalist.='<p class="help-block">'.(@$item['helperHTML']?$item['helper']:\c\input::htmlspecialchars($item['helper'])).'</p>';
 		return $out.$datalist;
 	}
-        
-        
 }

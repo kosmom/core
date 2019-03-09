@@ -19,7 +19,7 @@ while (c\request::eachFile('filename')){
  * @author Kosmom <Kosmom.ru>
  */
 class request{
-	private static $result=null;
+	private static $result;
 	private static $files=array();
 	private static $counter=array();
 	private static $isCMD;
@@ -55,25 +55,20 @@ class request{
 	}
 
 	static function get($parameter,$default=null){
-		if (isset($_GET[$parameter]))return $_GET[$parameter];
-		return $default;
+		return isset($_GET[$parameter])?$_GET[$parameter]:$default;
 	}
 	static function post($parameter,$default=null){
-		if (isset($_POST[$parameter]))return $_POST[$parameter];
-		return $default;
+		return isset($_POST[$parameter])?$_POST[$parameter]:$default;
 	}
 	static function input($parameter,$default=null){
-		if (isset($_REQUEST[$parameter]))return $_GET[$parameter];
-		if (isset($_COOKIE[$parameter]))return $_COOKIE[$parameter];
-		return $default;
+		if (isset($_REQUEST[$parameter]))return $_REQUEST[$parameter];
+		return self::cookie($parameter, $default);
 	}
 	static function request($parameter,$default=null){
-		if (isset($_REQUEST[$parameter]))return $_REQUEST[$parameter];
-		return $default;
+		return isset($_REQUEST[$parameter])?$_REQUEST[$parameter]:$default;
 	}
 	static function cookie($parameter,$default=null){
-		if (isset($_COOKIE[$parameter]))return $_COOKIE[$parameter];
-		return $default;
+		return isset($_COOKIE[$parameter])?$_COOKIE[$parameter]:$default;
 	}
 	static function file($parameter='CoreEachFile',$default=null){
 		if ($parameter=='CoreEachFile')return self::$files[self::$manyfilesfile][self::$counter[self::$manyfilesfile]];
@@ -84,44 +79,39 @@ class request{
 		@mkdir(dirname($destination),0777,true);
 		return move_uploaded_file (self::fileTmpName($parameter),$destination);
 	}
+	/*
 	static function eachFileCopy($destination){
 		@mkdir(dirname($destination),0777,true);
 		return move_uploaded_file (self::fileTmpName(),$destination);
 	}
+	 */
 	static function fileTmpName($parameter='CoreEachFile',$default=null){
 		if ($parameter=='CoreEachFile')return self::$files[self::$manyfilesfile][self::$counter[self::$manyfilesfile]]['tmp_name'];
-		if (isset($_FILES[$parameter]))return $_FILES[$parameter]['tmp_name'];
-		return $default;
+		return isset($_FILES[$parameter])?$_FILES[$parameter]['tmp_name']:$default;
 	}
 	static function fileName($parameter='CoreEachFile',$default=null){
 		if ($parameter=='CoreEachFile')return self::$files[self::$manyfilesfile][self::$counter[self::$manyfilesfile]]['name'];
-		if (isset($_FILES[$parameter]))return $_FILES[$parameter]['name'];
-		return $default;
+		return isset($_FILES[$parameter])?$_FILES[$parameter]['name']:$default;
 	}
 	static function fileSize($parameter='CoreEachFile',$default=null){
 		if ($parameter=='CoreEachFile')return self::$files[self::$manyfilesfile][self::$counter[self::$manyfilesfile]]['size'];
-		if (isset($_FILES[$parameter]))return $_FILES[$parameter]['size'];
-		return $default;
+		return isset($_FILES[$parameter])?$_FILES[$parameter]['size']:$default;
 	}
 	static function fileError($parameter='CoreEachFile',$default=null){
 		if ($parameter=='CoreEachFile')return self::$files[self::$manyfilesfile][self::$counter[self::$manyfilesfile]]['error'];
-		if (isset($_FILES[$parameter]))return $_FILES[$parameter]['error'];
-		return $default;
-	}
-	static function isFile($parameter){
-		if (!isset($_FILES[$parameter]))return false;
-		if ($_FILES[$parameter]['error']==4)return false;
-		return true;
-	}
-	static function isValidFile($parameter){
-		if (!isset($_FILES[$parameter]))return true;
-		if (self::fileError($parameter)===0)return true;
-		return false;
+		return isset($_FILES[$parameter])?$_FILES[$parameter]['error']:$default;
 	}
 	static function fileType($parameter='CoreEachFile',$default=null){
 		if ($parameter=='CoreEachFile')return self::$files[self::$manyfilesfile][self::$counter[self::$manyfilesfile]]['type'];
-		if (isset($_FILES[$parameter]))return $_FILES[$parameter]['type'];
-		return $default;
+		return isset($_FILES[$parameter])?$_FILES[$parameter]['type']:$default;
+	}
+	static function isFile($parameter){
+		if (!isset($_FILES[$parameter]))return false;
+		return $_FILES[$parameter]['error']!=4;
+	}
+	static function isValidFile($parameter){
+		if (!isset($_FILES[$parameter]))return true;
+		return self::fileError($parameter)===0;
 	}
 	static function fileToPic($parameter='CoreEachFile'){
 		if (core::$debug && empty($_FILES))debug::consoleLog ('probably not set form enctype', error::WARNING);
@@ -253,8 +243,8 @@ class request{
 	 * Compare browser versions.
 	 *
 	 * Returns int(0)  if version is aqual to $conditions,
-	 *         int(-1) if version is older than $conditions,
-	 *         int(1)  if version is newer than $conditions.
+	 * int(-1) if version is older than $conditions,
+	 * int(1)  if version is newer than $conditions.
 	 *
 	 * Returns NULL in case of any error.
 	 *
@@ -263,19 +253,16 @@ class request{
 	 * @license BSD
 	 *
 	 * @param array $browser -- result of self::detectBrowser() method
-	 * @param $conditions    -- vetsions to compre array('Opera' => array(9, 4), 'Firefox' => array(3, 1, 1), ...)
+	 * @param $conditions -- vetsions to compre array('Opera' => array(9, 4), 'Firefox' => array(3, 1, 1), ...)
 	 * @return int
 	 */
 	static function checkForBrowserVersion($browser, $conditions){
-		if (!isset($browser['name']) || !isset($conditions[$browser['name']])
-		|| !isset($browser['version']) || count($browser['version']) < 1)return null;
-
+		if (!isset($browser['name']) || !isset($conditions[$browser['name']]) || !isset($browser['version']) || count($browser['version']) < 1)return null;
 		$cnd = $conditions[$browser['name']]; // 0=>, 1=>, 2=>
 		if (!is_array($cnd))return null;
-
-		for ($i = 0; $i < count($cnd); $i++){
-			if ($browser['version'][$i] < $cnd[$i])
-			{
+		$cnt=count($cnd);
+		for ($i = 0; $i < $cnt; $i++){
+			if ($browser['version'][$i] < $cnd[$i]){
 				return -1;
 			}else if ($browser['version'][$i] > $cnd[$i]){
 				return 1;
@@ -285,7 +272,7 @@ class request{
 	}
 
 	/**
-	 * Является ли посетитель ботом
+	 * visitor is bot
 	 *
 	 * @param string $USER_AGENT
 	 * @return string
@@ -320,10 +307,10 @@ class request{
 	'YaDirectBot'=>'Yandex Direct');
 
 	foreach ($engines as $key=> $engine){
-		if (strstr($USER_AGENT, $key))return($engine);
+		if (strstr($USER_AGENT, $key))return $engine;
 	}
 
-	return (false);
+	return false;
 	}
 
 }

@@ -10,7 +10,7 @@ class translate{
 	static $tDict=array();
 	private static $isdictLoaded=false;
 
-		static function reloadLocate($locate){
+	static function reloadLocate($locate){
 		core::$lang=$locate;
 		self::$tDict=array();
 		if (!core::$lang)return true;
@@ -51,7 +51,7 @@ class translate{
 		}
 
 		if (strpos($text,'{')===false)return $text;
-		// work with vars and functions
+		// vars and functions
 		return preg_replace_callback('/\{(.*)\}/sU',function($matches) use($vars,$magicvar){
 			$params=explode('|',$matches[1]);
 			$var=array_shift($params);
@@ -316,11 +316,6 @@ class translate{
 	}
 
 	/**
-	 * Change phrase with keyboard layout
-	 * @param string $str input string
-	 * @param boolean $to_rus true - translate to rus from eng, false - to eng from rus
-	 * @paran boolean $utf8 - is your charset is utf8? only for class use parameter
-	 * @return string
 	 * @deprecated since version 3.4
 	 */
 	static function change_keyboard($str, $to_rus=true,$utf8=false){
@@ -346,9 +341,6 @@ class translate{
 	}
 
 	/**
-	 * Transform word to keyboard layout smarty
-	 * @param string $str
-	 * @return string transform string
 	 * @deprecated since version 3.4
 	 */
 	static function smart_keyboard_word($str,$utf8=false){
@@ -486,9 +478,6 @@ class translate{
 	}
 
 	/**
-	 * Transform phrase to keyboard layout
-	 * @param string $str phrase
-	 * @return string
 	 * @deprecated since version 3.4
 	 */
 	static function smart_keyboard($str){
@@ -504,7 +493,7 @@ class translate{
 		$words=explode(' ',$str);
 		$out=array();
 		foreach ($words as $item){
-			$out[]=self::smart_keyboard_word($item,true);
+			$out[]=self::smartKeyboardWord($item,true);
 		}
 		$out= implode(' ',$out);
 		if (core::$charset!=core::UTF8)$out=iconv(core::UTF8,core::$charset,$out);
@@ -549,11 +538,11 @@ class translate{
 		if ($number>=11 && $number<=19)return $ending5;
 		$number %= 10;
 		switch ($number){
-				case 1: return $ending1;
-				case 2:
-				case 3:
-				case 4: return $ending4;
-			}
+			case 1: return $ending1;
+			case 2:
+			case 3:
+			case 4: return $ending4;
+		}
 		return $ending5;
 	}
 

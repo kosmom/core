@@ -1,16 +1,16 @@
 <?php
 namespace c\factory;
 
-class db_mysql {
+class db_pgsql {
 	private static $date_formats=array(
-		'd'=>'%d',
-		'm'=>'%m',
-		'y'=>'%y',
-		'Y'=>'%Y',
-		'H'=>'%H',
-		'i'=>'%i',
-		's'=>'%s'
-	);
+		'd'=>'DD',
+		'm'=>'MM',
+		'y'=>'YY',
+		'Y'=>'YYYY',
+		'H'=>'HH24',
+		'i'=>'MI',
+		's'=>'SS'
+		);
 	var $data;
 	var $cn;
 	private $insert_id;
@@ -28,20 +28,20 @@ class db_mysql {
 	function wrapper($object){
 		return '`'.$object.'`';
 	}
-	private function charset_mastmach(){
+	private function charset_mach(){
 		switch (strtoupper(\c\core::$charset)){
-			case \c\core::UTF8:return 'utf8';
+			case \c\core::UTF8:return 'UTF8';
 			default: return 'cp1251';
 		}
 	}
 
 	function connect(){
-		@$this->connect = mysqli_connect('p:'.$this->data['host'], $this->data['login'], $this->data['password'],$this->data['name'],isset($this->data['port'])?$this->data['port']:3306);
-		if (!$this->connect)throw new \Exception('MySQL connection error '.mysqli_connect_errno());
+		$this->connect = pg_pconnect('host='.$this->data['host'].(isset($this->data['port'])?' port='.$this->data['port']:'').' dbname='.$this->data['name'].' user='. $this->data['login'].' password='. $this->data['password']." options='--client_encoding='".$this->charset_mach()."'");
+		if (!$this->connect)throw new \Exception('PgSQL connection error '.pg_last_error());
 		if (\c\core::$debug){
-			\c\debug::group('Connection to '.($this->cn?$this->cn:'MySQL'),\c\error::SUCCESS);
+			\c\debug::group('Connection to '.($this->cn?$this->cn:'PgSQL'),\c\error::SUCCESS);
 			@\c\core::$data['stat']['db_connections']++;
-			$stat=explode('  ',mysqli_stat($this->connect));
+			//$stat=explode('  ',mysqli_stat($this->connect));
 			$out=array();
 			foreach ($stat as $item){
 				$out[substr($item,0,strpos($item,':') )]=substr($item,strpos($item,':')+2 );
@@ -49,25 +49,24 @@ class db_mysql {
 			\c\debug::dir($out);
 			\c\debug::groupEnd();
 		}
-		mysqli_query($this->connect,'set names '.$this->charset_mastmach());
 	}
 	function disconnect(){
-		mysqli_close($this->connect);
+		pg_close($this->connect);
 	}
 	function beginTransaction(){
-		mysqli_begin_transaction($this->connect);
+		$this->execute('begin');
 	}
 	function commit(){
-		mysqli_commit($this->connect);
+		$this->execute('commit');
 	}
 	function rollback(){
-		mysqli_rollback($this->connect);
+		$this->execute('rollback');
 	}
 	function bind($sql,$bind=array()){
 		if (sizeof($bind)==0 or !is_array($bind))return $sql;
 		$bind2=array();
 		foreach ($bind as $key=>$value){
-			$bind2[':'.$key]=($value==='' || $value===\c\db::NULL || $value===NULL?'NULL':"'".mysqli_real_escape_string($this->connect,$value)."'");
+			$bind2[':'.$key]=($value==='' || $value===\c\db::NULL || $value===NULL?'NULL':"'".pg_escape_string($this->connect,$value)."'");
 		}
 		return strtr($sql,$bind2);
 	}
@@ -77,7 +76,7 @@ class db_mysql {
 	function execute_assoc($sql,$bind=array(),$mode='ea'){
 		if (\c\core::$debug){
 			@\c\core::$data['stat']['db_queryes']++;
-			\c\debug::group('MySQL query');
+			\c\debug::group('PgSQL query');
 			if (ltrim($sql)!=$sql){
 				\c\debug::trace('clear whitespaces at begin of query for correct work. Autocorrect in debug mode',\c\error::ERROR);
 				$sql=ltrim($sql);
@@ -93,21 +92,16 @@ class db_mysql {
 		}
 		$sql=$this->bind($sql,$bind);
 		//echo $sql;
-		@$_result = mysqli_query($this->connect,$sql,MYSQLI_USE_RESULT);
-		if (!$_result && mysqli_error($this->connect)=='MySQL server has gone away'){
-			$this->disconnect();
-			$this->connect();
-			$_result = mysqli_query($this->connect,$sql,MYSQLI_USE_RESULT);
-		}
+		@$_result = pg_query($this->connect,$sql);
 		if (\c\core::$debug){
 			\c\debug::consoleLog('Query execute for '.round((microtime(true)-$start)*1000,2).' ms');
 			$start=microtime(true);
 		}
 		if(!$_result){
 			if (\c\core::$debug){
-				\c\debug::trace('Query error: '.mysqli_error($this->connect),\c\error::ERROR);
+				\c\debug::trace('Query error: '. pg_errormessage($this->connect),\c\error::ERROR);
 				\c\debug::groupEnd();
-				\c\debug::trace('MySQL error: '.mysqli_error($this->connect),\c\error::ERROR);
+				\c\debug::trace('PgSQL error: '. pg_errormessage($this->connect),\c\error::ERROR);
 			}
 			if (empty(\c\core::$data['db_exception']))return false;
 			throw new \Exception('SQL execute error');
@@ -117,23 +111,10 @@ class db_mysql {
 		if (isset($this->result_array[$subsql])){
 			switch ($mode){
 				case 'ea':
-					if (function_exists('mysqli_fetch_all')){
-						$_data=\mysqli_fetch_all($_result,MYSQLI_ASSOC);
-					}else{
-						$data=array();
-						while ($_row = mysqli_fetch_array ($_result,MYSQLI_ASSOC))$_data[] = $_row;
-					}
-					break;
-				case 'e':
-					if (function_exists('mysqli_fetch_all')){
-						$_data=\mysqli_fetch_all($_result,MYSQLI_BOTH);
-					}else{
-						$data=array();
-						while ($_row = mysqli_fetch_array ($_result))$_data[] = $_row;
-					}
+					$_data=pg_fetch_all($_result);
 					break;
 				case 'ea1':
-					$_data=mysqli_fetch_assoc($_result);
+					$_data= pg_fetch_assoc($_result, 0);
 					break;
 			}
 			if (\c\core::$debug)\c\debug::trace('Result fetch get '.round((microtime(true)-$start)*1000,2).' ms');
@@ -160,15 +141,15 @@ class db_mysql {
 			}
 			// explain
 			\c\debug::group('Explain select');
-			$this->affected_rows=mysqli_affected_rows($this->connect);
-			$this->num_rows=@mysqli_num_rows($_result);
-			$this->insert_id=mysqli_insert_id($this->connect);
-			@mysqli_free_result($_result);
+			$this->affected_rows=pg_affected_rows($_result);
+			$this->num_rows= pg_num_rows($_result);
+			$this->insert_id= pg_last_oid($_result);
+			pg_free_result($_result);
 			\c\debug::table($this->explain($sql));
 			\c\debug::groupEnd();
 			\c\debug::groupEnd();
 		}else{
-			@mysqli_free_result($_result);
+			pg_free_result($_result);
 		}
 		return $_data;
 	}
@@ -176,51 +157,46 @@ class db_mysql {
 		return $this->execute_assoc($sql,$bind,'ea1');
 	}
 	function db_limit($sql, $from=0, $count=0){
-		return $sql.' LIMIT '.intval($from).', '.intval($count);
+		return $sql.' LIMIT '.intval($count).' OFFSET '.intval($from);
 	}
 	function getLenResult(){
 		if (\c\core::$debug)return $this->num_rows;
-		if ($this->m_result)return mysqli_num_rows($this -> m_result);
+		if ($this->m_result)return pg_num_rows($this -> m_result);
 		return 0;
 	}
 	function insertId(){
 		if (\c\core::$debug)return $this->insert_id;
-		return mysqli_insert_id( $this -> connect);
+		return pg_last_oid($this->m_result);
 	}
 	function rows(){
 		if (\c\core::$debug)return $this->affected_rows;
-		return mysqli_affected_rows( $this -> connect);
+		return pg_affected_rows($this->result);
 	}
 	function explain($sql,$bind=array()){
 		$sql='explain '.$this->bind($sql,$bind);
-		$_result = mysqli_query($this->connect,$sql,MYSQLI_USE_RESULT);
+		$_result = pg_query($this->connect,$sql);
 		if(!$_result)return false;
-		if (function_exists('mysqli_fetch_all')){
-			$_data=mysqli_fetch_all($_result,MYSQLI_ASSOC);
-		}else{
-			$data=array();
-			while ($_row = mysqli_fetch_array ($_result,MYSQLI_ASSOC))$_data[] = $_row;
-		}
-		mysqli_free_result($_result);
+		$_data=pg_fetch_all($_result);
+		pg_free_result($_result);
 		return $_data;
 	}
 	function query($sql,$bind){
 		$sql=$this->bind($sql,$bind);
-		return mysqli_query($this->connect,$sql,MYSQLI_USE_RESULT);
+		return pg_query($this->connect,$sql);
 	}
 	function fa($_result){
-		$row=mysqli_fetch_assoc($_result);
-		if (empty($row))mysqli_free_result($_result);
+		$row= pg_fetch_assoc($_result);
+		if (empty($row))pg_free_result($_result);
 		return $row;
 	}
 	function date_from_db($value,$format){
 		$format=strtr($format,self::$date_formats);
-		return "date_format(".$value.",'".$format."')";
+		return "TO_CHAR(".$value.",'".$format."')";
 	}
 	function date_to_db($value,$format=null){
 		if ($value===null)return 'now()';
-		if ($format)return "STR_TO_DATE(".$value.",'".strtr($format,self::$date_formats)."')";
+		if ($format)return "to_timestamp(".$value.",'".strtr($format,self::$date_formats)."')";
 		if (!is_numeric($value))$value=strtotime ($value);
-		return "STR_TO_DATE('".date('Y-m-d H:i:s',$value)."','%Y-%m-%d %H:%i:%s')";
+		return "to_timestamp('".date('Y-m-d H:i:s',$value)."','YYYY-MM-DD HH24:MI:SS')";
 	}
 }

@@ -81,10 +81,10 @@ class dbwork{
 	 * @return bollean|array [datatable struct,primary key,unique keys]
 	 */
 	static function describeTable($tablename,$schema='',$db=''){
-            	if ($db=='')$db=core::$data['db'];
+		if ($db=='')$db=core::$data['db'];
 		if (is_array($db))$db=db::autodb($db);
 		$defaultScheme=$schema?$schema:$db;
-                if (core::$debug){
+		if (core::$debug){
 			debug::group('DBWork describeTable start');
 			debug::consoleLog('Table '.($schema?$schema.'.':'').$tablename);
 		}
@@ -95,7 +95,7 @@ class dbwork{
 			}
 			return self::$describeStorage[$db][$defaultScheme][$tablename];
 		}
-                if (core::$data['db_describe_cache']){
+		if (core::$data['db_describe_cache']){
 			$f=core::$data['db_describe_cache'];
 			$cache_file=$f($tablename,$schema,$db);
 			if (file_exists($cache_file)){
@@ -108,7 +108,7 @@ class dbwork{
 		}
 		$primaryKey=array();
 		$uniqueKey=array();
-                $data=array();
+		$data=array();
 		switch(db::type($db)){
 			case 'mysql':
 				/************************ MYSQL *************************/
@@ -234,7 +234,7 @@ class dbwork{
 					$data[$column]['typerange']=$item['DATA_LENGTH'];
 					if ($item['COMMENTS']) $data[$column]['comment']=$item['COMMENTS'];
 					if ($item['NULLABLE'] == 'N') $data[$column]['notnull']=true;
-                                        if (@$item['DATA_DEFAULT']) $data[$column]['default']=$item['DATA_DEFAULT'];
+					if (@$item['DATA_DEFAULT']) $data[$column]['default']=$item['DATA_DEFAULT'];
 				}
 				break;
 			default:
@@ -351,10 +351,10 @@ class dbwork{
 			if (db::ea11($sql,$pkVals,$db))$opType=2; //update
 		}
 		// if has inuque keys - validate // todo
-	//        if ($desc['unique_key']){
-	//            if ($opType==1){
-	//            }
-	//        }
+	//if ($desc['unique_key']){
+	//if ($opType==1){
+	//}
+	//}
 
 		// check of each field value
 		foreach ($desc['data'] as $field=>$fieldVal){

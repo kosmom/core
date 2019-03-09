@@ -4,7 +4,7 @@ namespace c;
 class str{
 	private $val;
 	private $charset;
-	
+
 	public function __toString () {
 		return $this->val;
 	}
@@ -18,7 +18,7 @@ class str{
 	static function make($string,$charset=null){
 		return new str($string,$charset);
 	}
-	
+
 	function substr($start, $length = null) {
 		$this->val= mb_substr($this->val, $start, $length, $this->charset);
 		return $this;
@@ -59,12 +59,12 @@ class str{
 		$this->val=str_replace($search,$replace,$this->val);
 		return $this;
 	}
-	
+
 	function strtr($from,$to=null){
 		if ($to===null){
 			$this->val=strtr($this->val,$from);
 		}else{
-			$this->val= strtr($this->val,$from,$to);
+			$this->val=strtr($this->val,$from,$to);
 		}
 		return $this;
 	}
@@ -96,7 +96,6 @@ class str{
 	}
 	function upper(){
 		return $this->strtoupper();
-		
 	}
 	function match ($regex) {
 		$matches=array();
@@ -202,7 +201,7 @@ class str{
 	function strtotime($now=null){
 		return $this->totime($now);
 	}
-	
+
 	function mat_filter(){
 		$this->val= translate::mat($this->val);
 		return $this;

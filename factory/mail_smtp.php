@@ -83,7 +83,7 @@ Content-Transfer-Encoding: base64
 ';
 foreach ($this->filelist as $filename=>$content){
 	$type=\c\filedata::mime_content_type($filename);
-    $this->body.='
+	$this->body.='
 --'.$this->separator.'
 Content-Type: '.$type.'; name="=?UTF-8?Q?'.str_replace("+","_",str_replace("%","=",urlencode($filename))).'?="
 Content-transfer-encoding: base64'.($content['cid']?'
@@ -123,7 +123,7 @@ if($code != 250)throw new \Exception('Error DATA2 '.$code);
 
 fputs($smtp_conn,"QUIT\r\n");
 
-			$success=1;
+		$success=1;
 		} catch (\Exception $e) {
 			fclose($smtp_conn);
 			\c\error::add('SMTP Error:'.$e->getMessage());
@@ -135,11 +135,11 @@ fputs($smtp_conn,"QUIT\r\n");
 	}
 
 	private function get_data($smtp_conn){
-    $data="";
-    while($str = fgets($smtp_conn,515)){
-        $data .= $str;
-        if(substr($str,3,1) == " ") break;
-    }
-    return $data;
-}
+		$data="";
+		while($str = fgets($smtp_conn,515)){
+			$data .= $str;
+			if(substr($str,3,1) == " ") break;
+		}
+		return $data;
+	}
 }

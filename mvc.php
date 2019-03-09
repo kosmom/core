@@ -6,6 +6,7 @@ namespace c;
  * @author Kosmom <Kosmom.ru>
  */
 class mvc{
+	private static $viewPageNames=array();
 	static $basefolder='';
 	static $story=array(array('link'=>'')); //for breadcrumbs
 	static $links;
@@ -26,7 +27,7 @@ class mvc{
 	private static $isConfig;
 	static $slashAtEnd='/';
 	static $appFolder='app';
-        private static $realHost;
+	private static $realHost;
 	/**
 	 * counter - __DIR__
 	 * @var array
@@ -80,7 +81,7 @@ class mvc{
 	 * link to favicon.ico
 	 * @var string
 	 */
-	static $favicon='';
+	static $favicon;
 	static $css_dict=array();
 	static $js_dict=array(); // imported dictionary of scripts
 	static $css=array();
@@ -107,8 +108,7 @@ class mvc{
 	static $content=false;
 	private static $folder;
 	private static $nextFolder;
-	//private static $exception_folder;
-
+	
 	static function isAjax(){
 		self::addJs('core_ajax');
 		return core::$ajax;
@@ -183,17 +183,17 @@ class mvc{
 			}
 		case 'ajax.php':
 			if ((core::$debug) && file_exists(self::$folder.'debug.php')){
-                            self::$content='debug.php';
-                            return self::$folder.self::$content;
+				self::$content='debug.php';
+				return self::$folder.self::$content;
 			}
 		case 'debug.php':
 			self::$content='index.php';
 			return self::$folder.self::$content;
 		case 'index.php':
-                        if ($_POST && file_exists(self::$folder.'post.php')){
-                            self::$content='post.php';
-                            return self::$folder.self::$content;
-                        }
+			if ($_POST && file_exists(self::$folder.'post.php')){
+				self::$content='post.php';
+				return self::$folder.self::$content;
+			}
 		case 'post.php':
 			if (self::$search_css_js){
 				$dir=self::getRealDir(self::$folder);
@@ -202,8 +202,8 @@ class mvc{
 			}
 			return self::$isRoute=self::$content=false;
 		default:
-				self::$content='index.php';
-				return self::$folder.self::$content;
+			self::$content='index.php';
+			return self::$folder.self::$content;
 		}
 	}
 
@@ -307,14 +307,14 @@ class mvc{
 		return '/'.self::$basefolder.self::$routes[$route_name];
 	}
 	 */
-	
+
 	/**
 	 * @deprecated since version 3.4
 	*/
 	static function get_real_dir($__DIR__=null,$withApp=true){
 		return self::getRealDir($__DIR__,$withApp);
 	}
-	
+
 	/**
 	 * Path to current folder via http
 	 * @param string $__DIR__
@@ -329,7 +329,6 @@ class mvc{
 	}
 
 	/**
-	 * Inverse title
 	 * @deprecated use $title_inverse variable
 	 * @deprecated since version 3.4
 	 */
@@ -340,7 +339,7 @@ class mvc{
 	/**
 	 * @deprecated since version 3.4
 	*/
-	static function module_exists( $path='',$__DIR__=null){
+	static function module_exists($path='',$__DIR__=null){
 		return self::moduleExists($path,$__DIR__);
 	}
 	/**
@@ -349,7 +348,7 @@ class mvc{
 	 * @param string|null $__DIR__
 	 * @return boolean
 	*/
-	static function moduleExists( $path='',$__DIR__=null){
+	static function moduleExists($path='',$__DIR__=null){
 		if (empty($__DIR__))$__DIR__=self::$base__DIR__.'/'.self::$appFolder.'/';
 		if (substr($path,0,1)=='/'){
 			$path=substr($path,1);
@@ -389,7 +388,7 @@ class mvc{
 			debug::timer();
 		}
 		header('Content-Type: text/html; charset='.core::$charset);
-                mb_internal_encoding(core::$charset);
+		mb_internal_encoding(core::$charset);
 		if (request::isAjax())ajax::init();
 		$dir=trim(dirname($_SERVER['SCRIPT_NAME']),'\\/');
 		if ($dir)self::$basefolder=$dir.'/';
@@ -397,10 +396,10 @@ class mvc{
 			self::$base__DIR__=$__DIR__;
 			self::$next_dir=array($__DIR__.DIRECTORY_SEPARATOR.self::$appFolder);
 		}
-                if (!isset($_SERVER['REDIRECT_URL'])){
-                    $q=strpos($_SERVER['REQUEST_URI'], '?');
-                    $_SERVER['REDIRECT_URL']=$q===false?$_SERVER['REQUEST_URI']:substr($_SERVER['REQUEST_URI'],0, $q);
-                }
+		if (!isset($_SERVER['REDIRECT_URL'])){
+			$q=strpos($_SERVER['REQUEST_URI'], '?');
+			$_SERVER['REDIRECT_URL']=$q===false?$_SERVER['REQUEST_URI']:substr($_SERVER['REQUEST_URI'],0, $q);
+		}
 		if (request::isCmd()){
 			global $argv;
 			if (@strpos($argv[1], '?')!==false){ //parse get params
@@ -413,13 +412,13 @@ class mvc{
 		}else{
 			self::$links_string=substr(ltrim(@$_SERVER['REDIRECT_URL'],'\\/'), strlen(self::$basefolder));
 		}
-                self::$realHost=isset($_SERVER['HTTP_X_FORWARDED_HOST'])?$_SERVER['HTTP_X_FORWARDED_HOST']:$_SERVER['HTTP_HOST'];
+		self::$realHost=isset($_SERVER['HTTP_X_FORWARDED_HOST'])?$_SERVER['HTTP_X_FORWARDED_HOST']:$_SERVER['HTTP_HOST'];
 		if (core::$charset!=core::UTF8)self::$links_string=iconv('utf-8',core::$charset,self::$links_string);
 		self::$links=explode('/',self::$links_string);
 		self::getConfig();
 		self::$nextFolder=$__DIR__.DIRECTORY_SEPARATOR.self::$appFolder.DIRECTORY_SEPARATOR;
 	}
-	
+
 	private static function getConfig(){
 		if (self::$isConfig)return ;
 		if (file_exists(__DIR__.'/global-config/mvc.php'))include __DIR__.'/global-config/mvc.php';
@@ -581,7 +580,7 @@ class mvc{
 	/**
 	 * Add css style from mvc dictionary or create css link to file
 	 * @param string $css
-         * @return super
+	 * @return super
 	 */
 	static function addCss($css){
 		self::getConfig();
@@ -744,9 +743,8 @@ class mvc{
 	}
 
 	static function drawTitle(){
-		return input::htmlspecialchars(implode(' '.self::$titleSeparator.' ',self::$title_inverse?array_reverse(self::$title):self::$title));
+		return input::htmlspecialchars(is_string(self::$title)?self::$title:(implode(' '.self::$titleSeparator.' ',self::$title_inverse?array_reverse(self::$title):self::$title)));
 	}
-
 	static function header(){
 		if (headers_sent()){
 			if (core::$debug){
@@ -772,28 +770,29 @@ class mvc{
 			if (self::$description)self::$meta['description']=self::$description;
 			if (self::$keywords)self::$meta['keywords']=self::$keywords;
 			if (self::$noindex)self::$meta['noindex']=self::$noindex===true?'noindex,follow':self::$noindex;
-//print_r(self::$url_links);
-//print_r(self::$url);
-//print_r(self::$story);
 	?><!DOCTYPE html>
-	<html>
-	<head>
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta charset="<?=core::$charset?>">
-		<link rel="canonical" href='//<?=self::$realHost?>/<?=self::$basefolder.htmlspecialchars(rtrim(@implode('/',self::$url_links).'/'.@self::$canonical_links,'/')).self::$slashAtEnd?>'>
-	<title><?=self::drawTitle();?></title><?
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta charset="<?=core::$charset?>">
+	<link rel="canonical" href='<?=request::protocol().self::$realHost.self::$basefolder.htmlspecialchars(rtrim('/'.@implode('/',self::$url_links).'/'.@self::$canonical_links,'/')).self::$slashAtEnd?>'>
+<title><?=self::drawTitle();?></title><?php
 foreach (self::$meta as $name=>$content){?>
-<meta name="<?=$name?>" content="<?=input::htmlspecialchars($content)?>">
+<meta name="<?=input::htmlspecialchars($name)?>" content="<?=input::htmlspecialchars($content)?>">
 <?php }?>	
-		<base href="//<?=self::$realHost?>/<?=self::$basefolder?>" />
-		<?=self::drawCss().(self::$js_first?self::drawJs():'');if (self::$favicon){?><link href="<?=self::$favicon?><?=core::$version?'?v='.core::$version:''?>" rel="icon" type="image/x-icon" /><?php }?>
-	</head>
-		<?php }
-		if (!self::$noBody){?><body<?if (self::$bodyAttributes){
-			foreach (self::$bodyAttributes as $attribute=>$v){
-				echo ' '.input::htmlspecialchars($attribute).'="'.input::htmlspecialchars($v).'"';
-			}
-		}?>><?php }
+	<base href="//<?=self::$realHost?>/<?=self::$basefolder?>" />
+	<?=self::drawCss().(self::$js_first?self::drawJs():'');if (self::$favicon){?><link href="<?=self::$favicon?><?=core::$version?'?v='.core::$version:''?>" rel="icon" type="image/x-icon" /><?php }?>
+</head>
+<?php }
+if (!self::$noBody){
+	echo '<body';
+	if (self::$bodyAttributes){
+	foreach (self::$bodyAttributes as $attribute=>$v){
+		echo ' '.input::htmlspecialchars($attribute).'="'.input::htmlspecialchars($v).'"';
+	}
+	}
+echo '>';
+}
 	}
 	static function footer(){
 		if (request::isCmd())return false;
@@ -802,14 +801,11 @@ foreach (self::$meta as $name=>$content){?>
 		if (self::$partical_content_folder!==false)return true;
 		// until addJs addCss with __DIR__ not working
 		echo self::drawJs();
-		if (!self::$noBody){?></body><?php }
-		if (!self::$noHeader){?></html><?php }
+		if (!self::$noBody)echo '</body>';
+		if (!self::$noHeader)echo '</html>';
 	}
 
 	/**
-	 * Get addition route vars from current directory
-	 * @deprecated Use getParamsAsArray method
-	 * @return array
 	 * @deprecated since version 3.4
 	 */
 	static function get_vars(){
@@ -828,9 +824,6 @@ foreach (self::$meta as $name=>$content){?>
 	}
 
 	/**
-	 * Get addition route strinng from current directory
-	 * @deprecated Use getParamsAsString method
-	 * @return string
 	 * @deprecated since version 3.4
 	 */
 	static function get_params(){
@@ -912,7 +905,7 @@ foreach (self::$meta as $name=>$content){?>
 			$nextfile=$__DIR__.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'index.php';
 			if (!file_exists($nextfile))continue;
 			$module=self::getFileProp($nextfile);
-                        
+
 			if (empty($module->name)) continue;
 			if (!isset($module->link))$module->href=$module->link=@(self::$url[$base__DIR__]?self::$url[$base__DIR__].'/':'').$href.$file.self::$slashAtEnd;
 			$module->__DIR__=$__DIR__.DIRECTORY_SEPARATOR.$file;
@@ -980,7 +973,7 @@ foreach (self::$meta as $name=>$content){?>
 	}
 	static function addStory($link,$title){
 		self::$story[]=array('link'=>$link,'title'=>$title);
-		self::$canonical_links=$link;
+		//self::$canonical_links=$link;
 	}
 	/**
 	 * Use page as wrapper. Find default, exception subpage from current
@@ -1017,7 +1010,7 @@ foreach (self::$meta as $name=>$content){?>
 		// _ - private pages. closest access for direct routings
 		$temp=self::$file_links[self::$page_counter]=empty($nextPart)?$default:$nextPart;
 		if (substr($temp,0,1)!='_')self::$url_links[self::$page_counter]=$temp;
-	//		if (!$next_part)unset(self::$url_links[self::$page_counter]);
+	//if (!$next_part)unset(self::$url_links[self::$page_counter]);
 		if (substr($nextPart,0,1)=='_' || !is_dir($__DIR__.DIRECTORY_SEPARATOR.$nextPart)){
 
 			if (self::$foldersRegexp){
@@ -1065,10 +1058,10 @@ foreach (self::$meta as $name=>$content){?>
 		}
 		self::$url[$__DIR__.DIRECTORY_SEPARATOR.self::$file_links[self::$page_counter]]=(empty($nextPart) or substr($nextPart,0,1)=='_')?self::$url[$__DIR__]:implode('/',self::$url_links);
 		self::$next_dir[self::$page_counter]=$temp=$__DIR__.DIRECTORY_SEPARATOR.self::$file_links[self::$page_counter];
-		if (self::$lastDir==$__DIR__)array_pop(self::$next_dir);
+		//if (self::$lastDir==$__DIR__)array_pop(self::$next_dir);
 		self::$indexfile[$temp]=implode('/',self::$file_links);
 		self::$nextFolder=$temp.DIRECTORY_SEPARATOR;
-	//		self::$story[self::$page_counter]['link']=self::$url[$__DIR__];
+	//self::$story[self::$page_counter]['link']=self::$url[$__DIR__];
 		//self::$story[self::$page_counter]['link']=self::$indexfile[$temp];
 		self::$page_counter++;
 		self::$isRoute=true;
@@ -1076,8 +1069,7 @@ foreach (self::$meta as $name=>$content){?>
 		return isset($return)?$return:($nextPart?$nextPart:$default);
 	}
 
-	
-		private static function relativeFilePath($segment,$__DIR__){
+	private static function relativeFilePath($segment,$__DIR__){
 		if (substr($segment,0,1)!='/')return $segment;
 		// add .. in path to main folder
 		$path=self::$base__DIR__.DIRECTORY_SEPARATOR.self::$appFolder;
@@ -1113,29 +1105,23 @@ foreach (self::$meta as $name=>$content){?>
 		self::$indexfile[$temp]=implode('/',self::$file_links);
 		self::$nextFolder=$temp.DIRECTORY_SEPARATOR;
 		self::$page_counter++;
-		self::$isRoute=true;
 		self::$lastDir=$__DIR__;
-		return true;
+		return self::$isRoute=true;
 	}
 
-		/**
-		 * @deprecated since version 3.4
-		 */
+	/**
+	 * @deprecated since version 3.4
+	 */
 	static function controller_route($routePath){
 		return self::controllerRoute($routePath);
 	}
 	
 	static function clearScriptsFull(){
-		foreach (self::$required_js as $key=>$hard){
-			unset(self::$required_js[$key]);
-		}
-		foreach (self::$css as $key=>$script){
-			unset(self::$css[$key]);
-		}
-		foreach (self::$js as $key=>$script){
-			unset(self::$js[$key]);
-		}
+		self::$js=self::$css=self::$required_js=array();
 	}
+	/**
+	 * Clear all scripts & css initialized after mvc init
+	 */
 	static function clearScripts(){
 		foreach (self::$required_js as $key=>$hard){
 			if ($hard)unset(self::$required_js[$key]);
@@ -1147,10 +1133,10 @@ foreach (self::$meta as $name=>$content){?>
 			if ($script[1])unset(self::$js[$key]);
 		}
 	}
-		/**
-		 * Replace current path of new path and display page from start
-		 * @param string $routePath
-		 */
+	/**
+	 * Replace current path of new path and display page from start
+	 * @param string $routePath
+	 */
 	static function controllerRoute($routePath){//,$startDir=''){
 		self::$next_dir=array(self::$next_dir[0]);
 		self::$links_string=$routePath;
@@ -1176,7 +1162,7 @@ foreach (self::$meta as $name=>$content){?>
 	static function getRemaningParams(){
 		return implode('/',self::getParamsAsArray());
 	}
-        /**
+	/**
 	 * Get route vars from stack /_/_/ up to current page
 	 * @param array $routes
 	 * @return array key=>val
@@ -1308,6 +1294,9 @@ foreach (self::$meta as $name=>$content){?>
 	static function layoutRemove(){
 		array_pop(self::$next_dir);
 	}
+	static function setViewPageName($__DIR__,$name='index'){
+		self::$viewPageNames[$__DIR__]=$name;
+	}
 
 	/**
 	 * @deprecated since version 3.4 use viewPage
@@ -1338,7 +1327,7 @@ foreach (self::$meta as $name=>$content){?>
 		do {
 			$dir=array_shift(self::$next_dir);
 			if (!$dir)return __DIR__.'/empty';
-			$nextPage=$dir.DIRECTORY_SEPARATOR.(request::isCmd()?'cli':'index').".phtml";
+			$nextPage=$dir.DIRECTORY_SEPARATOR.(request::isCmd()?'cli':isset(self::$viewPageNames[$dir])?self::$viewPageNames[$dir]:'index').".phtml";
 		} while (!is_readable($nextPage));
 		return $nextPage?$nextPage:__DIR__.'/empty';
 	}

@@ -247,7 +247,7 @@ class table{
 			$cb=$input['fill'][$key];
 			return $cb($row,$key);
 		}
-                return @$this->drawCellValue($row instanceof model?$row->$key:$row[$key],$key);
+		return @$this->drawCellValue($row instanceof model?$row->$key:$row[$key],$key);
 	}
 	
 	private function drawCell($key,$row,$input){
@@ -280,7 +280,7 @@ class table{
 		if (!isset($input['group'])) return '';
 		$lastGroupState=array();
 		$reset=false;
-                $out='';
+		$out='';
 		foreach($input['group'] as $groupKey=> $item){
 			if ($reset) $this->lastGroupState[$groupKey]='';
 			$lastGroupState[$groupKey]=(isset($item['field']))?$row[$item['field']]:$item['fill']($row);
@@ -306,7 +306,7 @@ class table{
 		if (!isset($input['groupFooter'])) return '';
 		$lastGroupState=array();
 		$reset=false;
-        $out='';
+		$out='';
 		foreach($input['groupFooter'] as $groupKey=> $item){
 			if ($reset) $this->lastGroupFooterState[$groupKey]='';
 			$lastGroupState[$groupKey]=(isset($item['field']))?$row[$item['field']]:$item['fill']($row);
@@ -376,9 +376,9 @@ class table{
 		$row=array();
 		$out='<tbody>';
 		$lastrow=null;
-                
+
 		if (is_array($this->data)){
-                    if ($input['row_attributes']){
+			if ($input['row_attributes']){
 				if ($input['fill']){
 					foreach($this->data as $key=>$row){
 						$this->drawGroupFooter($input,$row);
@@ -424,7 +424,7 @@ class table{
 					}
 				}
 			}
-                }elseif ($this->data instanceof model or $this->data instanceof collection){ //empty($this->data) or 
+		}elseif ($this->data instanceof model or $this->data instanceof collection){ //empty($this->data) or 
 			if ($input['row_attributes']){
 				if ($input['fill']){
 					foreach($this->data as $key=>$row){

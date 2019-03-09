@@ -6,7 +6,6 @@ namespace c;
  * @author Kosmom <Kosmom.ru>
  */
 class ajax {
-
 	private static $answer = array();
 
 	/**
@@ -34,30 +33,21 @@ class ajax {
 		return self::errorHandler($errno,$errstr,$errfile,$errline);
 	}
 	static function errorHandler($errno, $errstr, $errfile, $errline){
-
-	if (!(error_reporting() & $errno))return;
-	switch ($errno) {
-	case E_USER_ERROR:
-		self::consoleGroup('FATAL ERROR'.$errstr, error::ERROR);
+		if (!(error_reporting() & $errno))return;
+		switch ($errno) {
+			case E_USER_ERROR:
+				self::consoleGroup('FATAL ERROR'.$errstr, error::ERROR);
+				break;
+			case E_USER_WARNING:
+				self::consoleGroup('WARNING ERROR'.$errstr, error::WARNING);
+				break;
+			default:
+				self::consoleGroup('ERROR'.$errstr);
+		}
 		self::consoleLog('Error in '.$errline.' string of '.$errfile);
 		self::consoleGroupEnd();
-		if (core::$ajax)ajax::render();
-		break;
-
-	case E_USER_WARNING:
-		self::consoleGroup('WARNING ERROR'.$errstr, error::WARNING);
-		self::consoleLog('Error in '.$errline.' string of '.$errfile);
-		self::consoleGroupEnd();
-		break;
-
-
-	default:
-		self::consoleGroup('ERROR'.$errstr);
-		self::consoleLog('Error in '.$errline.' string of '.$errfile);
-		self::consoleGroupEnd();
-		break;
-	}
-	return false;
+		if ($errno==E_USER_ERROR && core::$ajax)ajax::render();
+		return false;
 	}
 
 	static function getAct(){
@@ -175,7 +165,6 @@ class ajax {
 		self::$answer[] = array('_type' => 'console_groupEnd');
 	}
 
-
 	static private function renderPrepare($redirect,$answerNeeded){
 		// if redirect - not need show errors. Error stack must be added with messages
 		if (!$redirect){
@@ -200,7 +189,7 @@ class ajax {
 		return '<script>core_ajax_process('.self::renderOut(false,false).')</script>';
 	}
 	static function renderOut($redirect=false,$answerNeeded=null){
-		self::renderPrepare ($redirect,$answerNeeded);
+		self::renderPrepare($redirect,$answerNeeded);
 		return input::jsonEncode(self::$answer);
 	}
 	static function render($redirect = false,$answerNeeded=null) {

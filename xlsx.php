@@ -13,9 +13,7 @@ array_unshift($rs,$columns);
 c\xlsx::$columns=array_keys($columns);
 c\xlsx::writesheet($rs);
 c\xlsx::generate('export_'.time());
-*/
 
-/*
 //export sample from table class
 c\tables::$header=array('id'=>'id',
 	'tree_id'=>'column 1',
@@ -26,9 +24,7 @@ c\tables::$data=c\db::ea($sql);
 c\xlsx::writesheet_from_table($table_params);
 c\xlsx::generate('export_'.time());
 }
- *  */
 
-/*
 //import sample
 $filedata=c\xlsx::get($_FILES['upload']['tmp_name']);
 */
@@ -38,6 +34,7 @@ $filedata=c\xlsx::get($_FILES['upload']['tmp_name']);
  * @author Kosmom <Kosmom.ru>
  */
 class xlsx{
+	const DEFAULT_FORMATS=array(0=>'text',9=>'percent',10=>'percent', 14=>'date',15=>'date',16=>'date',17=>'date',18=>'date',19=>'date',20=>'date',21=>'date',22=>'date');
 	private static $unic=array();
 	private static $colnumber=array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ','BA','BB','BC','BD','BE','BF','BG','BH','BI','BJ');
 	static $outbuffer='';
@@ -45,7 +42,7 @@ class xlsx{
 	private static $count=-1;
 	private static $xlsxPages=array();
 	static $sst=array();
-	static $formats=array(0=>'text',9=>'percent',10=>'percent', 14=>'date',15=>'date',16=>'date',17=>'date',18=>'date',19=>'date',20=>'date',21=>'date',22=>'date');
+	static $formats=self::DEFAULT_FORMATS;
 	static $columns=array();
 	static $header=array();
 
@@ -54,7 +51,7 @@ class xlsx{
 		self::$unicCount=-1;
 		self::$outbuffer='';
 		self::$sst=array();
-		self::$formats=array(0=>'text',9=>'percent',10=>'percent', 14=>'date',15=>'date',16=>'date',17=>'date',18=>'date',19=>'date',20=>'date',21=>'date',22=>'date');
+		self::$formats=self::DEFAULT_FORMATS;
 	}
 
 	private static function writestring($rownum,$row,$callback=array()){
@@ -192,7 +189,7 @@ class xlsx{
 	static function display($source,$filename=''){
 		if (empty($filename)) $filename=$source;
 		if (!file_exists($source)) throw new \Exception('Source sample file not found');
-	header("Last-Modified: ".gmdate("D,d M YH:i:s")." GMT");
+		header("Last-Modified: ".gmdate("D,d M YH:i:s")." GMT");
 		header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
 		header("Pragma: no-cache");
 		header("Content-Type: application/force-download");
@@ -201,7 +198,7 @@ class xlsx{
 		header('Content-Disposition: attachment;filename="'.$filename.'.xlsx"');
 		header("Content-Transfer-Encoding: binary");
 		while (@ob_end_flush());
-	readfile($source);
+		readfile($source);
 	//header("Content-Length: ".strlen($source));
 		die();
 	}

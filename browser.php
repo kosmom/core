@@ -7,24 +7,24 @@ namespace c;
  */
 class browser{
 
-    /**
-     * @deprecated since version 3.4
-     */
+	/**
+	 * @deprecated since version 3.4
+	 */
 	static function get($userAgent = null){
-		return request::get($userAgent);
+		return request::getBrowser($userAgent);
 	}
 
-    /**
-     * @deprecated since version 3.4
-     */
+	/**
+	 * @deprecated since version 3.4
+	 */
 	static function checkForBrowserVersion(array $browser, array $conditions){
 		return request::checkForBrowserVersion($browser, $conditions);
 	}
 
-    /**
-     * @deprecated since version 3.4
-     */
-    static function spider($USER_AGENT=''){
-        return request::spider($USER_AGENT);
-    }
+	/**
+	 * @deprecated since version 3.4
+	 */
+	static function spider($USER_AGENT=''){
+		return request::spider($USER_AGENT);
+	}
 }

@@ -14,7 +14,6 @@ class curl{
 	private static $master;
 	private static $contents;
 
-
 	static function getContent($URL,$post=null,$cookieFile=null,$options=array()){
 		$c = curl_init();
 		curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
@@ -22,30 +21,29 @@ class curl{
 		curl_setopt($c, CURLOPT_REFERER, $URL);
 		if ($post){
 			curl_setopt($c, CURLOPT_POST, 1);
-		if (is_array($post)){
-			curl_setopt($c, CURLOPT_POSTFIELDS, http_build_query($post));
-		}else{
-			curl_setopt($c, CURLOPT_POSTFIELDS, $post);
-		}
+			if (is_array($post)){
+				curl_setopt($c, CURLOPT_POSTFIELDS, http_build_query($post));
+			}else{
+				curl_setopt($c, CURLOPT_POSTFIELDS, $post);
+			}
 		}
 		if ($cookieFile){
 			curl_setopt($c, CURLOPT_COOKIEJAR, $cookieFile);
 			curl_setopt($c, CURLOPT_COOKIEFILE, $cookieFile);
 		}
-curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt ($c, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt ($c, CURLOPT_SSL_VERIFYPEER, 0); 
+		curl_setopt ($c, CURLOPT_SSL_VERIFYPEER, 0); 
 		curl_setopt($c, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17');
 		curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
-   curl_setopt($c, CURLOPT_FOLLOWLOCATION, 1);
-   curl_setopt($c, CURLOPT_VERBOSE, 1);
+		curl_setopt($c, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt($c, CURLOPT_VERBOSE, 1);
 		if ($options)curl_setopt_array($c, $options);
 		$rs = curl_exec($c);
 		if ($rs===false)throw new \Exception(curl_error($c));
 		curl_close($c);
 		return $rs;
 	}
-
 
 	static function addTasks($url,$position=0,$callback=null){
 		$task=array('url'=>trim($url),'position'=>$position);
@@ -62,13 +60,7 @@ curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
 		});
 		self::$stack=array_keys($fil);
 	}
-	//    private static function done($ch,$header){
-	//        self::$pipe--;
-	//        $task_id=self::$tasks_link[(int)$ch];
-	//        self::$tasks[$task_id]['status']=1;
-	//        $content=self::$contents[(int)$ch];
-	//        if (isset(self::$tasks[$task_id]['callback']))self::$tasks[$task_id]['callback']($ch,$header,$content);
-	//    }
+
 	static private function addCh($task_id){
 		$ch = curl_init();
 		$options = array(
@@ -97,20 +89,17 @@ curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
 
 		// start the first batch of requests
 		for ($i = self::$pipe; $i < $rolling_window; $i++) {
-		  self::addCh(array_shift(self::$stack));
-		  self::$pipe++;
+			self::addCh(array_shift(self::$stack));
+			self::$pipe++;
 		}
 		self::check(0);
 		self::check();
 	}
 	static function check($pause=100){
 	usleep($pause);
-	//      while (($execrun = ) == CURLM_CALL_MULTI_PERFORM) {
-	//        ;
-	//      }
-	  curl_multi_exec(self::$master, self::$running);
-	  //if ($execrun != CURLM_OK)return false;
-	  while ($done = curl_multi_info_read(self::$master)) {
+		curl_multi_exec(self::$master, self::$running);
+		//if ($execrun != CURLM_OK)return false;
+		while ($done = curl_multi_info_read(self::$master)) {
 			self::$pipe--;
 			$task_id=self::$tasks_link[(int)$done['handle']];
 			self::$tasks[$task_id]['status']=1;
@@ -118,16 +107,16 @@ curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
 			if (isset(self::$tasks[$task_id]['callback']))self::$tasks[$task_id]['callback']($done['handle'],$content);
 
 			//var_dump(curl_multi_getcontent($done['handle']));
-		  if (self::$stack){
-			$rolling_window = min(sizeof(self::$stack),5);
-			for ($i = self::$pipe; $i < $rolling_window; $i++) {
-				self::addCh(array_shift(self::$stack));
-				self::$pipe++;
+			if (self::$stack){
+				$rolling_window = min(sizeof(self::$stack),5);
+				for ($i = self::$pipe; $i < $rolling_window; $i++) {
+					self::addCh(array_shift(self::$stack));
+					self::$pipe++;
+				}
+				self::$running=1;
 			}
-			self::$running=1;
+			curl_multi_remove_handle(self::$master, $done['handle']);
 		}
-		curl_multi_remove_handle(self::$master, $done['handle']);
-	  }
 	}
 	static function waitAll(){
 		self::push();
@@ -138,7 +127,7 @@ curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
 		curl_multi_close(self::$master);
 		var_dump(self::$contents);
 	}
-	
+
 	static function ping($host,$port=-1,$protocol='tcp',$timeout=1){
 		$fp = fsockopen(($protocol!='tcp'?$protocol.'://':'').$host,$port,$errCode,$errStr,$timeout);
 		$out=(bool)$fp;
@@ -155,8 +144,8 @@ curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
 		$ts = microtime(true);
 		socket_send($socket, $package, strLen($package), 0);
 		if (socket_read($socket, 255))
-				$result = microtime(true) - $ts;
-		else    $result = false;
+		$result = microtime(true) - $ts;
+		else $result = false;
 		socket_close($socket);
 		return $result;
 	}

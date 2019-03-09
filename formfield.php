@@ -1,64 +1,64 @@
 <?php
 namespace c;
 class formfield extends arrayaccess{
-    var $name;
-    var $label;
-    var $label_full;
+	var $name;
+	var $label;
+	var $label_full;
 	/**
 	 * Is label to html
 	 * @var boolean
 	 */
-    var $label_html;
-    var $value;
-    var $values;
-    var $tooltip;
-    var $type='text';
-    var $render='auto';
-    var $resolver='c\\factory\\form_bootstrap';
-    var $ico;
-    var $placeholder;
-    var $group_classes;
-    var $classes;
+	var $label_html;
+	var $value;
+	var $values;
+	var $tooltip;
+	var $type='text';
+	var $render='auto';
+	var $resolver='c\\factory\\form_bootstrap';
+	var $ico;
+	var $placeholder;
+	var $group_classes;
+	var $classes;
 	/**
 	 * Disabled field
 	 * @var boolean
 	 */
-    var $disabled=false;
+	var $disabled=false;
 	/**
 	 * Is readonly field
 	 * @var boolean
 	 */
-    var $readonly=false;
+	var $readonly=false;
 	/**
 	 * Is value to html
 	 * @var boolean
 	 */
-    var $html;
+	var $html;
 	/**
 	 * URL for capche
 	 * @var string
 	 */
-    var $url;
-    var $inputmask;
-    var $subform;
-    var $attributes;
-    var $filters;
-    var $helper;
-    var $validate;
+	var $url;
+	var $inputmask;
+	var $subform;
+	var $attributes;
+	var $filters;
+	var $helper;
+	var $validate;
 	/**
 	 * Position priority element in form
 	 * @var float
 	 */
-    var $position;
-    var $default;
+	var $position;
+	var $default;
 	/**
 	 * Is element with range [min][max] keys
 	 * @var float
 	 */
-    var $range;
-    var $prefix;
-    var $postfix;
-    var $datalist;
+	var $range;
+	var $prefix;
+	var $postfix;
+	var $datalist;
 	
 	function setName($val){
 		$this->name=$val;
