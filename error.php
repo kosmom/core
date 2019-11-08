@@ -181,7 +181,7 @@ class error{
 	 * @param string|integer|array $string string
 	 */
 	static function log($filename,$string){
-		if (is_array($string))$string= print_r ($string,true);
+		if (is_array($string) or is_object($string))$string= print_r ($string,true);
 		if (!file_put_contents($filename, "\n".$string, FILE_APPEND | LOCK_EX))file_put_contents($filename, "\n".$string);
 		return new super();
 	}

@@ -335,10 +335,14 @@ class table{
 		}
 		return $attributes;
 	}
+	private function cellHtmlConvert($value,$key){
+		if (@$this->header[$key]['is_html'])return $value;
+		return input::htmlspecialchars($value);
+	}
 	private function drawCellValue($value,$key){
-		if (!is_array($this->header[$key]))return input::htmlspecialchars($value);
-		if (!isset($this->header[$key]['values']))return input::htmlspecialchars($value);
-		return @$this->header[$key]['values'][$value]?$this->header[$key]['values'][$value]:input::htmlspecialchars($value);
+		if (!is_array($this->header[$key]))return $this->cellHtmlConvert($value,$key);
+		if (!isset($this->header[$key]['values']))return $this->cellHtmlConvert($value,$key);
+		return @$this->header[$key]['values'][$value]?$this->header[$key]['values'][$value]:$this->cellHtmlConvert($value,$key);
 	}
 	/**
 	 * @deprecated since version 3.4

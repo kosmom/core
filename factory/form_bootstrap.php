@@ -76,7 +76,7 @@ class form_bootstrap{
 	}
 	function renderFieldLabel($item){
 		if (@$item['type']=='hidden')return '';
-		if ($this->form->prop['type']!='form-inline' || @$item['type']!='submit')return (!empty($item['label']) && @$item['type']!='check' && @$item['type']!='boolean' && @$item['type']!='checkbox'?'<label for="'.$item['attributes']['id'].'" '.$this->horizontalGetLabelClass().'>'.(@$item['label_html']?$item['label']:\c\input::htmlspecialchars($item['label'])).'</label> ':'').$this->horizontalGetColDiv($item);
+		if ($this->form->prop['type']!='form-inline' || @$item['type']!='submit')return (!empty($item['label']) && @$item['type']!='check' && @$item['type']!='boolean' && @$item['type']!='checkbox'?'<label '.($this->form->prop['type']=='md-form' && ($item['type']=='file' || $item['type']=='select')?'class="active"':'').' for="'.$item['attributes']['id'].'" '.$this->horizontalGetLabelClass().'>'.(@$item['label_html']?$item['label']:\c\input::htmlspecialchars($item['label'])).'</label> ':'').$this->horizontalGetColDiv($item);
 		return '';
 	}
 
@@ -276,7 +276,7 @@ class form_bootstrap{
 							}
 						}else{
 							foreach ($item['values'] as $key=>$val){
-								$out.='<option value="'.\c\input::htmlspecialchars($key).'"'.($renderValue==$key?' selected':'').'>'.\c\input::htmlspecialchars($val).'</option>';
+								$out.='<option value="'.\c\input::htmlspecialchars($key).'"'.((string)$renderValue===(string)$key?' selected':'').'>'.\c\input::htmlspecialchars($val).'</option>';
 							}
 						}
 						$out.='</select>';

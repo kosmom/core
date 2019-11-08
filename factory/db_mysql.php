@@ -110,7 +110,7 @@ class db_mysql {
 				\c\debug::trace('MySQL error: '.mysqli_error($this->connect),\c\error::ERROR);
 			}
 			if (empty(\c\core::$data['db_exception']))return false;
-			throw new \Exception('SQL execute error');
+			throw new \Exception('SQL execute error^ '.mysqli_error($this->connect));
 		}
 		$subsql=strtolower(substr($sql,0,4));
 		$_data = array();

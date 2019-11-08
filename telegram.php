@@ -16,7 +16,13 @@ class telegram{
 	const SEND_CHAT_ACTION_FIND_LOCATION='find_location';
 
 	const EMOJI_THUMBS_UP="\xF0\x9F\x91\x8D";
-	const EMOJI_FIREWORKS="\xF0\x9F\x8E\x86";
+	const EMOJI_FIREWORKS="\xF0\x9F\x8E\x86"; 
+	
+	const PARSE_MODE_MARKDOWN='Markdown';
+	const PARSE_MODE_HTML='HTML';
+	const PARSE_MODE_NONE=null;
+	
+	static $parse_mode;
 	
 	static function getMe(){
 		self::check();
@@ -53,16 +59,17 @@ class telegram{
 		$reply = json_encode($resp);
 		return self::sendMessage($chat_id, $text, $reply);
 	}
-
 	static function sendMessage($chat_id,$text,$reply_markup=null){
 		self::check();
 		$params=array('chat_id'=>$chat_id,'text'=>input::iconv($text,true));
+		if (self::$parse_mode)$params['parse_mode']=self::$parse_mode;
 		if ($reply_markup)$params['reply_markup']=$reply_markup;
 		return self::request('sendMessage',$params);
 	}
 	static function editMessage($chat_id,$message_id,$text,$reply_markup=null){
 		self::check();
 		$params=array('chat_id'=>$chat_id,'message_id'=>$message_id,'text'=>input::iconv($text,true));
+		if (self::$parse_mode)$params['parse_mode']=self::$parse_mode;
 		if ($reply_markup)$params['reply_markup']=$reply_markup;
 		return self::request('editMessageText',$params);
 	}
@@ -93,7 +100,7 @@ class telegram{
 		return self::request('setWebhook',$data);
 	}
 	static function getWebhookInfo(){
-		return self::request('getWebhookInfo');
+	    return self::request('getWebhookInfo');
 	}
 	/**
 	 * get Webhook data
@@ -110,12 +117,14 @@ class telegram{
 			$a=core::$data['telegram_request'];
 			return $a($api,$post);
 		}else{
-			$url = 'https://api.telegram.org/bot'.core::$data['telegram'].'/'.$api;
+			$url='https://api.telegram.org/bot'.core::$data['telegram'].'/'.$api;
 			$proxy=array();
 			if (core::$data['telegram_proxy']){
-				$proxy[CURLOPT_PROXY]=core::$data['telegram_proxy']['host'];
-				$proxy[CURLOPT_PROXYUSERPWD]=core::$data['telegram_proxy']['auth'];
-				$proxy[CURLOPT_PROXYTYPE]=core::$data['telegram_proxy']['type'];
+				$proxy=array(
+					CURLOPT_PROXY=>core::$data['telegram_proxy']['host'],
+					CURLOPT_PROXYUSERPWD=>core::$data['telegram_proxy']['auth'],
+					CURLOPT_PROXYTYPE=>core::$data['telegram_proxy']['type']
+				);
 			}
 			$rs=curl::getContent ($url,$post,null,$proxy);
 			return json_decode($rs, true);

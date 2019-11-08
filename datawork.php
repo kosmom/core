@@ -121,7 +121,8 @@ class datawork{
 	 */
 	static function group($array,$key,$val=false){
 		if ($array instanceof \SplFixedArray)$array=$array->toArray();
-		if (!is_array($array)){
+
+		if (!is_array($array) && !$array instanceof collection && !$array instanceof collection_object){
 			if (core::$debug){
 				debug::group('Datawork key group operation');
 				debug::trace('Array is not array',error::WARNING);
@@ -139,15 +140,72 @@ class datawork{
 				return self::key2($array,$key,$val);
 			}
 		}
-		if (PHP_VERSION_ID>=50500 && $k0=='[]' && !is_object($val) && !is_array($val) && $val!==true && $val!==false){
+		if (PHP_VERSION_ID>=50500 && $k0=='[]' && !is_object($val) && !is_array($val) && $val!==true && $val!==false && is_array($array)){
 			return array_column($array,$val);
 		}
-		if (PHP_VERSION_ID>=50500 && empty($key[1]) && $val!=self::KEY && $key[0]!=self::KEY && !is_object($val) && !is_array($val) && !is_object($k0) && !is_array($k0) && $val!==true && $val!==false){
+		if (PHP_VERSION_ID>=50500 && empty($key[1]) && $val!=self::KEY && $key[0]!=self::KEY && !is_object($val) && !is_array($val) && !is_object($k0) && !is_array($k0) && $val!==true && $val!==false && is_array($array)){
 			return array_column($array,$val,$k0);
 		}
 		$out=array();
-
-		if (!isset($key[1])){
+		if ($array instanceof collection_object){
+			if ($k0=='[]'){
+				if (is_array($val)){
+					foreach ($array as $tkey=>$item)$out[]=self::arrayGroup($val,$tkey,$item);
+				}elseif (is_object($val)){
+					foreach ($array as $item)$out[]=$val($item);
+				}elseif ($val===false){
+					foreach ($array as $item)$out[]=$item;
+				}elseif ($val===true){
+					foreach ($array as $item)$out[]=true;
+				}elseif ($val===self::KEY){
+					foreach ($array as $tkey=>$i)$out[]=$tkey;
+				}else{
+					foreach ($array as $item)$out[]=$item->$val;
+				}
+			}elseif ($k0===self::KEY){
+				if (is_array($val)){
+					foreach ($array as $tkey=>$item)$out[$tkey]=self::arrayGroup($val,$tkey,$item);
+				}elseif (is_object($val)){
+					foreach ($array as $tkey=>$item)$out[$tkey]=$val($item);
+				}elseif ($val===false){
+					foreach ($array as $tkey=>$item)$out[$tkey]=$item;
+				}elseif ($val===true){
+					foreach ($array as $tkey=>$item)$out[$tkey]=true;
+				}elseif ($val===self::KEY){
+					foreach ($array as $tkey=>$item)$out[$tkey]=$tkey;
+				}else{
+					foreach ($array as $tkey=>$item)$out[$tkey]=$item->$val;
+				}
+			}elseif (is_object($k0)){
+				if (is_array($val)){
+					foreach ($array as $tkey=>$item)$out[$k0($item)]=self::arrayGroup($val,$tkey,$item);
+				}elseif (is_object($val)){
+					foreach ($array as $item)$out[$k0($item)]=$val($item);
+				}elseif ($val===false){
+					foreach ($array as $item)$out[$k0($item)]=$item;
+				}elseif ($val===true){
+					foreach ($array as $item)$out[$k0($item)]=true;
+				}elseif ($val===self::KEY){
+					foreach ($array as $tkey=>$item)$out[$k0($item)]=$tkey;
+				}else{
+					foreach ($array as $item)$out[$k0($item)]=$item->$val;
+				}
+			}else{
+				if (is_array($val)){
+					foreach ($array as $tkey=>$item)$out[$item->$k0]=self::arrayGroup($val,$tkey,$item);
+				}elseif (is_object($val)){
+					foreach ($array as $item)$out[$item->$k0]=$val($item);
+				}elseif ($val===false){
+					foreach ($array as $item)$out[$item->$k0]=$item;
+				}elseif ($val===true){
+					foreach ($array as $item)$out[$item->$k0]=true;
+				}elseif ($val===self::KEY){
+					foreach ($array as $tkey=>$item)$out[$item->$k0]=$tkey;
+				}else{
+					foreach ($array as $item)$out[$item->$k0]=$item->$val;
+				}
+			}
+		}elseif (!isset($key[1])){
 			if ($k0=='[]'){
 				if (is_array($val)){
 					foreach ($array as $tkey=>$item)$out[]=self::arrayGroup($val,$tkey,$item);

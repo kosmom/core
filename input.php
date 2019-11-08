@@ -294,7 +294,7 @@ class input{
 	static function setGet($var,$func=array(),$cannull=true){
 		if (empty($_GET[$var]))$_GET[$var]='';
 		if ($_GET[$var]==null && $cannull)return false;
-		$v=$_POST[$var];
+		$v=$_GET[$var];
 		self::filter($v,$func);
 		$_GET[$var]=$v;
 	}
@@ -564,9 +564,13 @@ class input{
 	static function phone($number){
 		$n=trim($number);
 		if (substr($n,0,2)=='+7')$n='8'.substr($n,2);
-		if (substr($n,0,1)=='9')$n='8'.$n;
-		if (strlen($n)==11 && preg_match ("/^([0-9]+)$/", $n))$n=substr($n,0,1).'-'.substr($n,1,3).'-'.substr($n,4,3).'-'.substr($n,7,2).'-'.substr($n,9);
-		return $n;
+        $n = preg_replace('/[^0-9]/', '', $n);
+        $len=strlen($n);
+		if (substr($n,0,1)=='9' && $len==10){
+			$n='8'.$n;
+			$len++;
+		}
+		return $len>=11?substr($n,0,$len-10).'('.substr($n,-10,3).')'.substr($n,-7,3).'-'.substr($n,-4,2).'-'.substr($n,-2):$n;
 	}
 	/**
 	 * Transform numbers in text field with delimeters "-" and "," in array

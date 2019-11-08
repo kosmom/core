@@ -260,9 +260,12 @@ class dbwork{
 	 * @param array $arrayIn input array. Keys - fields name. Vals - values. Magic values is {SYSDATE} - current timestamp and {+} - add or concat value with current. For example '{+}100'
 	 * @param string|boolean $sequence
 	 * @param string $db
+	 * @param array|boolean $errors array of errors returned into var
+	 * @param string $schema
+	 * @param boolean|null $is_update optimization if need update
 	 * @return boolean or inserted ID
 	 */
-	static function setData($tablename,$arrayIn='',$sequence=true,$db='',&$errors=true,$schema=''){
+	static function setData($tablename,$arrayIn='',$sequence=true,$db='',&$errors=true,$schema='',$is_update=null){
 		if ($db=='')$db=core::$data['db'];
 		if (is_array($db))$db=db::autodb($db);
 		if (!$arrayIn)return false;
@@ -274,13 +277,13 @@ class dbwork{
 		$arrays=array();
 		foreach($arrayIn as $key=> $value){
 			if (is_bool($value)){
-				$arrays[strtoupper($key)]=(int)$value;
-			}elseif ($value instanceof \DateTimeInterface){
-				$arrays[strtoupper($key)]=$value->format('d.m.Y H:i:s');
+				$arrays[$key]=(int)$value;
 			}elseif ($value instanceof model){
-				$arrays[strtoupper($key)]=(string)$value;
+				$arrays[$key]=(string)$value;
+			}elseif ($value instanceof \DateTimeInterface){
+				$arrays[$key]=$value->format('d.m.Y H:i:s');
 			}else{
-				$arrays[strtoupper($key)]=$value;
+				$arrays[$key]=$value;
 			}
 		}
 		if (core::$debug){
@@ -297,7 +300,7 @@ class dbwork{
 	// find operation type
 		$opType=1; // insert
 		foreach ($desc['primary_key'] as $field){
-			$upperField=strtoupper($field);
+			$upperField=$field;
 			if (isset($arrays[$upperField])){ // if key value exists
 				$pkVals[$upperField]=$arrays[$upperField];
 				if (in_array($desc['data'][$field]['type'],array('date','datetime','DATE'))){
@@ -336,7 +339,7 @@ class dbwork{
 				}else{
 					// try find next val of numberic vals
 					// if sequence not set - find max value of key + 1
-					$sql='SELECT MAX('.$notIsset.') FROM '.($schema?$schema.'.':'').$tablename.($sqlPkVals?' WHERE '.implode(' AND ',$sqlPkVals):'');
+					$sql='SELECT MAX('.$notIsset.') FROM '.($schema?db::wrapper($schema,$db).'.':'').$tablename.($sqlPkVals?' WHERE '.implode(' AND ',$sqlPkVals):'');
 					$rs=(int)db::ea11($sql,$pkVals,$db);
 					$bind[$notIsset]=$pkVals[$notIsset]=$rs+1;
 					$strvalues[]=':'.$notIsset;
@@ -347,8 +350,12 @@ class dbwork{
 			}
 		}elseif ($desc['primary_key']){
 			// check on exists row
-			$sql='SELECT COUNT(*) FROM '.($schema?$schema.'.':'').$tablename.' WHERE '.implode(' AND ',$sqlPkVals);
-			if (db::ea11($sql,$pkVals,$db))$opType=2; //update
+			if ($is_update===true){
+				$opType=2;
+			}elseif ($is_update===null){
+				$sql='SELECT COUNT(*) FROM '.($schema?db::wrapper($schema,$db).'.':'').$tablename.' WHERE '.implode(' AND ',$sqlPkVals);
+				if (db::ea11($sql,$pkVals,$db))$opType=2; //update
+			}
 		}
 		// if has inuque keys - validate // todo
 	//if ($desc['unique_key']){
@@ -359,10 +366,10 @@ class dbwork{
 		// check of each field value
 		foreach ($desc['data'] as $field=>$fieldVal){
 			if ($notIsset==$field) continue;
-			$upperField=strtoupper($field);
+			$upperField=$field;
 			$value=@$arrays[$upperField];
 			if ($value===db::NEXTVAL){
-				$sql='SELECT MAX('.$field.') FROM '.($schema?$schema.'.':'').$tablename;
+				$sql='SELECT MAX('.$field.') FROM '.($schema?db::wrapper($schema,$db).'.':'').$tablename;
 				$rs=(int)db::ea11($sql,'',$db);
 				$arrays[$upperField]=$value=$rs+1;
 			}
@@ -380,9 +387,11 @@ class dbwork{
 					case 'char':
 					case 'text':
 					case 'mediumtext':
+					case 'tinytext':
+					case 'longtext':
 					if (!empty($fieldVal['notnull']) && $opType==1 &&!isset($fieldVal['default']) && $value===''){
 						$outErrors[]=translate::t('Not set required field {field}',array('field'=>$fieldName));
-						continue;
+						break;
 					}
 					if (!$fieldVal['typerange']){
 						if ($fieldVal['type']=='tinytext')$fieldVal['typerange']=256;
@@ -392,7 +401,7 @@ class dbwork{
 					}
 					if ((int)$fieldVal['typerange'] < mb_strlen($value,core::$charset) && $fieldVal['type'] != 'CLOB' && $fieldVal['type'] != 'LONG'){
 						$outErrors[]=translate::t('Field {field} have max length <b>{max_length}</b> charecters. You length is <b>{my_length}</b> charecters',array('field'=>$fieldName,'max_length'=>$fieldVal['typerange'],'my_length'=>mb_strlen($value)));
-						continue;
+						break;
 					}
 					$strcolname[]=$field;
 					if (strlen($value) > 3 && substr($value,0,3) == '{+}'){
@@ -528,13 +537,13 @@ class dbwork{
 		}
 		if ($dbType=='mysql'){
 			if ($opType == 1){ // insert
-				$sql='INSERT INTO '.($schema?'`'.$schema.'`.':'').'`'.$tablename.'` (`'.implode('`,`',$strcolname).'`) VALUES ('.implode(',',$strvalues).')';
+				$sql='INSERT INTO '.($schema?db::wrapper($schema,$db).'.':'').'`'.$tablename.'` (`'.implode('`,`',$strcolname).'`) VALUES ('.implode(',',$strvalues).')';
 			}elseif ($opType == 2){ //update
 				$im=array();
 				foreach($strcolname as $key=> $values){
 					$im[]=$strcolname[$key].'='.$strvalues[$key];
 				}
-				$sql='UPDATE '.($schema?'`'.$schema.'`.':'').'`'.$tablename.'` SET '.implode(',',$im).' WHERE '.implode(' AND ',$sqlPkVals);
+				$sql='UPDATE '.($schema?db::wrapper($schema,$db).'.':'').'`'.$tablename.'` SET '.implode(',',$im).' WHERE '.implode(' AND ',$sqlPkVals);
 			}
 			db::e($sql,$bind,$db);
 			if ($opType == 1){ // insert
@@ -559,13 +568,13 @@ class dbwork{
 			if ($notIsset) $bind['insert_id']='aaaaaaaaaaaaaaa';
 
 			if ($opType == 1){ // insert
-				$sql='INSERT INTO '.($schema?$schema.'.':'').$tablename.' ('.implode(',',$strcolname).') VALUES ('.implode(',',$strvalues).') '.($notIsset?'RETURNING '.$notIsset.' INTO :insert_id':'');
+				$sql='INSERT INTO '.($schema?db::wrapper($schema,$db).'.':'').$tablename.' ('.implode(',',$strcolname).') VALUES ('.implode(',',$strvalues).') '.($notIsset?'RETURNING '.$notIsset.' INTO :insert_id':'');
 			}elseif ($opType == 2){ // update
 				$im=array();
 				foreach($strcolname as $key=> $values){
 					$im[]=$strcolname[$key].'='.$strvalues[$key];
 				}
-				$sql='UPDATE '.($schema?$schema.'.':'').$tablename.' SET '.implode(',',$im).' WHERE '.implode(' AND ',$sqlPkVals).($notIsset?' RETURNING '.$notIsset.' INTO :insert_id':'');
+				$sql='UPDATE '.($schema?db::wrapper($schema,$db).'.':'').$tablename.' SET '.implode(',',$im).' WHERE '.implode(' AND ',$sqlPkVals).($notIsset?' RETURNING '.$notIsset.' INTO :insert_id':'');
 			}
 			db::eRef($sql,$bind,$db);
 			if ($notIsset){

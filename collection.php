@@ -89,7 +89,7 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	}
 
 	function group($key, $val=false){
-		return datawork::group($this->toArray(), $key, $val);
+		return datawork::group($this, $key, $val);
 	}
 
 	function tree($keyField, $parentField, $childrenName='children', $mainbranch=null){

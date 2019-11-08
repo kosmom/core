@@ -70,7 +70,7 @@ class core {
 	 * @param table_header_render_callback
 	 * @param render
 	 */
-	static $data=array('db_autobind'=>array(),'render'=>'bootstrap3');
+	static $data=array('db_autobind'=>array(),'render'=>'bootstrap3','db_describe_cache'=>array());
 
 	static function load($class){
 			if (substr($class,0,2)=='c\\'){

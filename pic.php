@@ -494,11 +494,27 @@ class pic{
 		return $this;
 	}
 
-	function output($quality=50){
+	function output($quality=50,$format='png'){
 		$quality=(int)$quality;
 		if (core::$debug && ($quality<0 or $quality>100))debug::trace('Save image quality must be between 0 and 100. Current val is: '.$quality);
-		header('Content-Type: image/png');
-		imagepng($this->image);
+		switch ($format){
+			case 'png':
+				imagepng($this->image);
+			break;
+			case 'jpg':
+			case 'jpeg':
+				imagejpeg($this->image);
+			case 'gif':
+				imagegif($this->image);
+			break;
+		}
+	}
+	function outputBuffer($quality=50,$format='png'){
+		ob_start();
+		$this->output($quality,$format);
+		$image_data = ob_get_contents();
+		ob_end_clean();
+		return $image_data;
 	}
 
 	function __destruct() {
