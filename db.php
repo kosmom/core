@@ -277,14 +277,10 @@ class db{
 	 * @return string
 	 */
 	static function in(&$bind,$value=array(),$variable=null,$wrapper=null){
-		if ($variable===null)$variable='temp_bind_'.(self::$counter++).'_';
+		if ($variable===null)$variable='core_t_'.(self::$counter++).'_';
 		$out=array();
 		foreach ($value as $key=>$item){
-			if (is_callable($wrapper)){
-				$out[]= call_user_func($wrapper, ':'.$variable.'_'.$key);
-			}else{
-				$out[]=':'.$variable.'_'.$key;
-			}
+			$out[]=is_callable($wrapper)?call_user_func($wrapper,':'.$variable.'_'.$key):':'.$variable.'_'.$key;
 			$bind[$variable.'_'.$key]=$item;
 		}
 		return implode(',',$out);

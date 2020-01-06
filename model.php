@@ -11,7 +11,7 @@ class model implements \Iterator{
 	var $readonly=false;
 	var $sequence=true;
 	var $primaryField; // primary key PK (or can be set in fields var)
-	var $fields;
+	var $fields=array();
 
 	var $mode='model'; // or row
 
@@ -85,7 +85,7 @@ class model implements \Iterator{
 	function __get($name){
 		if ($this->pk_value && $name==$this->getPrimaryField())return $this->calculateValue($this->getPrimaryField(), $this->pk_value,$this);
 		//try get data from storage
-		if (!$this->pk_value && $this->storage[$name])return $this->storage[$name];
+		if (!$this->pk_value && isset($this->storage[$name]))return $this->storage[$name];
 		// if storage has data - get storage
 		// try get data from request
 		if (!$this->pk_value)return null;
@@ -310,13 +310,19 @@ class model implements \Iterator{
 		return $rs;
 	}
 
+	function updateOrCreate($paramsUpdate=array(),$paramsCreate=array()){
+		if (!isset($this))return self::toObject()->updateOrCreate($paramsUpdate,$paramsCreate);
+		$this->update($paramsUpdate);
+		if (db::rows($this->getConnections()))return $this;
+		return $this->create($paramsUpdate+$paramsCreate);
+	}
 	function update($params){
-		if (!array($params)) throw new \Exception('Params must be set');
+		if (!array($params)) throw new \Exception('Params must be array');
 		if (!isset($this))return self::toObject()->update($params);
 		$set=array();
 		foreach ($params as $field=>$value){
-			$set[]=$field.'=:update_'.$field;
-			$this->queryBind['update_'.$field]=$value;
+			$set[]=$field.'=:cu_'.$field;
+			$this->queryBind['cu_'.$field]=$value;
 		}
 		$sql='update '.$this->getScemeWithTable().' set '.implode(',',$set).$this->getWhereSqlPart();
 		return db::e($sql,$this->queryBind,$this->getConnections());
@@ -406,7 +412,7 @@ class model implements \Iterator{
 	}
 
 	/**
-	 * @deprecated since version 3.5
+	 * @deprecated since version 3.5 use where function
 	 */
 	function is($field,$value=null){
 		if (!isset($this))return self::toObject()->is($field,$value);
@@ -446,18 +452,22 @@ class model implements \Iterator{
 		$this->whereCondition($field,$prop,$value,true);
 		return $this;
 	}
-	function firstOrCreate(){
-		if (!isset($this))return self::toObject()->firstOrCreate();
+	function firstOrCreate($param = array()){
+		if (!isset($this))return self::toObject()->firstOrCreate($param);
 		$first=$this->first();
-		if (!$first)return $this->create();
+		if (!$first)return $this->create($param);
 		return $first;
 	}
-	function create(){
+	function create($param = array()){
+		if (!isset($this))return self::toObject()->create($param);
 		$new=$this->toObject();
 		foreach ($this->queryWhere as $where){
 			if ($where['prop']!='=')continue;
 			$field=$where['field'];
 			$new->$field=$this->queryBind[$where['field']];
+		}
+		foreach ($param as $field=>$value){
+			$new->$field=$value;
 		}
 		return $new;
 	}
@@ -471,6 +481,10 @@ class model implements \Iterator{
 		if (is_object($value) or is_numeric($value))$value=(string)$value;
 		if ($prop=='=<')$prop='<=';
 		if ($prop=='=>')$prop='>=';
+		if ($prop=='in' && sizeof($value)==1){
+			$prop='=';
+			$value=$value[0];
+		}
 		switch ($prop){
 			case 'filter_diap':
 			case 'filter-diap':
@@ -583,6 +597,8 @@ class model implements \Iterator{
 
 			//todo: error case
 			//var_dump($item->catalog_trees()->where(catalog_tree::FIELD_IS_MAIN_TREE,1)->first()->tree()->name);
+			// foreach (model1 as $model1){
+			//var_dump($model1->submodel()->subsubmodel()->get()->toArray());
 
 			//if get with relation
 			$tempWhere=$this->queryWhere;
