@@ -75,7 +75,7 @@ class db{
 	/**
 	 * Execute SQL
 	 */
-	static function e($sql=null,$bind=array(),$db='',$transaction=true){
+	static function e($sql=null,$bind=array(),$db=null,$transaction=true){
 		if ($sql==null)global $sql;
 		$db=self::dbPrepare($db);
 		if (is_array($sql)){
@@ -116,7 +116,7 @@ class db{
 		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
 		return $db;
 	}
-	static function query($sql=null,$bind=array(), $db=''){
+	static function query($sql=null,$bind=array(),$db=''){
 		if ($sql==null)global $sql;
 		$db=self::dbPrepare($db);
 		self::$hydrators[++self::$lastHydrator]=array('link'=>self::$dbs[core::$env][$db]->query($sql,self::autobind($sql, $bind),$db),'db'=>$db);
@@ -136,21 +136,40 @@ class db{
 		self::$dbs[core::$env][$db]->rollback();
 	}
 
-		private static function dbOutput($result,$mode=null){
-			if (!$result)return $result;
-			if ($mode===null && isset(core::$data['db_output']))$mode=core::$data['db_output'];
-			switch ($mode){
-				case null:
-				case core::DATA_DB_ARRAY:
-					return $result;
-				case core::DATA_DB_COLLECTON:
-					return new collection($result);
-				case core::DATA_DB_COLLECTON_OBJECT:
-					return new collection_object($result);
-				case core::DATA_DB_SPL_FIXED_ARRAY:
-					return \SplFixedArray::fromArray($result);
-			}
+	private static function dbOutput($result,$mode=null){
+		if (!$result)return $result;
+		if ($mode===null && isset(core::$data['db_output']))$mode=core::$data['db_output'];
+		switch ($mode){
+			case null:
+			case core::DATA_DB_ARRAY:
+				return $result;
+			case core::DATA_DB_COLLECTON:
+				return new collection($result);
+			case core::DATA_DB_COLLECTON_OBJECT:
+				return new collection_object($result);
+			case core::DATA_DB_SPL_FIXED_ARRAY:
+				return \SplFixedArray::fromArray($result);
 		}
+	}
+
+	private static function execute($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
+		if ($sql==null)global $sql;
+		$db=self::dbPrepare($db);
+		if ($cacheTimeout===null)return self::$dbs[core::$env][$db]->execute_assoc($sql,self::autobind($sql, $bind));
+		return cache::get('db_'.md5(json_encode(array($sql,$db,core::$env,$bind))), function() use ($bind,$sql,$db){
+			return self::$dbs[core::$env][$db]->execute_assoc($sql,self::autobind($sql, $bind));
+		}, $cacheTimeout);
+	}
+	
+	private static function execute1($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
+		if ($sql==null)global $sql;
+		$db=self::dbPrepare($db);
+		if ($cacheTimeout===null)return self::$dbs[core::$env][$db]->ea1($sql,self::autobind($sql, $bind));
+		return cache::get('db1_'.md5(json_encode(array($sql,$db,core::$env,$bind))), function() use ($bind,$sql,$db){
+			return self::$dbs[core::$env][$db]->ea1($sql,self::autobind($sql, $bind));
+		}, $cacheTimeout);
+	}
+	
 	/**
 	 * Fetch assoc hydrator after db::query
 	 * @param number|boolean $queryNumber
@@ -165,7 +184,7 @@ class db{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function e_ref($sql,&$bind,$db=''){
+	static function e_ref($sql,&$bind,$db=null){
 		return self::eRef($sql,$bind,$db);
 	}
 	/**
@@ -176,7 +195,7 @@ class db{
 	 * @return array
 	 * @example $sql="update table set link=link where 1=1 returning link into :test";<br>$bind=array('test'=>'max column length');<br>c\db::e_ref($sql,$bind);
 	 */
-	static function eRef($sql=null,&$bind,$db=''){
+	static function eRef($sql=null,&$bind,$db=null){
 		if ($sql==null)global $sql;
 		$db=self::dbPrepare($db);
 		return self::dbOutput(self::$dbs[core::$env][$db]->execute_ref($sql,$bind));
@@ -187,12 +206,11 @@ class db{
 	 * @param string $sql
 	 * @param array $bind
 	 * @param string|null $db
-	 * @return collection
+	 * @param integer|null $cachedTimeout
+	 * @return array
 	 */
-	static function ea($sql=null,$bind=array(), $db=null){
-		if ($sql==null)global $sql;
-		$db=self::dbPrepare($db);
-		return self::dbOutput(self::$dbs[core::$env][$db]->execute_assoc($sql,self::autobind($sql, $bind)));
+	static function ea($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
+		return self::dbOutput(self::execute($sql, $bind, $db, $cacheTimeout));
 	}
 
 	/**
@@ -200,38 +218,30 @@ class db{
 	 * @param string $sql
 	 * @param array $bind
 	 * @param string|null $db
-	 * @return collection|boolean
+	 * @return collection_object|boolean
 	 */
-	static function eo($sql=null,$bind=array(), $db=''){
-		if ($sql==null)global $sql;
-		$db=self::dbPrepare($db);
-		$rs=self::$dbs[core::$env][$db]->execute_assoc($sql,self::autobind($sql, $bind));
-		if ($rs)return new collection_object($rs);
-		return false;
+	static function eo($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
+		return self::dbOutput(self::execute($sql, $bind, $db, $cacheTimeout), core::DATA_DB_COLLECTON_OBJECT);
 	}
 	/**
 	 * Execute assoc 1 row SQL
 	 */
-	static function ea1($sql=null,$bind=array(),$db=''){
-		if ($sql==null)global $sql;
-		$db=self::dbPrepare($db);
-		return self::$dbs[core::$env][$db]->ea1($sql,self::autobind($sql, $bind));
+	static function ea1($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
+		return self::execute1($sql, $bind, $db, $cacheTimeout);
 	}
 	/**
 	 * Execute object 1 row SQL
 	 */
-	static function eo1($sql=null,$bind=array(),$db=''){
-		if ($sql==null)global $sql;
-		$db=self::dbPrepare($db);
-		return (object)self::$dbs[core::$env][$db]->ea1($sql,self::autobind($sql, $bind));
+	static function eo1($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
+		return (object)self::execute($sql, $bind, $db, $cacheTimeout);
 	}
 	/**
 	 * Execute assoc 1 cell SQL
 	 */
-	static function ea11($sql=null,$bind=array(),$db=''){
-		$out=self::ea1($sql,$bind,$db);
-		if (is_array($out))foreach ($out as $item)return $item;
-		return false;
+	static function ea11($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
+		$out=self::ea1($sql,$bind,$db,$cacheTimeout);
+		if (!is_array($out))return false;
+		foreach ($out as $item)return $item;
 	}
 	static function massExecute($sql,$beginSql='begin ',$repeatSql='',$endSql="end;",$bind=array(),$db=''){
 		$db=self::dbPrepare($db);
@@ -240,8 +250,8 @@ class db{
 	/**
 	 * Execute column SQL
 	 */
-	static function ec($sql=null,$bind=array(),$db=''){
-		$rs=self::ea($sql,$bind,$db);
+	static function ec($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
+		$rs=self::ea($sql,$bind,$db,$cacheTimeout);
 		$out=array();
 		foreach ($rs as $item){
 			foreach($item as $val){

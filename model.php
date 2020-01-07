@@ -19,12 +19,24 @@ class model implements \Iterator{
 	private $storage; // storage before set storage class
 	var $pk_value;
 	private $collectionAutoGet;
+	private $cacheTimeout;
 
 	private function getAutoGet(){
 		if (!$this->collectionAutoGet)return $this->collectionAutoGet=$this->get();
 		return $this->collectionAutoGet;
 	}
 
+	private function calculateCache(){
+		return md5(json_encode(array($this->queryWhere,$this->queryBind,$this->queryOrders)));
+	}
+	private function calculateAggregateCache($aggregate,$parameter){
+		return md5(json_encode(array($this->queryWhere,$this->queryBind,$aggregate,$parameter)));
+	}
+	
+	function withCache($seconds=null){
+		$this->cacheTimeout=$seconds;
+		return $this;
+	}
 	function next(){
 		$this->getAutoGet();
 		return $this->collectionAutoGet->next();
@@ -586,7 +598,7 @@ class model implements \Iterator{
 	function get(){
 		if (!isset($this))return self::toObject()->get();
 		// if has cache - return cache
-		$hash=md5(json_encode(array($this->queryWhere,$this->queryBind,$this->queryOrders)));
+		$hash=$this->calculateCache();
 		$pk=$this->getPrimaryField();
 		$is_full=empty($this->queryWhere);
 		if (isset(model::$cache[get_called_class()][$hash])){
@@ -618,13 +630,12 @@ class model implements \Iterator{
 			$elements=  datawork::group($rs, array($field,'[]'),  $pk);
 			foreach ($collection_elements as $element){
 				$this->queryBind[$field]=$element;
-				$temphash=md5(json_encode(array($this->queryWhere,$this->queryBind,$this->queryOrders)));
-				model::$cache[get_called_class()][$temphash]=isset($elements[$element])?$elements[$element]:array();
+				model::$cache[get_called_class()][$this->calculateCache()]=isset($elements[$element])?$elements[$element]:array();
 			}
 
 		}else{
 			//get data for cache
-			$rs=db::ea($this->getSql(),$this->queryBind,$this->getConnections());
+			$rs=db::ea($this->getSql(),$this->queryBind,$this->getConnections(), $this->cacheTimeout);
 			foreach ($rs as $row){
 				model::setData($this,$row[$pk],$row);
 			}
@@ -664,7 +675,7 @@ class model implements \Iterator{
 	}
 	private function aggregate($aggregate,$parameter){
 		$this->globalScope();
-		$hash=md5(json_encode(array($this->queryWhere,$this->queryBind,$aggregate,$parameter)));
+		$hash=$this->calculateAggregateCache($aggregate, $parameter);
 		if (isset(model::$cache[get_called_class()][$hash]))return model::$cache[get_called_class()][$hash];
 
 		if ($this->collectionSource && isset($this->collectionSource->keys()[1])){
@@ -683,13 +694,12 @@ class model implements \Iterator{
 			$this->queryBind=$tempBind;
 			foreach ($collection_elements as $row){
 				$this->queryBind[$field]=$row;
-				$temphash=md5(json_encode(array($this->queryWhere,$this->queryBind,$aggregate,$parameter)));
-				model::$cache[get_called_class()][$temphash]=isset($rs[$row])?(float)$rs[$row]:false;
+				model::$cache[get_called_class()][$this->calculateAggregateCache($aggregate, $parameter)]=isset($rs[$row])?(float)$rs[$row]:false;
 			}
 			return model::$cache[get_called_class()][$hash];
 		}
 		$sql='SELECT '.$aggregate.'('.($parameter===null?'*':$parameter).') from '.$this->getScemeWithTable().$this->getWhereSqlPart();
-		return model::$cache[get_called_class()][$hash]=(float)db::ea11($sql,$this->queryBind,$this->getConnections());
+		return model::$cache[get_called_class()][$hash]=(float)db::ea11($sql,$this->queryBind,$this->getConnections(), $this->cacheTimeout);
 	}
 	function globalScope(){
 	}
