@@ -352,6 +352,7 @@ class form implements \ArrayAccess{
 		return $this->addData($data,$namePriority,true);
 	}
 	function addData($data=null,$namePriority=true,$force=false){
+		$this->data=null;
 		if (core::$debug)debug::group('Form setData');
 		if ($data===null)$data=(@$this->prop['method']=='GET'?$_GET:$_POST);
 		if ($this->ajax)input::filter($data,'iconv'); //? need tests
@@ -436,7 +437,6 @@ class form implements \ArrayAccess{
 	 * @param string form
 	 */
 	function setData($data=null,$namePriority=true,$force=false){
-		$this->data=null;
 		return $this->addData($data,$namePriority,$force);
 	}
 	function setDataForce($data=null,$namePriority=true){
@@ -561,6 +561,7 @@ class form implements \ArrayAccess{
 			return $this->fillData();
 		}
 	function fillData(){
+		$this->data=null;
 		foreach ($this->fields as $key=>&$params){
 			if (!is_callable($params['fill']))  continue;
 			$out=$params['fill']($this->getData(),$key);

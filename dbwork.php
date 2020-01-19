@@ -187,7 +187,7 @@ class dbwork{
 								$data[$column]['default']=input::findFirstPrepare($string);
 								$string=trim($string);
 							}elseif (substr($string,0,5) == 'NULL '){
-								$data[$column]['default']=false;
+								$data[$column]['default']=null;
 								$string=substr($string,5);
 							}elseif (substr($string,0,18) == 'CURRENT_TIMESTAMP '){
 								$data[$column]['default']='CURRENT_TIMESTAMP';
@@ -484,6 +484,7 @@ class dbwork{
 								$bind['core_infinity']="01.01.9999";
 								break;
 							case '':
+							case false:
 							case 'NULL':
 							case self::NULL:
 								if ($fieldVal['notnull']){
@@ -579,7 +580,7 @@ class dbwork{
 			db::eRef($sql,$bind,$db);
 			if ($notIsset){
 				$return=isset($bind['insert_id'])?$bind['insert_id']:true;
-				if ($return==='aaaaaaaaaaaaaaa'){
+				if ($return==='not_inserted'){
 					if (core::$debug){
 						debug::consoleLog('Result: '.$return,error::INFO);
 						debug::groupEnd();

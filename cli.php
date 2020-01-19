@@ -79,4 +79,8 @@ class cli{
 		fclose($fp);
 		return trim($in);
 	}
+	static function argv() {
+		global $argv;
+		return array_splice($argv, 2);
+	}
 }

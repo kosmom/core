@@ -409,7 +409,8 @@ class mvc{
 				@$_SERVER['REDIRECT_URL']=$argv[1];
 			}
 			if (substr($_SERVER['REDIRECT_URL'],0, strlen(self::$appFolder))==self::$appFolder)$_SERVER['REDIRECT_URL']=substr($_SERVER['REDIRECT_URL'], strlen (self::$appFolder));
-			self::$links_string=ltrim($_SERVER['REDIRECT_URL'],'\\/');
+			$_SERVER['REDIRECT_URL']= str_replace('\\', '/', $_SERVER['REDIRECT_URL']);
+			self::$links_string=ltrim($_SERVER['REDIRECT_URL'],'/');
 		}else{
 			self::$links_string=substr(ltrim(@$_SERVER['REDIRECT_URL'],'\\/'), strlen(self::$basefolder));
 		}

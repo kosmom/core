@@ -687,7 +687,7 @@ class input{
 	 */
 	static function jsonEncode($var,$charset=null){
 		if ($charset==null)$charset=core::$charset;
-		if ($charset==core::UTF8)return json_encode ($var,JSON_UNESCAPED_UNICODE);
+		if ($charset==core::UTF8)return json_encode ($var,JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_INVALID_UTF8_IGNORE  );
 		return json_encode(self::jsonFixCharset($var,$charset),JSON_UNESCAPED_UNICODE);
 	}
 	private static function jsonFixCharset($var,$charset,$fromUtf=true){
