@@ -53,6 +53,15 @@ class ajax {
 	static function getAct(){
 		return $_POST['_act'];
 	}
+	static function getAction(){
+		return self::getAct();
+	}
+	static function getVars(){
+		$vars=$_POST;
+		unset($vars['_val']);
+		unset($vars['_act']);
+		return $vars;
+	}
 	/**
 	 * @deprecated since version 3.4
 	 */

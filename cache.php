@@ -164,6 +164,12 @@ class cache{
 		}
 		return filedata::loaddata($fullpath);
 	}
+	static function getList($mask=''){
+		$path=isset(core::$data['cachePath'])?core::$data['cachePath']:self::$cachePath;
+		return filedata::filelist($path,'/'.$mask.'.+\.cache/',function($item){
+			return basename($item,'.cache');
+		});
+	}
 	static function getMultiple($keys,$default=null,$timeout=null){
 		$out=array();
 		foreach ($keys as $key){
