@@ -1329,7 +1329,7 @@ echo '>';
 		do {
 			$dir=array_shift(self::$next_dir);
 			if (!$dir)return __DIR__.'/empty';
-			$nextPage=$dir.DIRECTORY_SEPARATOR.(request::isCmd()?'cli':isset(self::$viewPageNames[$dir])?self::$viewPageNames[$dir]:'index').".phtml";
+			$nextPage=$dir.DIRECTORY_SEPARATOR.(request::isCmd()?'cli':(isset(self::$viewPageNames[$dir])?self::$viewPageNames[$dir]:'index')).".phtml";
 		} while (!is_readable($nextPage));
 		return $nextPage?$nextPage:__DIR__.'/empty';
 	}
@@ -1368,13 +1368,15 @@ echo '>';
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function view_layout($layout){
-		return self::viewLayout($layout);
+	static function view_layout($layout,$__DIR__=null){
+		return self::viewLayout($layout,$__DIR__);
 	}
-	static function viewLayout($layout){
-		$next=array_reverse(self::$next_dir);
-		foreach ($next as $dir){
-			if (file_exists($way=$dir.'/'.$layout.'.phtml'))return $way;
+	static function viewLayout($layout,$__DIR__=null){
+		$next=array_reverse(self::$indexfile);
+		foreach ($next as $key=>$dir) {
+			if (file_exists($way = $key.'/'.$layout.'.phtml'))return $way;
+			if ($key==$__DIR__)break;
 		}
+		return __DIR__.'/empty';
 	}
 }

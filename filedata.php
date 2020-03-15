@@ -63,6 +63,9 @@ class filedata{
 		'odt' => 'application/vnd.oasis.opendocument.text',
 		'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
 	);
+	
+	static $dataPartHandlers = array();
+	
 	/**
 	 * Get stored data from file
 	 * @param string $filename
@@ -98,10 +101,7 @@ class filedata{
 	 * @return bool
 	 */
 	static function rmdir($dir){
-		$files = array_diff(scandir($dir), array('.','..'));
-		foreach ($files as $file) {
-			(is_dir($dir.'/'.$file)) ? self::rmdir($dir.'/'.$file) : unlink($dir.'/'.$file);
-		}
+		self::empt($dir);
 		return rmdir($dir);
 	}
 	/**
@@ -118,7 +118,7 @@ class filedata{
 	 */
 	static function empt($dir){
 		foreach (array_diff(scandir($dir), array('.','..')) as $file) {
-			(is_dir($dir.'/'.$file)) ? self::rmdir($dir.'/'.$file) : unlink($dir.'/'.$file);
+			is_dir($dir.'/'.$file) ? self::rmdir($dir.'/'.$file) : unlink($dir.'/'.$file);
 		}
 	}
 	static function clean($pattern,$mTimeAgo=2592000){
@@ -137,12 +137,12 @@ class filedata{
 		if (!is_dir($src_dir))return false;
 		$dir = opendir($src_dir);
 		$out=array();
-		while(false !== ( $file = readdir($dir)) ) {
+		while(false!==($file=readdir($dir))) {
 			if (( $file == '.' ) || ( $file == '..' ))continue;
-			if ( is_dir($src_dir . DIRECTORY_SEPARATOR . $file) ) {
-				$out+=self::filelist($src_dir . DIRECTORY_SEPARATOR . $file,$mask,$callback);
-			} elseif (!$mask || preg_match($mask, $file)){
-				$out[$src_dir . DIRECTORY_SEPARATOR . $file]=is_callable($callback)?$callback($src_dir . DIRECTORY_SEPARATOR . $file,$file,$src_dir):true;
+			if ( is_dir($src_dir.DIRECTORY_SEPARATOR.$file) ) {
+				$out+=self::filelist($src_dir.DIRECTORY_SEPARATOR.$file,$mask,$callback);
+			}elseif (!$mask || preg_match($mask, $file)){
+				$out[$src_dir.DIRECTORY_SEPARATOR.$file]=is_callable($callback)?$callback($src_dir.DIRECTORY_SEPARATOR.$file,$file,$src_dir):true;
 			}
 		}
 		closedir($dir);
@@ -158,12 +158,12 @@ class filedata{
 		if (!is_dir($src))return false;
 		$dir = opendir($src);
 		@mkdir($dst);
-		while(false !== ( $file = readdir($dir)) ) {
-			if (( $file == '.' ) || ( $file == '..' ))continue;
-			if ( is_dir($src . DIRECTORY_SEPARATOR . $file) ) {
-				self::copy($src . DIRECTORY_SEPARATOR . $file,$dst . DIRECTORY_SEPARATOR . $file);
+		while(false!==($file=readdir($dir))){
+			if (($file == '.') || ($file == '..' ))continue;
+			if (is_dir($src.DIRECTORY_SEPARATOR.$file)) {
+				self::copy($src.DIRECTORY_SEPARATOR.$file,$dst.DIRECTORY_SEPARATOR.$file);
 			} else {
-				copy($src . DIRECTORY_SEPARATOR . $file,$dst . DIRECTORY_SEPARATOR . $file);
+				copy($src.DIRECTORY_SEPARATOR.$file,$dst.DIRECTORY_SEPARATOR.$file);
 			}
 		}
 		closedir($dir);
@@ -194,5 +194,30 @@ class filedata{
 		if ($type=@mime_content_type($filename))return $type;
 		if ($type=self::$mime_types[self::extension($filename)])return $type;
 		return false;
+	}
+	static function appendDataPart($filename, $data){
+		$pos = filesize($filename);
+		$append = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+		$appendLen = strlen($append);
+		error::log($filename, $append.$appendLen.strlen($appendLen));
+	}
+	static function readLastDataPart($handlerOrPath){
+		if (is_string($handlerOrPath)) {
+			if (isset(self::$dataPartHandlers[$handlerOrPath])) {
+				$handler = self::$dataPartHandlers[$handlerOrPath];
+			} else {
+				self::$dataPartHandlers[$handlerOrPath] = $handler = fopen($handlerOrPath, 'r');
+			}
+		} else {
+			$handler = $handlerOrPath;
+		}
+		fseek($handler, -1, ftell($handler) ? SEEK_CUR : SEEK_END);
+		$char = (int) fgetc($handler);
+		fseek($handler, -1 - $char, SEEK_CUR);
+		$pos = (int) fgets($handler, $char + 1);
+		fseek($handler, -$char - $pos, SEEK_CUR);
+		$val = fread($handler, $pos);
+		fseek($handler, -$pos - 1, SEEK_CUR);
+		return $val;
 	}
 }

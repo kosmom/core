@@ -71,6 +71,11 @@ class core {
 	 * @param render
 	 */
 	static $data=array('db_autobind'=>array(),'render'=>'bootstrap3','db_describe_cache'=>array());
+	static $watch = array();
+
+	static function watch($key,&$var){
+		self::$watch[$key]=&$var;
+	}
 
 	static function load($class){
 			if (substr($class,0,2)=='c\\'){

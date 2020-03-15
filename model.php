@@ -711,6 +711,10 @@ class model implements \Iterator{
 	private function getScemeWithTable(){
 		return db::wrapper($this->getSchemeName(),$this->getConnections()) .'.'.db::wrapper($this->getTableName(),$this->getConnections());
 	}
+	function exists(){
+		$sql="select exists(".$this->getSql().") as 'exists' from dual";
+		return (bool)c\db::ea11($sql,$this->queryBind,$this->getConnections());
+	}
 	function getSql(){
 		$this->globalScope();
 		$types=array();
