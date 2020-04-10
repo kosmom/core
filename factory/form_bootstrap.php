@@ -354,7 +354,7 @@ class form_bootstrap{
 				case 'file':
 					$multiple=!empty($item['multiple']);
 					$has_file=@$item['value'] && is_file($item['value']);
-					$out.=($has_file?'<img src="'.$item['value'].'?time='.time().'" style="max-width: 100%;display: block;">':'').'<input  name="'.$renderName.($multiple?'[]':'').'"'.($multiple?' multiple':'').' type="file" '.$attributes.$placeholder.($has_file?'':$required).'/>'.(isset($item['fill']) && is_callable($item['fill'])?$item['fill']($this->form->getData()):'');
+					$out.=($has_file?'<img src="'.$item['value'].'?time='.time().'" style="max-width: 100%;display: block;">':'').'<input name="'.$renderName.($multiple?'[]':'').'"'.($multiple?' multiple':'').' type="file" '.$attributes.$placeholder.($has_file?'':$required).'/>'.(isset($item['fill']) && is_callable($item['fill'])?$item['fill']($this->form->getData()):'');
 					break;
 				case 'capcha':
 					$out.='<img src="'.$item['url'].'" style="max-width: 100%;display: block;"><input class="form-control'.$classes.'" name="'.$renderName.'" type="text" '.$attributes.$placeholder.$required.'/>';

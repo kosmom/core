@@ -713,7 +713,7 @@ class model implements \Iterator{
 	}
 	function exists(){
 		$sql="select exists(".$this->getSql().") as 'exists' from dual";
-		return (bool)c\db::ea11($sql,$this->queryBind,$this->getConnections());
+		return (bool)db::ea11($sql,$this->queryBind,$this->getConnections());
 	}
 	function getSql(){
 		$this->globalScope();
