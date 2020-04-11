@@ -190,9 +190,11 @@ class ajax {
 			if ($answerNeeded===null)$answerNeeded=self::$answer_needed;
 			if ($answerNeeded && empty(self::$answer))self::$answer[] = array('_type' => 'message', 'message' => 'Action not supported', 'type' => error::ERROR);
 		}
-		if (core::$debug)self::consoleLog('Core MVC debug finished',error::INFO);
-		if (core::$debug)self::consoleGroupEnd();
-		
+		if (core::$debug) {
+			array_unshift(self::$answer, debug::debugOutput());
+			self::consoleLog('Core MVC debug finished', error::INFO);
+			self::consoleGroupEnd();
+		}
 	}
 	static function renderOutLoad(){
 		return '<script>core_ajax_process('.self::renderOut(false,false).')</script>';

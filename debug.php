@@ -11,8 +11,7 @@ class debug{
 	static $bugtrace_report='console';
 	private static $timer=0;
 	private static $lastTimer=0;
-	//static $time_laps=0;
-	//static $lasp_counter=10;
+	static $debugBuffer = array();
 
 	private static function getDifference(){
 		if (!isset($_SERVER['REQUEST_TIME_FLOAT']))$_SERVER['REQUEST_TIME_FLOAT']=microtime(true);
@@ -45,65 +44,42 @@ class debug{
 	}
 	static function timer(){
 		$mtime = microtime(true);
+		if (!self::$timer && $_SERVER['REQUEST_TIME_FLOAT']) self::$timer = $_SERVER['REQUEST_TIME_FLOAT'];
 		$timout=$mtime-self::$timer;
 		self::$timer=$mtime;
 		return $timout;
 	}
 	static function count($message){
-			if (core::$ajax && !core::$partition)return ajax::consoleCount($message);
-			mvc::addScript('console.count(\''.input::jsPrepare($message).'\')'); //,self::$time_laps+=self::$lasp_counter
+		self::$debugBuffer[]=array('count', $message);
 	}
 	static function dir($array){
-			if (empty($array))return false;
-			if (core::$ajax && !core::$partition)return ajax::consoleDir($array);
-			mvc::addScript('console.dir('.input::jsVarArray($array).')'); //self::$time_laps+=self::$lasp_counter
+		self::$debugBuffer[]=array('dir', $array);
 	}
 	static function table($array){
-		if (empty($array))return false;
-		if (core::$ajax && !core::$partition)return ajax::consoleTable($array);
-		$br=browser::get();
-
-		if ($br['name']=='Internet Explorer')return self::dir($array);
-		mvc::addScript('console.table('.input::jsVarArray($array).')'); //,self::$time_laps+=100
+		if (empty($array)) return false;
+		self::$debugBuffer[]=array('table', $array);
 	}
 	static function group($header,$type=error::INFO,$collapsed=true,$increaseCounter=true){
 		if (@core::$data['label']){
-			mvc::addScript('console.log(\'%c'.input::jsPrepare(core::$data['label']).'\',\'color: #f66;\')'); //,self::$time_laps+=self::$lasp_counter
-			core::$data['label']='';
+			self::consoleLog(core::$data['label'], error::HEADER);
+			core::$data['label'] = '';
 		}
 		if (!self::$groupCounter){
-			$need=self::getBacktrace();
-			$filename=substr($need['file'],self::$bugtrace_file_from);
+			$need = self::getBacktrace();
+			$filename = substr($need['file'], self::$bugtrace_file_from);
 			if ($need['file'])$var=self::readFileVar($need['file'],$need['line']);
 			$string=self::getDifference().' '.($var?$var.' = ':'').$filename.':'.$need['line'].' - '.$need['class'].$need['type'].$need['function'].' - '.$header;
-		}else{
+		} else {
 			$string=$header;
 		}
 		if ($increaseCounter)self::$groupCounter++;
-		if (core::$ajax && !core::$partition)return ajax::consoleGroup($string,$type,$collapsed);
-		if (self::$bugtrace_report=='console'){
-			switch ($type){
-				case error::INFO:
-					mvc::addScript('console.group'.($collapsed?'Collapsed':'').'(\''.input::jsPrepare($string).'\')'); //,self::$time_laps+=self::$lasp_counter
-					break;
-				case error::SUCCESS:
-					mvc::addScript('console.group'.($collapsed?'Collapsed':'').'(\'%c'.input::jsPrepare($string).'\',\'color: green;\')'); //,self::$time_laps+=self::$lasp_counter
-					break;
-				case error::ERROR:
-					mvc::addScript('console.group'.($collapsed?'Collapsed':'').'(\'%c'.input::jsPrepare($string).'\',\'color: red;\')'); //,self::$time_laps+=self::$lasp_counter
-					break;
-				case error::WARNING:
-					mvc::addScript('console.group'.($collapsed?'Collapsed':'').'(\'%c'.input::jsPrepare($string).'\',\'color: orange;\')'); //,self::$time_laps+=self::$lasp_counter
-					break;
-			}
-		}
+		self::$debugBuffer[]=array('group',$string,$type,$collapsed);
 	}
 	static function groupEnd($decreaseCounter=true){
 		if ($decreaseCounter)self::$groupCounter--;
-		if (core::$ajax && !core::$partition)return ajax::console_groupEnd();
-		if (self::$bugtrace_report=='console')mvc::addScript('console.groupEnd()'); //,++self::$time_laps
+		self::$debugBuffer[]=array('groupEnd');
 	}
-
+	
 	private static function getBacktrace(){
 		if (!self::$bugtrace_file_from)self::$bugtrace_file_from=strlen(dirname($_SERVER['SCRIPT_FILENAME']));
 		$out=debug_backtrace(false);
@@ -131,11 +107,104 @@ class debug{
 				if (is_array($args) or is_object($args)){
 					self::dir($args);
 				}else{
-					mvc::addScript('console.log(\''.$args.'\'))'); //,self::$time_laps+=self::$lasp_counter
+					self::consoleLog($args,null,false);
 				}
 			}
 		}
 	}
+	
+	static function debugOutput(){
+		$out=array();
+		if (core::$ajax && !core::$partition){
+			// format ajax actions
+			foreach (self::$debugBuffer as $arg){
+				switch ($arg[0]){
+					case 'log':
+						$out[]=array('_type'=>'console_log','data'=>$arg[1],'text_type'=>$arg[2]);
+						break;
+					case 'count':
+						$out[]=array('_type'=>'console_count','data'=>$arg[1]);
+						break;
+					case 'dir':
+						$out[]=array('_type'=>'console_dir','data'=>$arg[1]);
+						break;
+					case 'table':
+						$out[]=array('_type'=>'console_table','data'=>$arg[1]);
+						break;
+					case 'groupEnd':
+						$out[]=array('_type'=>'console_groupEnd');
+						break;
+					case 'group':
+						$out[]=array('_type'=>'console_group','data'=>$arg[1],'text_type'=>$arg[2],'collapsed'=>$arg[3]);
+						break;
+				}
+			}
+			return $out;
+		}
+		foreach (self::$debugBuffer as $arg){
+			switch ($arg[0]){
+				case 'log':
+					$message=$arg[1];
+					$type=$arg[2];
+					$wrapped=$arg[3];
+					$mes=$wrapped?input::jsPrepare($message):$message;
+					switch ($type){
+						case error::SUCCESS:
+							$out[]='console.log(\'%c'.$mes.'\',\'color: green;\')';
+							break;
+						case error::INFO:
+							$out[]='console.info(\''.$mes.'\')';
+							break;
+						case error::ERROR:
+							$out[]='console.warn(\'%c'.$mes.'\',\'color: red;\')';
+							break;
+						case error::HEADER:
+							$out[]='console.log(\'%c'.$mes.'\',\'color: #f66;\')';
+							break;
+						case error::WARNING:
+							$out[]='console.warn(\''.$mes.'\')';
+							break;
+						default:
+							$out[]='console.log(\''.$mes.'\')';
+					}
+					break;
+				case 'groupEnd':
+					$out[]='console.groupEnd()';
+					break;
+				case 'dir':
+					$out[]='console.dir('.input::jsVarArray($arg[1]).')';
+					break;
+				case 'table':
+					$out[]='console.table('.input::jsVarArray($arg[1]).')';
+					break;
+				case 'count':
+					$out[]='console.count(\''.input::jsPrepare($arg[1]).'\')';
+					break;
+				case 'group':
+					$message=$arg[1];
+					$type=$arg[2];
+					$collapsed=$arg[3];
+					$col=$collapsed?'Collapsed':'';
+					switch ($type){
+						case error::INFO:
+							$out[]='console.group'.$col.'(\''.input::jsPrepare($message).'\')';
+							break;
+						case error::SUCCESS:
+							$out[]='console.group'.$col.'(\'%c'.input::jsPrepare($message).'\',\'color: green;\')';
+							break;
+						case error::ERROR:
+							$out[]='console.group'.$col.'(\'%c'.input::jsPrepare($message).'\',\'color: red;\')';
+							break;
+						case error::WARNING:
+							$out[]='console.group'.$col.'(\'%c'.input::jsPrepare($message).'\',\'color: orange;\')';
+							break;
+					}
+			}
+		}
+		return $out;
+	}
+
+	
 	/**
 	 * @deprecated since version 3.4
 	 */
@@ -148,24 +217,7 @@ class debug{
 	 * @param int $type error::TYPE type of message
 	 */
 	static function consoleLog($message,$type=null){
-		if (core::$ajax && !core::$partition)return ajax::consoleLog($message,$type);
-
-			switch ($type){
-				case error::SUCCESS:
-					mvc::addScript('console.log(\'%c'.input::jsPrepare($message).'\',\'color: green;\')'); //,self::$time_laps+=self::$lasp_counter
-					break;
-				case error::INFO:
-					mvc::addScript('console.info(\''.input::jsPrepare($message).'\')'); //,self::$time_laps+=self::$lasp_counter
-					break;
-				case error::ERROR:
-					mvc::addScript('console.warn(\'%c'.input::jsPrepare($message).'\',\'color: red;\')'); //,self::$time_laps+=self::$lasp_counter
-					break;
-				case error::WARNING:
-					mvc::addScript('console.warn(\''.input::jsPrepare($message).'\')'); //,self::$time_laps+=self::$lasp_counter
-					break;
-				default:
-					mvc::addScript('console.log(\''.input::jsPrepare($message).'\')'); //,self::$time_laps+=self::$lasp_counter
-		}
+		self::$debugBuffer[]=array('log',$message,$type,$wrapped);
 	}
 	static function stat(){
 		$files=get_included_files();

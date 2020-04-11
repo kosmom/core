@@ -451,7 +451,11 @@ class mvc{
 	}
 	static function drawJs($inlineOnly=false){
 		$out='';
-		if (core::$debug && core::$ajax)debug::groupEnd();
+		if (core::$debug) {
+			if (core::$ajax)debug::groupEnd();
+			$debugOut=debug::debugOutput();
+			if ($debugOut)array_unshift(self::$js,array(implode(';',$debugOut),self::$jsHard,3));
+		}
 		$scriptMode=false;
 		foreach (self::$js as $script){
 			if ($script[2]==3){

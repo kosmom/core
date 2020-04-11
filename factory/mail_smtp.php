@@ -50,7 +50,7 @@ class mail_smtp{
 			fputs($smtp_conn,"EHLO ".$this->UserName."\r\n");
 			$code = substr(self::get_data($smtp_conn),0,3);
 			//if($code != 250)throw new \Exception('Error EHLO');
-			if ($this->auth){
+			if ($this->auth && $this->Password){
 				fputs($smtp_conn,"AUTH LOGIN\r\n");
 				$code = substr($this->get_data($smtp_conn),0,3);
 				if($code != 334)throw new \Exception('Error Auth');

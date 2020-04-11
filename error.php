@@ -10,6 +10,7 @@ class error{
 	const WARNING=2;
 	const SUCCESS=3;
 	const INFO=4;
+	const HEADER=5;
 	private static function toType($error){
 		switch ($error){
 			case 'error':return self::ERROR;
