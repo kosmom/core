@@ -216,7 +216,7 @@ class debug{
 	 * @param string $message console message
 	 * @param int $type error::TYPE type of message
 	 */
-	static function consoleLog($message,$type=null){
+	static function consoleLog($message,$type=null,$wrapped=true){
 		self::$debugBuffer[]=array('log',$message,$type,$wrapped);
 	}
 	static function stat(){
