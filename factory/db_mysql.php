@@ -29,6 +29,7 @@ class db_mysql {
 		return '`'.$object.'`';
 	}
 	private function charset_mastmach(){
+		if (isset($this->data['charset']))return $this->data['charset'];
 		switch (strtoupper(\c\core::$charset)){
 			case \c\core::UTF8:return 'utf8';
 			default: return 'cp1251';

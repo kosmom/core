@@ -29,6 +29,7 @@ class db_pgsql {
 		return '`'.$object.'`';
 	}
 	private function charset_mach(){
+		if (isset($this->data['charset']))return $this->data['charset'];
 		switch (strtoupper(\c\core::$charset)){
 			case \c\core::UTF8:return 'UTF8';
 			default: return 'cp1251';

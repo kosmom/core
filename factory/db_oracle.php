@@ -27,6 +27,7 @@ class db_oracle {
 	}
 	
 	private function charset_mastmach(){
+		if (isset($this->data['charset']))return $this->data['charset'];
 		switch (strtoupper(\c\core::$charset)){
 			case \c\core::UTF8:return 'UTF8';
 			default: return 'CL8MSWIN1251';
