@@ -909,11 +909,13 @@ class model implements \Iterator{
 	 */
 	function findOrCreate($pk_value){
 		if (!isset($this))return self::toObject()->findOrCreate($pk_value);
-		$this->where($this->getPrimaryField(),$pk_value);
-		$this->pk_value=$pk_value;
-		$this->mode='row';
-		if ($this->formData(false))return $this;
-		return new $name($pk_value);
+		try {
+			return $this->findOrFail($pk_value);
+		} catch (\Exception $exc) {
+			$model=new $this();
+			$model->__set($model->getPrimaryField(),$pk_value);
+			return $model;
+		}
 	}
 	
 	//function select
