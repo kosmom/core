@@ -311,23 +311,6 @@ class dbwork{
 			}else{
 				if ($notIsset)throw new \Exception('DBWORK: Primary key for '.$field.' is required');
 				$notIsset=$field; // first not found key - is autoincrement
-				switch ($desc['data'][$field]['type']){
-					case 'NUMBER':
-					case 'INTEGER':
-					case 'FLOAT':
-					case 'int':
-					case 'float':
-					case 'smallint':
-					case 'bigint':
-					case 'mediumint':
-					case 'decimal':
-					case 'real':
-					case 'tinyint':
-					case 'double':
-						break;
-					default:
-					throw new \Exception('DBWORK: Primary key for '.$field.' is required');
-				}
 			}
 		}
 		if ($notIsset){
@@ -345,6 +328,9 @@ class dbwork{
 					$strvalues[]=':'.$notIsset;
 					$sqlPkVals[]=$notIsset.' = :'.$notIsset;
 				}
+			}elseif (is_callable($sequence)){
+				$bind[$notIsset]=$sequence();
+				$strvalues[]=':'.$notIsset;
 			}else{
 				$strvalues[]=$sequence.'.nextval';
 			}
@@ -549,7 +535,7 @@ class dbwork{
 			db::e($sql,$bind,$db);
 			if ($opType == 1){ // insert
 				if (isset($bind[$notIsset]) && $bind[$notIsset]!==''){
-					$return=(int)$bind[$notIsset];
+					$return=$bind[$notIsset];
 				}else{
 					$return=db::lastId($db);
 				}
@@ -588,7 +574,7 @@ class dbwork{
 					throw new \Exception('DBWORK: Insert record error');
 				}
 			}else{
-				$return =true;
+				$return=true;
 				if (sizeof($pkVals)==1){
 					foreach ($pkVals as $value){
 						$return =$value;
