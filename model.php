@@ -926,12 +926,12 @@ class model implements \Iterator{
 	
 	/** Storage drive */
 	
-	/*
+	/**
 	 * Base data of models
 	 * model.pk.key=>val
 	 */
 	static $base=array();
-	/*
+	/**
 	 * Changed data of models
 	 * model.pk.key=>val
 	 */

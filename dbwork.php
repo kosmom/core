@@ -303,7 +303,7 @@ class dbwork{
 			$upperField=$field;
 			if (isset($arrays[$upperField])){ // if key value exists
 				$pkVals[$upperField]=$arrays[$upperField];
-				if (in_array($desc['data'][$field]['type'],array('date','datetime','DATE'))){
+				if (in_array($desc['data'][$field]['type'],array('date','datetime','DATE','timestamp'))){
 					$sqlPkVals[]=db::dateFromDb($field,'Y-m-d H:i:s',$db).'=:'.$upperField;
 				}else{
 					$sqlPkVals[]=$field.'=:'.$upperField;
@@ -454,6 +454,7 @@ class dbwork{
 
 					case 'DATE':
 					case 'date':
+					case 'timestamp':
 					case 'datetime':
 						switch (trim($value)){
 							case db::NOW:
