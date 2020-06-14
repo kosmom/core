@@ -209,12 +209,22 @@ class model implements \Iterator{
 		}
 		return $this->primaryField='id';
 	}
-	function saveOrFail(){
-		if (core::$data['db_exception'])return $this->save();
-		core::$data['db_exception']=true;
-		$rs=$this->save();
-		core::$data['db_exception']=false;
-		return $rs;
+	function saveOrFail($exception=null){
+		try {
+			if (core::$data['db_exception'])return $this->save();
+			core::$data['db_exception']=true;
+			$rs=$this->save();
+			core::$data['db_exception']=false;
+			return $rs;
+		} catch (\Exception $exc) {
+			if ($exception){
+				throw new \Exception($exception);
+			}else{
+				throw new \Exception($ex);
+			}
+		}
+
+		
 	}
 	function clearCache(){
 		unset(model::$cache[get_called_class()]);
@@ -243,7 +253,8 @@ class model implements \Iterator{
 		}
 		$errors=array();
 		if ($result)$this->pk_value=dbwork::setData($this->getTableName(), $result,$this->sequence,$this->getConnectionsAlter(),$errors,$this->getSchemeName());
-		//model::setData($this,$this->pk_value,$result);
+//model::setData($this,$this->pk_value,$result);
+		model::un_set($this,$this->pk_value);
 		$this->storage=null;
 		if ($this->mode!='row')$this->find($this->pk_value);
 		if ($operation=='create'){
@@ -561,6 +572,7 @@ class model implements \Iterator{
 		if (!isset($this))return self::toObject()->firstOrFail($exception);
 		$first=$this->first();
 		if (!$first){
+			if (is_string($exception))$exception=new \Exception ($exception);
 			if ($exception instanceof \Exception) throw $exception;
 			throw new \Exception('not found');
 		}
@@ -780,6 +792,12 @@ class model implements \Iterator{
 		$name->fill($source);
 		return $name;
 	}
+	function relationMorphToMany($model,$entity_id_field,$entity_type_field=null){
+		return $this->relation($model,$entity_id_field)->where($entity_type_field,'=',get_called_class());
+	}
+	function relationMorphToOne($model,$entity_id_field,$entity_type_field=null){
+		return $this->relationToOne($model,$entity_id_field)->where($entity_type_field,'=',get_called_class());
+	}
 	function relationInner($model,$foreign_key=null,$local_key=null){
 		return $this->relation($model,$foreign_key,$local_key,true);
 	}
@@ -926,12 +944,12 @@ class model implements \Iterator{
 	
 	/** Storage drive */
 	
-	/**
+	/*
 	 * Base data of models
 	 * model.pk.key=>val
 	 */
 	static $base=array();
-	/**
+	/*
 	 * Changed data of models
 	 * model.pk.key=>val
 	 */
@@ -950,6 +968,10 @@ class model implements \Iterator{
 	static function is_set($model,$pk){
 		$modelName=get_class($model);
 		return (isset(self::$base[$modelName][$pk]));
+	}
+	static function un_set($model,$pk){
+		$modelName=get_class($model);
+		unset(self::$base[$modelName][$pk]);
 	}
 	static function getRawData($model,$pk,$field=null){
 		$modelName=is_object($model)?get_class($model):$model;

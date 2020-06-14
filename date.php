@@ -181,4 +181,14 @@ class date{
 		if ($number==12)return 'декабря';
 		return $number;
 	}
+	static function to_timestamp($value){
+		if (is_numeric($value))return $value;
+		if ($value instanceof \DateTime)return $value->getTimestamp();
+		return strtotime($value);
+	}
+	static function to_datetime($value){
+		if ($value instanceof \DateTime)return $value;
+		if (is_numeric($value))return new \DateTime(date('d.m.Y H:i:s',$value));
+		return new \DateTime($value);
+	}
 }
