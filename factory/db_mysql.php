@@ -37,7 +37,7 @@ class db_mysql {
 	}
 
 	function connect(){
-		@$this->connect = mysqli_connect('p:'.$this->data['host'], $this->data['login'], $this->data['password'],$this->data['name'],isset($this->data['port'])?$this->data['port']:3306);
+		@$this->connect = mysqli_connect(($this->data['persistent']?'p:':'').$this->data['host'], $this->data['login'], $this->data['password'],$this->data['name'],isset($this->data['port'])?$this->data['port']:3306);
 		if (!$this->connect)throw new \Exception('MySQL connection error '.mysqli_connect_errno());
 		if (\c\core::$debug){
 			\c\debug::group('Connection to '.($this->cn?$this->cn:'MySQL'),\c\error::SUCCESS);

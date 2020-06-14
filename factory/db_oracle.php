@@ -50,7 +50,11 @@ class db_oracle {
 	}
 
 	function connect(){
-		$this->connect = oci_pconnect($this->data['login'], $this->data['password'], $this->data['host'],$this->charset_mastmach());
+		if ($this->data['persistent']){
+			$this->connect = oci_pconnect($this->data['login'], $this->data['password'], $this->data['host'],$this->charset_mastmach());
+		}else{
+			$this->connect = oci_connect($this->data['login'], $this->data['password'], $this->data['host'],$this->charset_mastmach());
+		}
 		if (!$this -> connect){
 			$error=oci_error();
 			if (\c\core::$debug)\c\debug::trace('Oracle connection error: '.$error['message'],\c\error::ERROR);

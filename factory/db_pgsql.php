@@ -37,7 +37,11 @@ class db_pgsql {
 	}
 
 	function connect(){
-		$this->connect = pg_pconnect('host='.$this->data['host'].(isset($this->data['port'])?' port='.$this->data['port']:'').' dbname='.$this->data['name'].' user='. $this->data['login'].' password='. $this->data['password']." options='--client_encoding='".$this->charset_mach()."'");
+		if ($this->data['persistent']){
+			$this->connect = pg_pconnect('host='.$this->data['host'].(isset($this->data['port'])?' port='.$this->data['port']:'').' dbname='.$this->data['name'].' user='. $this->data['login'].' password='. $this->data['password']." options='--client_encoding='".$this->charset_mach()."'");
+		}else{
+			$this->connect = pg_connect('host='.$this->data['host'].(isset($this->data['port'])?' port='.$this->data['port']:'').' dbname='.$this->data['name'].' user='. $this->data['login'].' password='. $this->data['password']." options='--client_encoding='".$this->charset_mach()."'");
+		}
 		if (!$this->connect)throw new \Exception('PgSQL connection error '.pg_last_error());
 		if (\c\core::$debug){
 			\c\debug::group('Connection to '.($this->cn?$this->cn:'PgSQL'),\c\error::SUCCESS);

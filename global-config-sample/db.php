@@ -5,4 +5,5 @@ self::addConnect('connection_name',array(
 'password'=>'password',
 'name'=>'db_name',
 'type'=>'mysql',
+'persistent'=>true,
 ));

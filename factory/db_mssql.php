@@ -16,7 +16,11 @@ class db_mssql{
 		return $object;
 	}
 	function connect(){
-		$this->connect=mssql_pconnect($this->data['host'],$this->data['login'],$this->data['password']);
+		if ($this->data['persistent']){
+			$this->connect=mssql_pconnect($this->data['host'],$this->data['login'],$this->data['password']);
+		}else{
+			$this->connect=mssql_connect($this->data['host'],$this->data['login'],$this->data['password']);
+		}
 		if (!$this -> connect){
 			if (\c\core::$debug){
 				\c\debug::trace('Mssql connection error',\c\error::ERROR);
