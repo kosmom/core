@@ -254,7 +254,6 @@ class model implements \Iterator{
 		$errors=array();
 		if ($result)$this->pk_value=dbwork::setData($this->getTableName(), $result,$this->sequence,$this->getConnectionsAlter(),$errors,$this->getSchemeName());
 //model::setData($this,$this->pk_value,$result);
-		model::un_set($this,$this->pk_value);
 		$this->storage=null;
 		if ($this->mode!='row')$this->find($this->pk_value);
 		if ($operation=='create'){
@@ -768,7 +767,7 @@ class model implements \Iterator{
 	function toArray(){
 		if ($this->pk_value){
 			$this->formData();
-			return model::getRawData($this,$this->pk_value);
+			return model::getData($this,$this->pk_value);
 		}else{
 			$rs=$this->get();
 			$out=array();
@@ -969,10 +968,7 @@ class model implements \Iterator{
 		$modelName=get_class($model);
 		return (isset(self::$base[$modelName][$pk]));
 	}
-	static function un_set($model,$pk){
-		$modelName=get_class($model);
-		unset(self::$base[$modelName][$pk]);
-	}
+	
 	static function getRawData($model,$pk,$field=null){
 		$modelName=is_object($model)?get_class($model):$model;
 		if ($field===null)return self::$base[$modelName][$pk];
