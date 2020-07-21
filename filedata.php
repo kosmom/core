@@ -196,7 +196,7 @@ class filedata{
 		return false;
 	}
 	static function appendDataPart($filename, $data){
-		$pos = filesize($filename);
+		$pos = @filesize($filename);
 		$append = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 		$appendLen = strlen($append);
 		error::log($filename, $append.$appendLen.strlen($appendLen));

@@ -72,11 +72,11 @@ class model implements \Iterator{
 	}
 	function on_before_update(){
 	}
-	function on_after_update(){
+	function on_after_update($base){
 	}
 	function on_before_save(){
 	}
-	function on_after_save(){
+	function on_after_save($base){
 	}
 	function on_before_delete(){
 	}
@@ -234,18 +234,19 @@ class model implements \Iterator{
 		// only for row mode
 		$mode=$this->mode;
 		$this->mode='row';
-		$operation='create';
+		$isCreate=1;
 		try {
-		if ($this->pk_value && ($this->toObject()->findOrFail($this->pk_value)))$operation='update';
+			if ($this->pk_value && ($this->toObject()->findOrFail($this->pk_value)))$isCreate=0;
 		} catch (Exception $exc) {
 		}
-		if ($operation=='create'){
+		if ($isCreate){
 			$this->on_before_create();
 		}else{
 			$this->on_before_update();
 		}
 		$this->on_before_save();
 		$this->mode=$mode;
+		$base=$this->pk_value?model::getRawData($this,$this->pk_value):[];
 		$result=$values=$this->pk_value?model::getChanged($this,$this->pk_value):$this->storage;
 		foreach ($this->fields as $fieldKey=>$fieldVal){
 			if (!@$fieldVal['dbname'])continue;
@@ -256,12 +257,12 @@ class model implements \Iterator{
 //model::setData($this,$this->pk_value,$result);
 		$this->storage=null;
 		if ($this->mode!='row')$this->find($this->pk_value);
-		if ($operation=='create'){
+		if ($isCreate){
 			$this->on_after_create();
 		}else{
-			$this->on_after_update();
+			$this->on_after_update($base);
 		}
-		$this->on_after_save();
+		$this->on_after_save($base);
 		return $this;
 	}
 
@@ -629,8 +630,8 @@ class model implements \Iterator{
 			$field=$tempWhere[0]['field'];
 			array_shift($this->queryWhere);
 			array_shift($this->queryBind);
-			$collection_elements=$this->collectionSource->keys();
-			if (!$this->collectionSource->is_full)$this->where($field, $collection_elements);
+			$collectionElements=$this->collectionSource->keys();
+			if (!$this->collectionSource->is_full)$this->where($field, $collectionElements);
 			$rs=db::ea($this->getSql(),$this->queryBind,$this->getConnections());
 			foreach ($rs as $row){
 				model::setData($this,$row[$pk],$row);
@@ -639,7 +640,7 @@ class model implements \Iterator{
 			$this->queryWhere=$tempWhere;
 			$this->queryBind=$tempBind;
 			$elements=  datawork::group($rs, array($field,'[]'),  $pk);
-			foreach ($collection_elements as $element){
+			foreach ($collectionElements as $element){
 				$this->queryBind[$field]=$element;
 				model::$cache[get_called_class()][$this->calculateCache()]=isset($elements[$element])?$elements[$element]:array();
 			}
@@ -709,7 +710,7 @@ class model implements \Iterator{
 			}
 			return model::$cache[get_called_class()][$hash];
 		}
-		$sql='SELECT '.$aggregate.'('.($parameter===null?'*':$parameter).') from '.$this->getScemeWithTable().$this->getWhereSqlPart();
+		$sql='SELECT '.$aggregate.'('.($parameter===null?'*':$parameter).') from '.$this->getScemeWithTable().' t'.$this->getWhereSqlPart();
 		return model::$cache[get_called_class()][$hash]=(float)db::ea11($sql,$this->queryBind,$this->getConnections(), $this->cacheTimeout);
 	}
 	function globalScope(){
