@@ -506,7 +506,7 @@ class model implements \Iterator{
 		if ($prop=='=>')$prop='>=';
 		if ($prop=='in' && sizeof($value)==1){
 			$prop='=';
-			$value=$value[0];
+			$value=current($value);
 		}
 		switch ($prop){
 			case 'filter_diap':
