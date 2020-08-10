@@ -201,16 +201,8 @@ class filedata{
 		$appendLen = strlen($append);
 		error::log($filename, $append.$appendLen.strlen($appendLen));
 	}
-	static function readLastDataPart($handlerOrPath){
-		if (is_string($handlerOrPath)) {
-			if (isset(self::$dataPartHandlers[$handlerOrPath])) {
-				$handler = self::$dataPartHandlers[$handlerOrPath];
-			} else {
-				self::$dataPartHandlers[$handlerOrPath] = $handler = fopen($handlerOrPath, 'r');
-			}
-		} else {
-			$handler = $handlerOrPath;
-		}
+	static function readLastDataPart($handlerOrPath, $offset = null){
+		$handler = self::getHandler($handlerOrPath, $offset);
 		fseek($handler, -1, ftell($handler) ? SEEK_CUR : SEEK_END);
 		$char = (int) fgetc($handler);
 		fseek($handler, -1 - $char, SEEK_CUR);
@@ -219,5 +211,12 @@ class filedata{
 		$val = fread($handler, $pos);
 		fseek($handler, -$pos - 1, SEEK_CUR);
 		return $val;
+	}
+	static function getHandler($handlerOrPath, $offset = null){
+		if (!is_string($handlerOrPath))return $handlerOrPath;
+		if (isset(self::$dataPartHandlers[$handlerOrPath]))return self::$dataPartHandlers[$handlerOrPath];
+		self::$dataPartHandlers[$handlerOrPath] = fopen($handlerOrPath, 'r');
+		if ($offset)fseek(self::$dataPartHandlers[$handlerOrPath], $offset);
+		return self::$dataPartHandlers[$handlerOrPath];
 	}
 }
