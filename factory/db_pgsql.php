@@ -46,11 +46,7 @@ class db_pgsql {
 		if (\c\core::$debug){
 			\c\debug::group('Connection to '.($this->cn?$this->cn:'PgSQL'),\c\error::SUCCESS);
 			@\c\core::$data['stat']['db_connections']++;
-			//$stat=explode('  ',mysqli_stat($this->connect));
 			$out=array();
-			foreach ($stat as $item){
-				$out[substr($item,0,strpos($item,':') )]=substr($item,strpos($item,':')+2 );
-			}
 			\c\debug::dir($out);
 			\c\debug::groupEnd();
 		}

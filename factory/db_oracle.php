@@ -203,7 +203,7 @@ class db_oracle {
 		foreach ($binds as $bind){
 			$msql=$sql;
 			foreach($bind as $key => $value){
-				$msql= str_replace(':'.$key, "'".self::slashes($value)."'", $msql);
+				$msql= str_replace(':'.$key, "'".$this->slashes($value)."'", $msql);
 			}
 			$total_sql[]=$msql;
 		}

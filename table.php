@@ -230,7 +230,8 @@ class table{
 	private function drawSortTag($input,$key,$item){
 		$rs=$this->drawCellLabel($item);
 		if ($this->header_render_callback){
-			$rs=$this->header_render_callback($rs);
+			$callback=$this->header_render_callback;
+			$rs=$callback($rs);
 		}elseif (@core::$data['table_header_render_callback']){
 			$cb=core::$data['table_header_render_callback'];
 			$rs=$cb($rs);
@@ -641,13 +642,6 @@ class table{
 				$out[]=$outRow;
 			}
 		}else{
-			if ($row){
-				$outRow=array();
-				foreach($input['header'] as $key=> $coll){
-					$outRow[$key]=$this->drawCellValueWithCallback($key,$row,$input);
-				}
-				$out[]=$outRow;
-			}
 			while ($row=db::fa($this->data)){
 				$outRow=array();
 				foreach($input['header'] as $key=> $coll){

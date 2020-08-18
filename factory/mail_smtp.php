@@ -46,21 +46,21 @@ class mail_smtp{
 		try {
 			$smtp_conn = fsockopen($this->Host,$this->port,$errno,$errstr,$this->timeout);
 			if (!$smtp_conn)throw new \Exception('Error connection to SMTP server: '.$errno.': '.$errstr);
-			$this->get_data($smtp_conn);
+			$this->getData($smtp_conn);
 			fputs($smtp_conn,"EHLO ".$this->UserName."\r\n");
-			$code = substr(self::get_data($smtp_conn),0,3);
+			$code = substr($this->getData($smtp_conn),0,3);
 			//if($code != 250)throw new \Exception('Error EHLO');
 			if ($this->auth && $this->Password){
 				fputs($smtp_conn,"AUTH LOGIN\r\n");
-				$code = substr($this->get_data($smtp_conn),0,3);
+				$code = substr($this->getData($smtp_conn),0,3);
 				if($code != 334)throw new \Exception('Error Auth');
 
 				fputs($smtp_conn,base64_encode($this->UserName)."\r\n");
-				$code = substr($this->get_data($smtp_conn),0,3);
+				$code = substr($this->getData($smtp_conn),0,3);
 				if($code != 334)throw new \Exception('Error Login');
 
 				fputs($smtp_conn,base64_encode($this->Password)."\r\n");
-				$code = substr($this->get_data($smtp_conn),0,3);
+				$code = substr($this->getData($smtp_conn),0,3);
 				if($code != 235)throw new \Exception('Error Password');
 			}
 			$header="Date: ".date("D, j M Y G:i:s")." +0300\r\n";
@@ -104,21 +104,21 @@ Content-Transfer-Encoding: base64\r\n";
 $size_msg=strlen($header."\r\n".$this->body);
 
 fputs($smtp_conn,"MAIL FROM:<".$this->From."> SIZE=".$size_msg."\r\n");
-$code = substr($this->get_data($smtp_conn),0,3);
+$code = substr($this->getData($smtp_conn),0,3);
 if($code != 250)throw new \Exception('Error MAIL FROM');
 
 			foreach($this->addresslist as $mail){
 fputs($smtp_conn,"RCPT TO:".$mail."\r\n");
-$code = substr($this->get_data($smtp_conn),0,3);
+$code = substr($this->getData($smtp_conn),0,3);
 if($code != 250 && $code != 251)throw new \Exception('Error MAIL RCPT TO');
 			}
 
 fputs($smtp_conn,"DATA\r\n");
-$code = substr($this->get_data($smtp_conn),0,3);
+$code = substr($this->getData($smtp_conn),0,3);
 if($code != 354)throw new \Exception('Error DATA '.$code);
 
 fputs($smtp_conn,$header."\r\n".$this->body."\r\n.\r\n");
-$code = substr($this->get_data($smtp_conn),0,3);
+$code = substr($this->getData($smtp_conn),0,3);
 if($code != 250)throw new \Exception('Error DATA2 '.$code);
 
 fputs($smtp_conn,"QUIT\r\n");
@@ -134,7 +134,7 @@ fputs($smtp_conn,"QUIT\r\n");
 		return $success;
 	}
 
-	private function get_data($smtp_conn){
+	private function getData($smtp_conn){
 		$data="";
 		while($str = fgets($smtp_conn,515)){
 			$data .= $str;

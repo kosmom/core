@@ -377,7 +377,7 @@ class models{
 		}
 		return $value;
 	}
-	private function sqlExpression($where,$need_write_alias){
+	private function sqlExpression($where,$need_write_alias=null){
 		if ($where['expression']===true){
 			return str_replace('{{alias}}',($need_write_alias?$where['alias'].'.':''),$where['field']).' '.$where['prop'].' '.$where['value'];
 		}elseif ($where['expression']){
@@ -536,7 +536,7 @@ class models{
 		if (isset(models::$models[$this->queryJoins[$alias]['class']]->fields[$param]['dbname']))return models::$models[$this->queryJoins[$alias]['class']]->fields[$param]['dbname'];
 		return $param;
 	}
-	private function whereCondition($field,$prop,$value,$alias,$on=false){
+	private function whereCondition($field,$prop,$value,$alias=null,$on=false){
 		if (is_object($value))$value=(string)$value;
 		if (!$alias)$alias=$this->activeAlias;
 		if ($prop=='=<')$prop='<=';

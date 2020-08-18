@@ -90,7 +90,7 @@ class mail{
 	static function embedAttachment($text,$cacheFolder=null,$db=''){
 		$files=array();
 		if (!self::$time)self::$time=time();
-	$text=preg_replace_callback('|<img src="([^"]*\.([^"]*))"|s', function($phrase) use(&$files,$db){
+	$text=preg_replace_callback('|<img src="([^"]*\.([^"]*))"|s', function($phrase) use(&$files,$db,$cacheFolder){
 		if (empty($files[$phrase[1]])){
 			$counter=$files[$phrase[1]]= sizeof($files);
 			if ($cacheFolder){

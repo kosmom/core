@@ -237,7 +237,7 @@ class model implements \Iterator{
 		$isCreate=1;
 		try {
 			if ($this->pk_value && ($this->toObject()->findOrFail($this->pk_value)))$isCreate=0;
-		} catch (Exception $exc) {
+		} catch (\Exception $exc) {
 		}
 		if ($isCreate){
 			$this->on_before_create();
@@ -738,6 +738,7 @@ class model implements \Iterator{
 				$fieldName=isset($fieldVal['dbname'])?$fieldVal['dbname']:$fieldKey;
 				$types[]=db::dateFromDb($fieldName,'Y-m-d H:i:s',$this->getConnections()).' "'.$fieldKey.'"';
 			}elseif (@$fieldVal['dbname']){
+				$fieldName=isset($fieldVal['dbname'])?$fieldVal['dbname']:$fieldKey;
 				$types[]=$fieldName.' "'.$fieldKey.'"';
 			}
 		}
@@ -804,7 +805,6 @@ class model implements \Iterator{
 	function relation($model,$foreign_key=null,$local_key=null,$is_inner=false,$to_one=false){
 		// уххх
 
-		if ($foreign_key===null)$foreign_key=$obj->getPrimaryField();
 		if ($local_key===null)$local_key=$this->getPrimaryField();
 
 		// get base collection from keys
@@ -818,6 +818,7 @@ class model implements \Iterator{
 			}
 		}
 		$obj=new $model(null, $baseCollection);
+		if ($foreign_key===null)$foreign_key=$obj->getPrimaryField();
 
 		if ($this->isRowMode()){
 			$obj->where($foreign_key,$this->$local_key);

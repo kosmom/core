@@ -389,7 +389,7 @@ class form_bootstrap{
 					break;
 				case 'static':
 					// static plant text
-					$out.='<p class="form-control-static'.$classes.'">'.\c\input::htmlspecialchars($item['value']).'</p><input name="'.$name.'" type="hidden" '.$attributes.$value.'/>';
+					$out.='<p class="form-control-static'.$classes.'">'.\c\input::htmlspecialchars($item['value']).'</p><input name="'.$renderName.'" type="hidden" '.$attributes.$value.'/>';
 					break;
 				case 'color':
 					if ($item['render']=='pick-a-color'){

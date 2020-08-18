@@ -287,7 +287,7 @@ class mvc{
 	 * Fill variable to route placeholder callback
 	 * @param string $routeAs router name
 	 * @param string $value
-	 * @return type
+	 * @return mixed
 	 */
 	static function routeFill($routeAs,$value){
 		if (empty(self::$route_placeholder[$routeAs]))return $value;
@@ -924,7 +924,7 @@ echo '>';
 						$modules[$key]=new fileprop(array('name'=>$item));
 					}elseif (is_array($item)){
 						$modules[$key]=new fileprop($item);
-					}elseif ($item instanceof c\arrayaccess){
+					}elseif ($item instanceof \c\arrayaccess){
 						$modules[$key]=clone($item);
 					}
 				}
@@ -998,11 +998,7 @@ echo '>';
 		$result=null;
 		$default=self::relativeFilePath($default, $__DIR__);
 		if ($exception===null){
-			if (empty(core::$data['controller_exception_page'])){
-				$exception=$default;
-			}else{
-				$exception=$core::$data['controller_exception_page'];
-			}
+			$exception=empty(core::$data['controller_exception_page']) ? $default : core::$data['controller_exception_page'];
 		}
 		if (is_array($exception) && $routes===null){
 			$routes=$exception;

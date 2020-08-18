@@ -157,7 +157,7 @@ class pic{
 		switch($prop[2]){
 			case IMAGETYPE_JPEG:
 				if (!$fromString)$this->image = imagecreatefromjpeg($filename);
-				$exif = read_exif_data($filename);
+				$exif = exif_read_data($filename);
 				if ($autorotate && isset($exif['Orientation'])){
 					switch($exif['Orientation']){
 						case 3: $this->image=imagerotate($this->image,180,0);

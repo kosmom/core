@@ -103,7 +103,7 @@ class pics{
 	}
 	static function resizeMaxHeight($y,$pic=null){
 		$pic=self::checkObject($pic);
-		return self::$pics[$pic]->resizeMaxHeight($x);
+		return self::$pics[$pic]->resizeMaxHeight($y);
 	}
 	/**
 	 * Change size with save dimensions for max of values
@@ -270,7 +270,7 @@ class pics{
 	/**
 	 * Clear buffer image and release memory
 	 */
-	static function freeImage(){
+	static function freeImage($pic=null){
 		$pic=self::checkObject($pic);
 		unset(self::$pics[$pic]);
 	}

@@ -527,8 +527,6 @@ class form implements \ArrayAccess{
 			if (@$item['disabled']) continue;
 			if (!@is_array($item['validate']) && @!$item['subform']) continue;
 			if (isset($item['subform'])){
-				$result=input::validate($value,$item['validate'],$item);
-				if ($result===false)$valid=false;
 				foreach ($item['value'] as $value){
 					$result=$value->isValid($data[$key],$checkData); //$result=$item['subform']->isValid($data[$key],$checkData);
 					if ($result===false)$valid=false;
