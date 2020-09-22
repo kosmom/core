@@ -25,33 +25,39 @@ class request{
 	private static $isCMD;
 	private static $manyfilesfile;
 	
-	static function isCmd(){
+	static function isCmd($SERVER=null){
+		if ($SERVER===null)$SERVER=$_SERVER;
 		if (self::$isCMD!==null)return self::$isCMD;
-		return self::$isCMD=(PHP_SAPI === 'cli' || empty($_SERVER['REMOTE_ADDR']));
+		return self::$isCMD=(PHP_SAPI === 'cli' || empty($SERVER['REMOTE_ADDR']));
 	}
 	
-	static function isAjax(){
-		return @$_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+	static function isAjax($SERVER=null){
+		if ($SERVER===null)$SERVER=$_SERVER;
+		return @$SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
 	}
 
 	/**
 	 * Current user IP
 	 * @return string
 	 */
-	static function ip(){
-		return (isset($_SERVER['HTTP_X_REAL_IP']))?$_SERVER['HTTP_X_REAL_IP']:$_SERVER['REMOTE_ADDR'];
+	static function ip($SERVER=null){
+		if ($SERVER===null)$SERVER=$_SERVER;
+		return (isset($SERVER['HTTP_X_REAL_IP']))?$SERVER['HTTP_X_REAL_IP']:$SERVER['REMOTE_ADDR'];
 	}
 
-	static function url(){
-		return self::protocol().self::domain().$_SERVER['REQUEST_URI'].($_SERVER['QUERY_STRING']===''?'':$_SERVER['QUERY_STRING']);
+	static function url($SERVER=null){
+		if ($SERVER===null)$SERVER=$_SERVER;
+		return self::protocol($SERVER).self::domain($SERVER).$SERVER['REQUEST_URI'].($SERVER['QUERY_STRING']===''?'':$SERVER['QUERY_STRING']);
 	}
 	
-	static function domain(){
-		return $_SERVER['SERVER_NAME'];
+	static function domain($SERVER=null){
+		if ($SERVER===null)$SERVER=$_SERVER;
+		return $SERVER['SERVER_NAME'];
 	}
 	
-	static function protocol() {
-		return 'http'.((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? 's' : '').'://';
+	static function protocol($SERVER=null){
+		if ($SERVER===null)$SERVER=$_SERVER;
+		return 'http'.((!empty($SERVER['HTTPS']) && $SERVER['HTTPS'] !== 'off' || $SERVER['SERVER_PORT'] == 443) ? 's' : '').'://';
 	}
 
 	static function get($parameter,$default=null){
