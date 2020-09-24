@@ -20,6 +20,7 @@ class model implements \Iterator{
 	var $pk_value;
 	private $collectionAutoGet;
 	private $cacheTimeout;
+	var $nextConjunction = 'AND';
 
 	private function getAutoGet(){
 		if (!$this->collectionAutoGet)return $this->collectionAutoGet=$this->get();
@@ -542,6 +543,8 @@ class model implements \Iterator{
 		$result['field']=$field_val;
 		$result['value']=$value;
 		if ($field_val!=$field)$result['expression']=true;
+		$result['conjunction'] = $this->nextConjunction;
+		$this->nextConjunction = 'AND';
 		$this->queryWhere[]=$result;
 	}
 	private function bindFind($field,$value){
@@ -658,13 +661,14 @@ class model implements \Iterator{
 	}
 
 	private function getWhereSqlPart(){
-			if (!$this->queryWhere)return '';
-			$wheres=array();
-			foreach ($this->queryWhere as $where){
-				$wheres[]=$this->sqlExpression($where);
-			}
-		return ' WHERE '.implode(' AND ',$wheres);
+		if (!$this->queryWhere)return '';
+		$wheres=array();
+		foreach ($this->queryWhere as $key=>$where){
+			$wheres[]=($key?' '.$where['conjunction'].' ':'').$this->sqlExpression($where);
+		}
+		return ' WHERE '.implode('', $wheres);
 	}
+	
 	function count($distinctField=null){
 		if (!isset($this))return self::toObject()->count($distinctField);
 		return $this->aggregate('count', $distinctField);
@@ -936,6 +940,35 @@ class model implements \Iterator{
 			return $model;
 		}
 	}
+	
+	function each($callback){
+		foreach ($this->get() as $item){
+			if ($callback($item)===false)break;
+		}
+	}
+	
+	function when($condition, $ifCallback, $elseCallback=null){
+		if ($condition){
+			$ifCallback($this);
+		} elseif (is_callable($elseCallback)){
+			$elseCallback($this);
+		}
+		return $this;
+	}
+	
+	function and(){
+		$this->nextConjunction='AND';
+		return $this;
+	}
+	function or(){
+		$this->nextConjunction='OR';
+		return $this;
+	}
+	function xor(){
+		$this->nextConjunction='XOR';
+		return $this;
+	}
+
 	
 	//function select
 	//function unselect
