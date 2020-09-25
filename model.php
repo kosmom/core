@@ -190,7 +190,9 @@ class model implements \Iterator{
 	function getTableName(){
 		if (isset($this->tableName))return $this->tableName;
 		if (isset($this->table))return $this->table;
-		return get_called_class();
+		$class=get_called_class();
+		return $class==='c\\model'?false:$class;
+
 	}
 	function getSchemeName(){
 		if (isset($this->scheme))return $this->scheme;
@@ -352,17 +354,22 @@ class model implements \Iterator{
 		return db::e($sql,$this->queryBind,$this->getConnections());
 	}
 	private function sqlExpression($where){
-		if (@$where['expression']===true){
-			return $where['field'].' '.$where['prop'].' '.$where['value'];
-		}elseif (@$where['expression']){
-			return $where['expression'];
-		}else{
-			return $where['field'].' '.$where['prop'].' '.$where['value'];
+		if (is_callable($where['field'])){
+			$model = new model();
+			$model->queryBind=$this->queryBind;
+			$model->connection=$this->connection;
+			$where['field']($model);
+			$this->queryBind=$model->queryBind;
+			$sql=$model->getSql();
+			return $sql?'('.$sql.')':'';
 		}
+		if (@$where['expression'] && $where['expression']!==true)return $where['expression'];
+		return $where['field'].' '.$where['prop'].' '.$where['value'];
 	}
 	function whereRaw($sqlPart,$bind=array()){
 		if (!isset($this))return self::toObject()->whereRaw($sqlPart,$bind);
-		$this->queryWhere[]=array('expression'=>$sqlPart);
+		$this->queryWhere[]=array('expression'=>$sqlPart,'conjunction'=>$this->nextConjunction);
+		$this->nextConjunction='AND';
 		if (is_array($bind))$this->queryBind+=$bind;
 		return $this;
 	}
@@ -375,7 +382,8 @@ class model implements \Iterator{
 	function whereInRaw($sqlPart,$arrayIn){
 		if (!isset($this))return self::toObject()->whereInRaw($sqlPart,$arrayIn);
 		$sqlInPart=db::in($this->queryBind,$arrayIn);
-		$this->queryWhere[]=array('expression'=>str_replace('(:in)','('.$sqlInPart.')', $sqlPart));
+		$this->queryWhere[]=array('expression'=>str_replace('(:in)','('.$sqlInPart.')', $sqlPart),'conjunction'=>$this->nextConjunction);
+		$this->nextConjunction='AND';
 		return $this;
 	}
 	/**
@@ -666,7 +674,7 @@ class model implements \Iterator{
 		foreach ($this->queryWhere as $key=>$where){
 			$wheres[]=($key?' '.$where['conjunction'].' ':'').$this->sqlExpression($where);
 		}
-		return ' WHERE '.implode('', $wheres);
+		return ($this->getTableName() ? ' WHERE ' : '') . implode('', $wheres);
 	}
 	
 	function count($distinctField=null){
@@ -746,7 +754,7 @@ class model implements \Iterator{
 				$types[]=$fieldName.' "'.$fieldKey.'"';
 			}
 		}
-		$return="SELECT t.*".($types?','.implode(',',$types):'')." from ".$this->getScemeWithTable().' t'.$this->getWhereSqlPart();
+		$return = ($this->getTableName()?"SELECT t.*".($types?','.implode(',',$types):'')." from ".$this->getScemeWithTable().' t' : "").$this->getWhereSqlPart();
 
 		if ($this->queryOrders){
 			$orders=array();
