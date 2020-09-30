@@ -561,10 +561,13 @@ class input{
 		while (strpos($text,'  '))$text=str_replace('  ',' ',$text);
 		return str_replace('""','',$text);
 	}
-	static function phone($number){
+	static function phoneDigits($number){
 		$n=trim($number);
 		if (substr($n,0,2)=='+7')$n='8'.substr($n,2);
-        $n = preg_replace('/[^0-9]/', '', $n);
+        return preg_replace('/[^0-9]/', '', $n);
+	}
+	static function phone($number){
+		$n=self::phoneDigits($number);
         $len=strlen($n);
 		if (substr($n,0,1)=='9' && $len==10){
 			$n='8'.$n;
@@ -819,6 +822,9 @@ class input{
 		$matches=array();
 		if (preg_match('/([12]\d\d\d)[\.\-]([0-2]\d)/', $time,$matches)){
 			return mktime(0, 0, 0, $matches[2], 1, $matches[1]);
+		}
+		if (is_numeric($time) && date('d.m.Y H:i:s',$time)==$time){
+			return $time;
 		}
 		return strtotime($time);
 	}
