@@ -47,7 +47,7 @@ class request{
 
 	static function url($SERVER=null){
 		if ($SERVER===null)$SERVER=$_SERVER;
-		return self::protocol($SERVER).self::domain($SERVER).$SERVER['REQUEST_URI'].($SERVER['QUERY_STRING']===''?'':$SERVER['QUERY_STRING']);
+		return self::protocol($SERVER).self::domain($SERVER).$SERVER['REQUEST_URI'];
 	}
 	
 	static function domain($SERVER=null){
