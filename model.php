@@ -22,6 +22,12 @@ class model implements \Iterator{
 	private $cacheTimeout;
 	var $nextConjunction = 'AND';
 
+	private function nextConjunction(){
+		$return = $this->nextConjunction;
+		$this->nextConjunction='AND';
+		return $return;
+	}
+	
 	private function getAutoGet(){
 		if (!$this->collectionAutoGet)return $this->collectionAutoGet=$this->get();
 		return $this->collectionAutoGet;
@@ -73,11 +79,11 @@ class model implements \Iterator{
 	}
 	function on_before_update(){
 	}
-	function on_after_update($base){
+	function on_after_update($base=null){
 	}
 	function on_before_save(){
 	}
-	function on_after_save($base){
+	function on_after_save($base=null){
 	}
 	function on_before_delete(){
 	}
@@ -354,7 +360,7 @@ class model implements \Iterator{
 		return db::e($sql,$this->queryBind,$this->getConnections());
 	}
 	private function sqlExpression($where){
-		if (is_callable($where['field'])){
+		if (is_callable($where['field']) && !is_string($where['field'])){
 			$model = new model();
 			$model->queryBind=$this->queryBind;
 			$model->connection=$this->connection;
@@ -366,13 +372,30 @@ class model implements \Iterator{
 		if (@$where['expression'] && $where['expression']!==true)return $where['expression'];
 		return $where['field'].' '.$where['prop'].' '.$where['value'];
 	}
+	/**
+	 * Set filter in raw format
+	 * @param string $sqlPart
+	 * @param array $bind
+	 * @return $this
+	 */
 	function whereRaw($sqlPart,$bind=array()){
 		if (!isset($this))return self::toObject()->whereRaw($sqlPart,$bind);
-		$this->queryWhere[]=array('expression'=>$sqlPart,'conjunction'=>$this->nextConjunction);
-		$this->nextConjunction='AND';
+		$this->queryWhere[]=array('expression'=>$sqlPart,'conjunction'=>$this->nextConjunction());
 		if (is_array($bind))$this->queryBind+=$bind;
 		return $this;
 	}
+	
+	/**
+	 * Set filter in raw format
+	 * @param string $sqlPart
+	 * @param array $bind
+	 * @return static
+	 */
+	static function whereRawStatic($sqlPart, $bind = array())
+	{
+		return self::toObject()->whereRaw($sqlPart, $bind);
+	}
+	
 	/**
 	 * Set filter in raw text and In expression
 	 * @param string $sqlPart
@@ -382,8 +405,7 @@ class model implements \Iterator{
 	function whereInRaw($sqlPart,$arrayIn){
 		if (!isset($this))return self::toObject()->whereInRaw($sqlPart,$arrayIn);
 		$sqlInPart=db::in($this->queryBind,$arrayIn);
-		$this->queryWhere[]=array('expression'=>str_replace('(:in)','('.$sqlInPart.')', $sqlPart),'conjunction'=>$this->nextConjunction);
-		$this->nextConjunction='AND';
+		$this->queryWhere[]=array('expression'=>str_replace('(:in)','('.$sqlInPart.')', $sqlPart),'conjunction'=>$this->nextConjunction());
 		return $this;
 	}
 	/**
@@ -525,12 +547,12 @@ class model implements \Iterator{
 
 			case 'in':
 			if (!is_array($value))$value=array($value);
-			if (empty($value))return $this->queryWhere[]=array('expression'=>'1=0');
+			if (empty($value))return $this->queryWhere[]=array('expression'=>'1=0','conjunction'=>$this->nextConjunction());
 			$value='('.db::in($this->queryBind,$value,$field).')';
 			break;
 			case 'not in':
 			if (!is_array($value))$value=array($value);
-			if (empty($value))return $this->queryWhere[]=array('expression'=>'1=1');
+			if (empty($value))return $this->queryWhere[]=array('expression'=>'1=1','conjunction'=>$this->nextConjunction());
 			$value='('.db::in($this->queryBind,$value,$field).')';
 			break;
 			case 'is null':
@@ -551,8 +573,7 @@ class model implements \Iterator{
 		$result['field']=$field_val;
 		$result['value']=$value;
 		if ($field_val!=$field)$result['expression']=true;
-		$result['conjunction'] = $this->nextConjunction;
-		$this->nextConjunction = 'AND';
+		$result['conjunction'] = $this->nextConjunction();
 		$this->queryWhere[]=$result;
 	}
 	private function bindFind($field,$value){
@@ -900,6 +921,7 @@ class model implements \Iterator{
 	static function findStatic($pk_value){
 		return self::toObject()->find($pk_value);
 	}
+	
 	/**
 	 * Find row model by pk. Thrown exception if not found
 	 * @param string|integer $pk_value
