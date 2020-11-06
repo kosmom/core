@@ -14,7 +14,7 @@ class pics{
 	static $pics=array();
 	private static $activePic='default';
 	private static function checkObject($pic){
-		if ($pic===null)$pic=self::$activePic;
+		if ($pic===\null)$pic=self::$activePic;
 		if (!isset(self::$pics[$pic]))throw new \Exception('need create picture object first');
 		return $pic;
 	}
@@ -24,8 +24,8 @@ class pics{
 	 * @param string $autorotate
 	 * @return pic
 	 */
-	static function createPic($filename,$autorotate=true, $pic=null){
-		if ($pic===null)$pic=self::$activePic;
+	static function createPic($filename,$autorotate=\true, $pic=\null){
+		if ($pic===\null)$pic=self::$activePic;
 		return self::$pics[$pic]=new pic($filename,$autorotate);
 	}
 
@@ -66,7 +66,7 @@ class pics{
 	 * @param string $filename
 	 * @return pic
 	 */
-	static function getpic($filename,$autorotate=true,$pic=null){
+	static function getpic($filename,$autorotate=\true,$pic=\null){
 		return self::createPic($filename, $autorotate,$pic);
 	}
 
@@ -76,7 +76,7 @@ class pics{
 	 * @param integer $y height
 	 * @return pic
 	 */
-	static function resize($x,$y=null,$pic=null){
+	static function resize($x,$y=\null,$pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->resize($x,$y);
 	}
@@ -84,7 +84,7 @@ class pics{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function resize_box($x,$y=null,$pic=null){
+	static function resize_box($x,$y=\null,$pic=\null){
 		return self::resizeBox($x,$y,$pic);
 	}
 	/**
@@ -93,15 +93,15 @@ class pics{
 	 * @param int $y height
 	 * @return pic
 	 */
-	static function resizeBox($x,$y=null,$pic=null){
+	static function resizeBox($x,$y=\null,$pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->resizeBox($x,$y);
 	}
-	static function resizeMaxWidth($x,$pic=null){
+	static function resizeMaxWidth($x,$pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->resizeMaxWidth($x);
 	}
-	static function resizeMaxHeight($y,$pic=null){
+	static function resizeMaxHeight($y,$pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->resizeMaxHeight($y);
 	}
@@ -109,13 +109,13 @@ class pics{
 	 * Change size with save dimensions for max of values
 	 * @deprecated since version 3.4
 	 */
-	static function resize_box_fit($x,$y=null,$pic=null){
+	static function resize_box_fit($x,$y=\null,$pic=\null){
 		return self::resizeBoxFit($x,$y,$pic);
 	}
 	/**
 	 * Change size with save dimensions for max of values
 	 */
-	static function resizeBoxFit($x,$y=null,$pic=null){
+	static function resizeBoxFit($x,$y=\null,$pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->resizeBoxFit($x,$y);
 	}
@@ -127,24 +127,24 @@ class pics{
 	 * @param number|null $height height
 	 * @return pic
 	 */
-	static function crop($x,$y,$width=null,$height=null,$pic=null){
+	static function crop($x,$y,$width=\null,$height=\null,$pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->crop($x,$y,$width,$height);
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function resize_fit($x,$y=null,$pic=null){
+	static function resize_fit($x,$y=\null,$pic=\null){
 	   return self::resizeFit($x,$y,$pic);
 	}
-	static function resizeFit($x,$y=null,$pic=null){
+	static function resizeFit($x,$y=\null,$pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->resizeFit($x,$y);
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function crop_center($x,$y=null,$pic=null){
+	static function crop_center($x,$y=\null,$pic=\null){
 		return self::cropCenter($x,$y,$pic);
 	}
 	/**
@@ -153,91 +153,91 @@ class pics{
 	 * @param number $y height
 	 * @return pic
 	 */
-	static function cropCenter($x,$y=null,$pic=null){
+	static function cropCenter($x,$y=\null,$pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->cropCenter($x,$y);
 	}
-	static function flip($direction='xy',$pic=null){
+	static function flip($direction='xy',$pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->flip($direction);
 	}
-	static function getImage($pic=null){
+	static function getImage($pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->getImage();
 	}
-	static function getWidth($pic=null){
+	static function getWidth($pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->getWidth();
 	}
-	static function getHeight($pic=null){
+	static function getHeight($pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->getHeight();
 	}
-	static function blurSelective($passes=1, $pic=null){
+	static function blurSelective($passes=1, $pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->blurSelective($passes);
 	}
-	static function blurGaussian($passes=1, $pic=null){
+	static function blurGaussian($passes=1, $pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->blurGaussian($passes);
 	}
-	static function brightness($level, $pic=null){
+	static function brightness($level, $pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->brightness($level);
 	}
-	static function contrast($level, $pic=null){
+	static function contrast($level, $pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->contrast($level);
 	}
-	static function desaturate($percentage, $pic=null){
+	static function desaturate($percentage, $pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->desaturate($percentage);
 	}
-	static function rotate($angleClockwise,$bgdColor=0,$pic=null){
+	static function rotate($angleClockwise,$bgdColor=0,$pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->rotate($angleClockwise,$bgdColor=0);
 	}
-	static function edges($pic=null){
+	static function edges($pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->edges();
 	}
-	static function emboss($pic=null){
+	static function emboss($pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->emboss();
 	}
-	static function invert($pic=null){
+	static function invert($pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->invert();
 	}
-	static function meanRemove($pic=null){
+	static function meanRemove($pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->meanRemove();
 	}
-	static function pixelate($blockSize=10, $pic=null){
+	static function pixelate($blockSize=10, $pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->pixelate($blockSize);
 	}
-	static function sepia($pic=null){
+	static function sepia($pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->sepia();
 	}
-	static function output($quality=50,$pic=null){
+	static function output($quality=50,$pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->output($quality);
 	}
-	static function sketch($pic=null){
+	static function sketch($pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->sketch();
 	}
-	static function smooth($level,$pic=null){
+	static function smooth($level,$pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->smooth($level);
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function add_watermark($x,$y,$watermarkFile,$opacity=100,$pic=null){
-		return self::addWatermark($x,$y,$watermarkFile,$opacity,$pin=null);
+	static function add_watermark($x,$y,$watermarkFile,$opacity=100,$pic=\null){
+		return self::addWatermark($x,$y,$watermarkFile,$opacity,$pin=\null);
 	}
 	/**
 	 * add watermart to picture
@@ -247,7 +247,7 @@ class pics{
 	 * @param float $opacity watermart opacity
 	 * @return pic
 	 */
-	static function addWatermark($x,$y,$watermarkFile,$opacity=100,$pic=null){
+	static function addWatermark($x,$y,$watermarkFile,$opacity=100,$pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->addWatermark($x,$y,$watermarkFile,$opacity);
 	}
@@ -257,20 +257,20 @@ class pics{
 	 * @param string $filename filename
 	 * @param float $quality quality for some formats. Quality must be between 0 - 100
 	 */
-	static function save($filename,$quality=50,$pic=null){
+	static function save($filename,$quality=50,$pic=\null){
 		$pic=self::checkObject($pic);
 		return self::$pics[$pic]->save($filename,$quality);
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function free_image($pic=null){
+	static function free_image($pic=\null){
 		self::freeImage($pic);
 	}
 	/**
 	 * Clear buffer image and release memory
 	 */
-	static function freeImage($pic=null){
+	static function freeImage($pic=\null){
 		$pic=self::checkObject($pic);
 		unset(self::$pics[$pic]);
 	}
@@ -280,8 +280,8 @@ class pics{
 	 * @param string|null $form
 	 * @return null|string
 	 */
-	static function activePic($pic=null){
-		if ($pic===null)return self::$activePic;
+	static function activePic($pic=\null){
+		if ($pic===\null)return self::$activePic;
 		self::$activePic=(string)$pic;
 	}
 }

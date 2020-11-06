@@ -27,57 +27,57 @@ class error{
 	 * @param int $header redirect type after error
 	 * @return super
 	 */
-	static function add($text,$type=self::ERROR,$redirect=false,$header='',$key=null){
+	static function add($text,$type=self::ERROR,$redirect=\false,$header='',$key=\null){
 		if (core::$debug){
 			debug::trace('Error message added to stack',error::SUCCESS,array('text'=>$text,'type'=>$type));
-			if (is_string($type))debug::trace('Error added without use const. Please, use error type as c\\error::ERROR const',error::WARNING);
+			if (\is_string($type))debug::trace('Error added without use const. Please, use error type as c\\error::ERROR const',error::WARNING);
 		}
 		if (isset(core::$data['error_callback'])){
-			call_user_func(core::$data['error_callback'],$text,$type);
-		}elseif ($key===null){
+			\call_user_func(core::$data['error_callback'],$text,$type);
+		}elseif ($key===\null){
 			$_SESSION['errors'][self::toType($type)][]=$text;
 		}else{
 			$_SESSION['errors'][self::toType($type)][$key]=$text;
 		}
-		if (core::$debug && session_id() === '')debug::trace('Probably you forget start session session_start()',error::WARNING);
-		if ($redirect!==false)self::redirect($redirect,$header);
+		if (core::$debug && \session_id() === '')debug::trace('Probably you forget start session session_start()',error::WARNING);
+		if ($redirect!==\false)self::redirect($redirect,$header);
 		return new super();
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function add_success($text,$redirect=false,$header=''){
+	static function add_success($text,$redirect=\false,$header=''){
 		return self::addSuccess($text, $redirect, $header);
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function add_error($text,$redirect=false,$header=''){
+	static function add_error($text,$redirect=\false,$header=''){
 		return self::addError($text, $redirect, $header);
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function add_warning($text,$redirect=false,$header=''){
+	static function add_warning($text,$redirect=\false,$header=''){
 		return self::addWarning($text, $redirect, $header);
 	}
-	static function addSuccess($text,$redirect=false,$header=''){
+	static function addSuccess($text,$redirect=\false,$header=''){
 		return self::add($text,self::SUCCESS,$redirect,$header);
 	}
-	static function addError($text,$redirect=false,$header=''){
+	static function addError($text,$redirect=\false,$header=''){
 		return self::add($text,self::ERROR,$redirect,$header);
 	}
-	static function addWarning($text,$redirect=false,$header=''){
+	static function addWarning($text,$redirect=\false,$header=''){
 		return self::add($text,self::WARNING,$redirect,$header);
 	}
 
-	static function setSuccess($key, $text,$redirect=false,$header=''){
+	static function setSuccess($key, $text,$redirect=\false,$header=''){
 		return self::add($text,self::SUCCESS,$redirect,$header,$key);
 	}
-	static function setError($key, $text,$redirect=false,$header=''){
+	static function setError($key, $text,$redirect=\false,$header=''){
 		return self::add($text,self::ERROR,$redirect,$header,$key);
 	}
-	static function setWarning($key, $text,$redirect=false,$header=''){
+	static function setWarning($key, $text,$redirect=\false,$header=''){
 		return self::add($text,self::WARNING,$redirect,$header,$key);
 	}
 	
@@ -121,7 +121,7 @@ class error{
 	 */
 	static function count($type=self::ERROR){
 			if (empty($_SESSION['errors']))return 0;
-			return @count($_SESSION['errors'][self::toType($type)]);
+			return @\count($_SESSION['errors'][self::toType($type)]);
 	}
 	static function size($type=self::ERROR){
 		return self::count($type);
@@ -173,7 +173,7 @@ class error{
 	 * @param string $url redirect URL
 	 * @param integer $header redirect with header
 	 */
-	static function redirect($url=null,$header=''){
+	static function redirect($url=\null,$header=''){
 		return responce::redirect($url,$header);
 	}
 	/**
@@ -182,8 +182,8 @@ class error{
 	 * @param string|integer|array $string string
 	 */
 	static function log($filename,$string){
-		if (is_array($string) or is_object($string))$string= print_r ($string,true);
-		if (!file_put_contents($filename, "\n".$string, FILE_APPEND | LOCK_EX))file_put_contents($filename, "\n".$string);
+		if (\is_array($string) or \is_object($string))$string=\print_r($string,\true);
+		if (!\file_put_contents($filename, "\n".$string, \FILE_APPEND | \LOCK_EX))\file_put_contents($filename, "\n".$string);
 		return new super();
 	}
 }

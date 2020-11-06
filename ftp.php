@@ -13,19 +13,19 @@ class ftp{
 	* @return bool
 	*/
 	static function rmdir($dir,$conn_id){
-		$ar_files = ftp_nlist($conn_id, $dir);
-		if (is_array($ar_files)){
+		$ar_files = \ftp_nlist($conn_id, $dir);
+		if (\is_array($ar_files)){
 			foreach ($ar_files as $file){
-				$st_file = basename($file);
+				$st_file = \basename($file);
 				if($st_file == '.' || $st_file == '..') continue;
-				if (ftp_size($conn_id, $dir.'/'.$st_file) == -1){
+				if (\ftp_size($conn_id, $dir.'/'.$st_file) == -1){
 					self::rmdir( $dir.'/'.$st_file,$conn_id);
 				} else {
-					ftp_delete($conn_id,  $dir.'/'.$st_file);
+					\ftp_delete($conn_id,  $dir.'/'.$st_file);
 				}
 			}
 		}
-		ftp_rmdir($conn_id, $dir);
+		\ftp_rmdir($conn_id, $dir);
 	}
 	/**
 	* Same as rmdir
@@ -40,15 +40,15 @@ class ftp{
 	* @param string $dir
 	*/
 	static function empt($dir,$conn_id){
-	  $ar_files = ftp_nlist($conn_id, $dir);
-		if (!is_array($ar_files))return;
+	  $ar_files = \ftp_nlist($conn_id, $dir);
+		if (!\is_array($ar_files))return;
 		foreach ($ar_files as $file){
-			$st_file = basename($file);
+			$st_file = \basename($file);
 			if($st_file == '.' || $st_file == '..') continue;
-			if (ftp_size($conn_id, $dir.'/'.$st_file) == -1){
+			if (\ftp_size($conn_id, $dir.'/'.$st_file) == -1){
 				self::rmdir( $dir.'/'.$st_file,$conn_id);
 			} else {
-				ftp_delete($conn_id,  $dir.'/'.$st_file);
+				\ftp_delete($conn_id,  $dir.'/'.$st_file);
 			}
 		}
 	}
@@ -65,19 +65,19 @@ class ftp{
 	* @param object $connId ftp connect handle
 	*/
 	static function copyToFtp($srcDir, $dstDir,$connId) {
-		@ftp_mkdir($connId, dirname($dstDir));
-		$d = dir($srcDir);
+		@\ftp_mkdir($connId, \dirname($dstDir));
+		$d = \dir($srcDir);
 		if (!$d){
-			ftp_put($connId, $dstDir, $srcDir, FTP_BINARY);
-			return true;
+			\ftp_put($connId, $dstDir, $srcDir, \FTP_BINARY);
+			return \true;
 		}
 		while($file = $d->read()) {
 			if ($file == '.' || $file == '..') continue;
-			if (is_dir($srcDir.'/'.$file)) {
-				if (!@ftp_chdir($connId, $dstDir.'/'.$file))ftp_mkdir($connId, $dstDir.'/'.$file);
+			if (\is_dir($srcDir.'/'.$file)) {
+				if (!@ftp_chdir($connId, $dstDir.'/'.$file))\ftp_mkdir($connId, $dstDir.'/'.$file);
 				self::copyToFtp($srcDir.'/'.$file, $dstDir.'/'.$file,$connId);
 			} else {
-				ftp_put($connId, $dstDir.'/'.$file, $srcDir.'/'.$file, FTP_BINARY);
+				\ftp_put($connId, $dstDir.'/'.$file, $srcDir.'/'.$file, \FTP_BINARY);
 			}
 		}
 		$d->close();

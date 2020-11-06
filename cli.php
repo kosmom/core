@@ -74,13 +74,13 @@ class cli{
 		return "\033[".$row.";".$col."f";
 	}
 	static function prompt() {
-		$fp = fopen("php://stdin", "r");
-		$in = fgets($fp, 4094);
-		fclose($fp);
-		return trim($in);
+		$fp = \fopen("php://stdin", "r");
+		$in = \fgets($fp, 4094);
+		\fclose($fp);
+		return \trim($in);
 	}
 	static function argv() {
 		global $argv;
-		return array_splice($argv, 2);
+		return \array_splice($argv, 2);
 	}
 }

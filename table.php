@@ -14,41 +14,41 @@ class table{
 	var $groupFooter;
 	var $attributes=array();
 	var $classes=array('table');
-	var $row_attributes=false;
-	var $cell_attributes=false;
-	var $header_attributes=false;
-	var $headerTotalHtml=false;
+	var $row_attributes=\false;
+	var $cell_attributes=\false;
+	var $header_attributes=\false;
+	var $headerTotalHtml=\false;
 	private $preparedData=[];
 	/**
 	 * Set table responsives
 	 * @param string $responsive_border xxs, xs, sm, md
 	 */
-	var $responsive=false;
+	var $responsive=\false;
 	/**
 	 * sticky or not header
 	 * @var boolean
 	 */
-	var $sticky=false;
+	var $sticky=\false;
 	/**
 	 * Show header
 	 * @var false|true|'join'
 	 */
-	var $show_header=true;
+	var $show_header=\true;
 	/**
 	 * Draw header if not set data
 	 * @var boolean
 	 */
-	var $draw_if_empty=false;
+	var $draw_if_empty=\false;
 	private $callableAttributes=array(); //column-attribute-callable
 	private $lastGroupState=array();
 	private $lastGroupFooterState=array();
 
-	function __construct($data=null,$header=array()){
+	function __construct($data=\null,$header=array()){
 		$this->data=$data;
 		$this->header=$header;
 	}
 	function sort($default='',$field=''){
-		if ($field == '') $field=$_GET['sort'];
+		if ($field=='') $field=$_GET['sort'];
 		if (empty($this->header[$field]['sort'])) return $default;
 		return $field;
 	}
@@ -57,53 +57,53 @@ class table{
 	}
 	function is_data(){
 		if ($this->data instanceof collection or $this->data instanceof model)return $this->data->count();
-		if (is_array($this->data))return sizeof($this->data);
+		if (\is_array($this->data))return \sizeof($this->data);
 		return $this->preparedData=db::fa($this->data); // db query
 	}
-	function render($input=array(),$empty_callback=null){
+	function render($input=array(),$empty_callback=\null){
 		if (!isset($input['draw_if_empty'])) $input['draw_if_empty']=$this->draw_if_empty;
 		if (!isset($input['responsive'])) $input['responsive']=$this->responsive;
 		if (!isset($input['sticky'])) $input['sticky']=$this->sticky;
 		if (!isset($input['fill'])) $input['fill']=$this->fill;
 		if (!isset($input['header_render_callback'])) $input['header_render_callback']=$this->header_render_callback;
-		if (isset($input['row_attributes']) && is_array($this->row_attributes)){
+		if (isset($input['row_attributes']) && \is_array($this->row_attributes)){
 			$input['row_attributes']+=$this->row_attributes;
 		}elseif (!isset($input['row_attributes'])){
 			$input['row_attributes']=$this->row_attributes;
 		}
 		if (!$input['draw_if_empty'] && !$this->is_data()){
-			return (is_callable($empty_callback))?$empty_callback():$empty_callback;
+			return (\is_callable($empty_callback))?$empty_callback():$empty_callback;
 		}
 		if (!isset($input['attributes'])) $input['attributes']=$this->attributes;
 		if (!isset($input['classes'])) $input['classes']=$this->classes;
 		if (!isset($input['show_header'])) $input['show_header']=$this->show_header;
-		if ($input['attributes'] && is_array($input['attributes'])){
+		if ($input['attributes'] && \is_array($input['attributes'])){
 			$attributes=array();
 			foreach($input['attributes'] as $key=> $val){
 				$attributes[]=$key.'="'.input::htmlspecialchars($val).'"';
 			}
-			$attributes=' '.implode(' ',$attributes);
+			$attributes=' '.\implode(' ',$attributes);
 		}else{
 			$attributes='';
 		}
 		if ($input['responsive']){
 			mvc::addCss('responsive-tables');
-			if (is_string($input['classes'])){
+			if (\is_string($input['classes'])){
 				$input['classes'].=' '.$input['responsive'].'-no-table';
-			}elseif (is_array($input['classes'])){
+			}elseif (\is_array($input['classes'])){
 				$input['classes'][]=$input['responsive'].'-no-table';
 			}
 		}
 		if ($input['sticky']){
 			mvc::addJs('sticky-tables');
-			if (is_string($input['classes'])){
+			if (\is_string($input['classes'])){
 				$input['classes'].=' '.'table-sticky';
-			}elseif (is_array($input['classes'])){
+			}elseif (\is_array($input['classes'])){
 				$input['classes'][]='table-sticky';
 			}
 			//$this->addClass('table-sticky');
 		}
-		$out='<table'.($input['classes']?' class="'.(is_array($input['classes'])?implode(' ',$input['classes']):$input['classes']).'"':'').$attributes.'>';
+		$out='<table'.($input['classes']?' class="'.(\is_array($input['classes'])?\implode(' ',$input['classes']):$input['classes']).'"':'').$attributes.'>';
 		if ($input['show_header']) $out.=$this->renderHeader($input);
 		return $out.$this->renderBody($input).'</table>';
 	}
@@ -114,22 +114,22 @@ class table{
 		return $this->addClass($class);
 	}
 	function addClass($class){
-		if (is_string($this->classes)){
+		if (\is_string($this->classes)){
 			$this->classes.=' '.$class;
-		}elseif (is_array($this->classes)){
+		}elseif (\is_array($this->classes)){
 			$this->classes[]=$class;
 		}
 		return $this;
 	}
 	private function headerPrepare($header){
-		$need_sort=false;
+		$need_sort=\false;
 		foreach($header as &$item){
-			if (is_string($item)){
+			if (\is_string($item)){
 				$item=array('name'=>$item);
 				continue;
 			}
 			if (isset($item[0]) && !isset($item['name']))$item['name']=$item[0];
-			if (isset($item['position']))$need_sort=true;
+			if (isset($item['position']))$need_sort=\true;
 		}
 		if (!$need_sort)return $header;
 			datawork::stable_uasort($header,array('c\\datawork','positionCompare'));
@@ -144,30 +144,30 @@ class table{
 	}
 	function renderHeader($input=array()){
 		if (!isset($input['header'])) $input['header']=$this->header;
-		if (core::$debug) if (empty($input['header'])) debug::trace('Table header is not set',error::WARNING);
+		if (core::$debug) if (empty($input['header']))debug::trace('Table header is not set',error::WARNING);
 		if ($this->headerTotalHtml)return $this->headerTotalHtml;
 		$input['header']=$this->headerPrepare($input['header']);
-		$hasSubheader=false;
+		$hasSubheader=\false;
 		foreach($input['header'] as $item){
 			if (!isset($item['header']))continue;
-			$hasSubheader=true;
+			$hasSubheader=\true;
 			break;
 		}
 		foreach($input['header'] as $key=> $h){
 			if (isset($h['header_attributes'])){
-				if (!is_array(@$input['header_attributes'][$key]))$input['header_attributes'][$key]=array();
+				if (!\is_array(@$input['header_attributes'][$key]))$input['header_attributes'][$key]=array();
 				$input['header_attributes'][$key]+=$h['header_attributes'];
 			}
 			if (isset($h['attributes'])){
-				if (!is_array(@$input['cell_attributes'][$key]))$input['cell_attributes'][$key]=array();
+				if (!\is_array(@$input['cell_attributes'][$key]))$input['cell_attributes'][$key]=array();
 				$input['cell_attributes'][$key]+=$h['attributes'];
 			}
 		}
 		unset($item);
 		if ($input['show_header'] == 'join'){
 			// transformations with colspan
-			$lastVal=null;
-			$lastKey=null;
+			$lastVal=\null;
+			$lastKey=\null;
 			foreach($input['header'] as $key=>$item){
 				$name=$this->drawCellLabel($item);
 				if ($name === $lastVal){
@@ -204,11 +204,11 @@ class table{
 				}
 			}
 			foreach($input['header'] as $key=> $item){
-				$lastHeader=null;
+				$lastHeader=\null;
 				if (empty($item['header'])){
 					$input['cell_attributes'][$key]['rowspan']=2;
 					$out.='<th'.(isset($input['cell_attributes'][$key])?' '.$this->drawCellAttributes($key,$input['header'],$input):'').'>'.$this->drawSortTag($input,$key,$item).'</th>';
-					$lastHeader=null;
+					$lastHeader=\null;
 				}else{
 					if ($lastHeader === $item['header'] or empty($h[$key])) continue;
 					$out.='<th colspan="'.$h[$key].'" '.(isset($input['header_attributes'][$key])?' '.$this->drawHeaderAttributes($key,$input['header'],$input):'').'>'.$item['header'].'</th>';
@@ -236,7 +236,7 @@ class table{
 			$cb=core::$data['table_header_render_callback'];
 			$rs=$cb($rs);
 		}
-		if (!empty($input['header'][$key]['sort'])) return '<a class="table-sort" href="'.input::getLink(array('sort'=>$key,'order'=>$_GET['order'] || $_GET['sort'] != $key?false:'desc')).'">'.$rs.'</a>';
+		if (!empty($input['header'][$key]['sort'])) return '<a class="table-sort" href="'.input::getLink(array('sort'=>$key,'order'=>$_GET['order'] || $_GET['sort'] != $key?\false:'desc')).'">'.$rs.'</a>';
 		return $rs;
 	}
 	private function drawCellLabel($item){
@@ -258,46 +258,46 @@ class table{
 	private function drawCellAttributes($cell,$row,$input){
 		$out=array();
 		foreach($input['cell_attributes'][$cell] as $attribute=> $callback){
-			$out[]=$attribute.'="'.input::htmlspecialchars(is_callable($callback)?@$callback($row,$cell):$callback).'"';
+			$out[]=$attribute.'="'.input::htmlspecialchars(\is_callable($callback)?@$callback($row,$cell):$callback).'"';
 		}
-		return implode(' ',$out);
+		return \implode(' ',$out);
 	}
 	private function drawHeaderAttributes($cell,$row,$input){
 		$out=array();
 		foreach($input['header_attributes'][$cell] as $attribute=> $callback){
-			$out[]=$attribute.'="'.input::htmlspecialchars(is_callable($callback)?$callback($row,$cell):$callback).'"';
+			$out[]=$attribute.'="'.input::htmlspecialchars(\is_callable($callback)?$callback($row,$cell):$callback).'"';
 		}
-		return implode(' ',$out);
+		return \implode(' ',$out);
 	}
 	private function setCallableAttributes($cell_attributes){
 		$this->callableAttributes=array();
 		foreach($cell_attributes as $cell=> $attributes){
 			foreach($attributes as $attribute=> $val){
-				if (is_callable($val)) $this->callableAttributes[$cell][$attribute]=true;
+				if (\is_callable($val)) $this->callableAttributes[$cell][$attribute]=\true;
 			}
 		}
 	}
 	private function drawGroup($input,$row){
 		if (!isset($input['group'])) return '';
 		$lastGroupState=array();
-		$reset=false;
+		$reset=\false;
 		$out='';
 		foreach($input['group'] as $groupKey=> $item){
 			if ($reset) $this->lastGroupState[$groupKey]='';
 			$lastGroupState[$groupKey]=(isset($item['field']))?$row[$item['field']]:$item['fill']($row);
 			if ($lastGroupState[$groupKey] == $this->lastGroupState[$groupKey]) continue;
-			$reset=true;
+			$reset=\true;
 
 			$row_attributes=array();
 			foreach($input['row_attributes'] as $key=> $val){
-				$row_attributes[]=$key.'="'.input::htmlspecialchars(is_callable($val)?$val($row):$val).'"';
+				$row_attributes[]=$key.'="'.input::htmlspecialchars(\is_callable($val)?$val($row):$val).'"';
 			}
 			$attrs=array();
 			foreach($item['cell_attributes'] as $attribute=> $callback){
-				$attrs[]=$attribute.'="'.input::htmlspecialchars(is_callable($callback)?$callback($row):$callback).'"';
+				$attrs[]=$attribute.'="'.input::htmlspecialchars(\is_callable($callback)?$callback($row):$callback).'"';
 			}
-			$attrs[]='colspan='.sizeof($input['header']);
-			$out.='<tr '.implode(' ',$row_attributes).'><td '.implode(' ',$attrs).'>'.$lastGroupState[$groupKey].'</td></tr>';
+			$attrs[]='colspan='.\sizeof($input['header']);
+			$out.='<tr '.\implode(' ',$row_attributes).'><td '.\implode(' ',$attrs).'>'.$lastGroupState[$groupKey].'</td></tr>';
 
 			$this->lastGroupState[$groupKey]=$lastGroupState[$groupKey];
 		}
@@ -306,24 +306,24 @@ class table{
 	private function drawGroupFooter($input,$row){
 		if (!isset($input['groupFooter'])) return '';
 		$lastGroupState=array();
-		$reset=false;
+		$reset=\false;
 		$out='';
 		foreach($input['groupFooter'] as $groupKey=> $item){
 			if ($reset) $this->lastGroupFooterState[$groupKey]='';
 			$lastGroupState[$groupKey]=(isset($item['field']))?$row[$item['field']]:$item['fill']($row);
 			if ($lastGroupState[$groupKey] == $this->lastGroupFooterState[$groupKey]) continue;
-			$reset=true;
+			$reset=\true;
 
 			$row_attributes=array();
 			foreach($input['row_attributes'] as $key=> $val){
-				$row_attributes[]=$key.'="'.input::htmlspecialchars(is_callable($val)?$val($row):$val).'"';
+				$row_attributes[]=$key.'="'.input::htmlspecialchars(\is_callable($val)?$val($row):$val).'"';
 			}
 			$attrs=array();
 			foreach($item['cell_attributes'] as $attribute=> $callback){
-				$attrs[]=$attribute.'="'.input::htmlspecialchars(is_callable($callback)?$callback($row):$callback).'"';
+				$attrs[]=$attribute.'="'.input::htmlspecialchars(\is_callable($callback)?$callback($row):$callback).'"';
 			}
-			$attrs[]='colspan='.sizeof($input['header']);
-			$out.='<tr '.implode(' ',$row_attributes).'><td '.implode(' ',$attrs).'>'.$lastGroupState[$groupKey].'</td></tr>';
+			$attrs[]='colspan='.\sizeof($input['header']);
+			$out.='<tr '.\implode(' ',$row_attributes).'><td '.\implode(' ',$attrs).'>'.$lastGroupState[$groupKey].'</td></tr>';
 
 			$this->lastGroupFooterState[$groupKey]=$lastGroupState[$groupKey];
 		}
@@ -332,7 +332,7 @@ class table{
 	private function getAttributes($input,$row){
 		$attributes=array();
 		foreach($input['row_attributes'] as $key=> $val){
-			$attributes[]=$key.'="'.input::htmlspecialchars(is_callable($val)?$val($row):$val).'"';
+			$attributes[]=$key.'="'.input::htmlspecialchars(\is_callable($val)?$val($row):$val).'"';
 		}
 		return $attributes;
 	}
@@ -341,7 +341,7 @@ class table{
 		return input::htmlspecialchars($value);
 	}
 	private function drawCellValue($value,$key){
-		if (!is_array($this->header[$key]))return $this->cellHtmlConvert($value,$key);
+		if (!\is_array($this->header[$key]))return $this->cellHtmlConvert($value,$key);
 		if (!isset($this->header[$key]['values']))return $this->cellHtmlConvert($value,$key);
 		return @$this->header[$key]['values'][$value]?$this->header[$key]['values'][$value]:$this->cellHtmlConvert($value,$key);
 	}
@@ -375,19 +375,19 @@ class table{
 
 		if (!isset($input['fill']))$input['fill']=$this->fill;
 		foreach ($input['header'] as $key=>$h){ //needed 292?
-			if (is_callable(@$h['fill']))$input['fill'][$key]=$h['fill'];
+			if (\is_callable(@$h['fill']))$input['fill'][$key]=$h['fill'];
 		}
 
 		$row=array();
 		$out='<tbody>';
-		$lastrow=null;
+		$lastrow=\null;
 
-		if (is_array($this->data)){
+		if (\is_array($this->data)){
 			if ($input['row_attributes']){
 				if ($input['fill']){
 					foreach($this->data as $key=>$row){
 						$this->drawGroupFooter($input,$row);
-						$out.=($key?$this->drawGroupFooter($input,$lastrow):'').$this->drawGroup($input,$row).'<tr '.implode(' ',$this->getAttributes($input,$row)).'>';
+						$out.=($key?$this->drawGroupFooter($input,$lastrow):'').$this->drawGroup($input,$row).'<tr '.\implode(' ',$this->getAttributes($input,$row)).'>';
 						foreach($input['header'] as $key=> $coll){
 							$out.=$this->drawCell($key,$row,$input);
 						}
@@ -397,7 +397,7 @@ class table{
 				}else{
 					foreach($this->data as $key=>$row){
 						$this->drawGroupFooter($input,$row);
-						$out.=($key?$this->drawGroupFooter($input,$lastrow):'').$this->drawGroup($input,$row).'<tr '.implode(' ',$this->getAttributes($input,$row)).'>';
+						$out.=($key?$this->drawGroupFooter($input,$lastrow):'').$this->drawGroup($input,$row).'<tr '.\implode(' ',$this->getAttributes($input,$row)).'>';
 						foreach($input['header'] as $key=> $coll){
 							$out.='<td'.(isset($input['cell_attributes'][$key])?' '.$this->drawCellAttributes($key,$row,$input):'').'>'.$this->drawCellValue(@$row[$key],$key).'</td>';
 						}
@@ -434,7 +434,7 @@ class table{
 				if ($input['fill']){
 					foreach($this->data as $key=>$row){
 						$this->drawGroupFooter($input,$row);
-						$out.=($key?$this->drawGroupFooter($input,$lastrow):'').$this->drawGroup($input,$row).'<tr '.implode(' ',$this->getAttributes($input,$row)).'>';
+						$out.=($key?$this->drawGroupFooter($input,$lastrow):'').$this->drawGroup($input,$row).'<tr '.\implode(' ',$this->getAttributes($input,$row)).'>';
 						foreach($input['header'] as $key=> $coll){
 							$out.=$this->drawCell($key,$row,$input);
 						}
@@ -444,7 +444,7 @@ class table{
 				}else{
 					foreach($this->data as $key=>$row){
 						$this->drawGroupFooter($input,$row);
-						$out.=($key?$this->drawGroupFooter($input,$lastrow):'').$this->drawGroup($input,$row).'<tr '.implode(' ',$this->getAttributes($input,$row)).'>';
+						$out.=($key?$this->drawGroupFooter($input,$lastrow):'').$this->drawGroup($input,$row).'<tr '.\implode(' ',$this->getAttributes($input,$row)).'>';
 						foreach($input['header'] as $key=> $coll){
 							$out.='<td'.(isset($input['cell_attributes'][$key])?' '.$this->drawCellAttributes($key,$row,$input):'').'>'.$this->drawCellValue(@$row->$key,$key).'</td>';
 						}
@@ -479,14 +479,14 @@ class table{
 		}else{
 			if ($this->preparedData){
 				$row=$this->preparedData;
-				$this->preparedData=null;
+				$this->preparedData=\null;
 			}
 			$key=0;
 			if ($input['row_attributes']){
 				if ($input['fill']){
 					if ($row){
 						$this->drawGroupFooter($input,$row);
-						$out.=($key?$this->drawGroupFooter($input,$lastrow):'').$this->drawGroup($input,$row).'<tr '.implode(' ',$this->getAttributes($input,$row)).'>';
+						$out.=($key?$this->drawGroupFooter($input,$lastrow):'').$this->drawGroup($input,$row).'<tr '.\implode(' ',$this->getAttributes($input,$row)).'>';
 						foreach($input['header'] as $key=> $coll){
 							$out.=$this->drawCell($key,$row,$input);
 						}
@@ -496,7 +496,7 @@ class table{
 					}
 					while ($row=db::fa($this->data)){ // same
 						$this->drawGroupFooter($input,$row);
-						$out.=($key?$this->drawGroupFooter($input,$lastrow):'').$this->drawGroup($input,$row).'<tr '.implode(' ',$this->getAttributes($input,$row)).'>';
+						$out.=($key?$this->drawGroupFooter($input,$lastrow):'').$this->drawGroup($input,$row).'<tr '.\implode(' ',$this->getAttributes($input,$row)).'>';
 						foreach($input['header'] as $key=> $coll){
 							$out.=$this->drawCell($key,$row,$input);
 						}
@@ -507,7 +507,7 @@ class table{
 				}else{
 					if ($row){
 						$this->drawGroupFooter($input,$row);
-						$out.=($key?$this->drawGroupFooter($input,$lastrow):'').$this->drawGroup($input,$row).'<tr '.implode(' ',$this->getAttributes($input,$row)).'>';
+						$out.=($key?$this->drawGroupFooter($input,$lastrow):'').$this->drawGroup($input,$row).'<tr '.\implode(' ',$this->getAttributes($input,$row)).'>';
 						foreach($input['header'] as $key=> $coll){
 							$out.='<td'.(isset($input['cell_attributes'][$key])?' '.$this->drawCellAttributes($key,$row,$input):'').'>'.$this->drawCellValue(@$row[$key],$key).'</td>';
 						}
@@ -517,7 +517,7 @@ class table{
 					}
 					while ($row=db::fa($this->data)){ // same
 						$this->drawGroupFooter($input,$row);
-						$out.=($key?$this->drawGroupFooter($input,$lastrow):'').$this->drawGroup($input,$row).'<tr '.implode(' ',$this->getAttributes($input,$row)).'>';
+						$out.=($key?$this->drawGroupFooter($input,$lastrow):'').$this->drawGroup($input,$row).'<tr '.\implode(' ',$this->getAttributes($input,$row)).'>';
 						foreach($input['header'] as $key=> $coll){
 							$out.='<td'.(isset($input['cell_attributes'][$key])?' '.$this->drawCellAttributes($key,$row,$input):'').'>'.$this->drawCellValue(@$row[$key],$key).'</td>';
 						}
@@ -592,7 +592,7 @@ class table{
 	function xlsx_generate($input=array(),$filename=''){
 		return $this->xlsxGenerate($input,$filename);
 	}
-	function xlsxGenerate($input=array(),$filename='',$out=true){
+	function xlsxGenerate($input=array(),$filename='',$out=\true){
 		if (is_string($input) && $filename==''){
 			$filename=$input;
 			$input=array();
@@ -615,9 +615,9 @@ class table{
 			foreach ($row as $key=>$cell){
 				$rowTemp[]=$key.$delimeterKeyVal.$cell;
 			}
-			$out[]= implode($delimeterCol, $rowTemp);
+			$out[]=\implode($delimeterCol, $rowTemp);
 		}
-		return implode($delimeterRow,$out);
+		return \implode($delimeterRow,$out);
 	}
 	/**
 	 * Render data as array with headers and fill parameters
@@ -633,7 +633,7 @@ class table{
 		}
 		$out=array();
 		if (empty($this->data))return $out;
-		if (is_array($this->data)){
+		if (\is_array($this->data)){
 			foreach($this->data as $key=>$row){
 				$outRow=array();
 				foreach($input['header'] as $key=> $coll){

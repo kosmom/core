@@ -23,12 +23,12 @@ class formfield extends arrayaccess{
 	 * Disabled field
 	 * @var boolean
 	 */
-	var $disabled=false;
+	var $disabled=\false;
 	/**
 	 * Is readonly field
 	 * @var boolean
 	 */
-	var $readonly=false;
+	var $readonly=\false;
 	/**
 	 * Is value to html
 	 * @var boolean
@@ -180,7 +180,7 @@ class formfield extends arrayaccess{
 		$this->datalist=$val;
 		return $this;
 	}
-	function addToForms($key,$form=null){
+	function addToForms($key,$form=\null){
 		return forms::addField($key, $this, $form);
 	}
 	function addToForm($form,$key){

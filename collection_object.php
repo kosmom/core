@@ -10,7 +10,7 @@ class collection_object extends collection{
 	var $pk_field;
 	var $connection;
 	var $is_full;
-	function __construct($array,$generator=null,$pk_field=null,$is_full=false){
+	function __construct($array,$generator=\null,$pk_field=\null,$is_full=\false){
 		parent::__construct($array);
 		$this->generator=$generator;
 		$this->pk_field=$pk_field;
@@ -23,7 +23,7 @@ class collection_object extends collection{
 		return new collection_object($array);
 	}
 	function offsetGet($offset){
-		return $this->offsetExists($offset)?(new $this->generator($this->_c[$offset],$this)):null;
+		return $this->offsetExists($offset)?(new $this->generator($this->_c[$offset],$this)):\null;
 	}
 	function first(){
 		foreach ($this->_c as $item){

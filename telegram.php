@@ -20,7 +20,7 @@ class telegram{
 	
 	const PARSE_MODE_MARKDOWN='Markdown';
 	const PARSE_MODE_HTML='HTML';
-	const PARSE_MODE_NONE=null;
+	const PARSE_MODE_NONE=\null;
 	
 	static $parse_mode;
 	
@@ -28,7 +28,7 @@ class telegram{
 		self::check();
 		return self::request('getMe');
 	}
-	static function sendLocation($chat_id,$latitude,$longitude,$reply_markup=null){
+	static function sendLocation($chat_id,$latitude,$longitude,$reply_markup=\null){
 		self::check();
 		$params=array('chat_id'=>$chat_id,'latitude'=>$latitude,'longitude'=>$longitude);
 		if ($reply_markup)$params['reply_markup']=$reply_markup;
@@ -44,31 +44,31 @@ class telegram{
 		$reply = json_encode($resp);
 		return self::editMessage($chat_id,$message_id, $text, $reply);
 	}
-	static function sendMessageWithKey($chat_id,$text,$keyboardArray,$resizable=true,$one_time=true){
+	static function sendMessageWithKey($chat_id,$text,$keyboardArray,$resizable=\true,$one_time=\true){
 		$resp = array("keyboard" => $keyboardArray,"resize_keyboard" => $resizable,"one_time_keyboard" => $one_time);
 		$reply = json_encode($resp);
 		return self::sendMessage($chat_id, $text, $reply);
 	}
 	static function sendMessageWithRemoveKey($chat_id,$text){
-		$resp = array("remove_keyboard" => true);
+		$resp = array("remove_keyboard" => \true);
 		$reply = json_encode($resp);
 		return self::sendMessage($chat_id, $text, $reply);
 	}
 	static function sendMessageWithForceReply($chat_id,$text){
-		$resp = array("force_reply" => true);
+		$resp = array("force_reply" => \true);
 		$reply = json_encode($resp);
 		return self::sendMessage($chat_id, $text, $reply);
 	}
-	static function sendMessage($chat_id,$text,$reply_markup=null){
+	static function sendMessage($chat_id,$text,$reply_markup=\null){
 		self::check();
-		$params=array('chat_id'=>$chat_id,'text'=>input::iconv($text,true));
+		$params=array('chat_id'=>$chat_id,'text'=>input::iconv($text,\true));
 		if (self::$parse_mode)$params['parse_mode']=self::$parse_mode;
 		if ($reply_markup)$params['reply_markup']=$reply_markup;
 		return self::request('sendMessage',$params);
 	}
-	static function editMessage($chat_id,$message_id,$text,$reply_markup=null){
+	static function editMessage($chat_id,$message_id,$text,$reply_markup=\null){
 		self::check();
-		$params=array('chat_id'=>$chat_id,'message_id'=>$message_id,'text'=>input::iconv($text,true));
+		$params=array('chat_id'=>$chat_id,'message_id'=>$message_id,'text'=>input::iconv($text,\true));
 		if (self::$parse_mode)$params['parse_mode']=self::$parse_mode;
 		if ($reply_markup)$params['reply_markup']=$reply_markup;
 		return self::request('editMessageText',$params);
@@ -81,14 +81,14 @@ class telegram{
 		self::check();
 		return input::iconv(self::request('sendChatAction',array('chat_id'=>$chat_id,'action'=>$action)));
 	}
-	static function sendPhoto($chat_id,$photoLink,$caption=null){
+	static function sendPhoto($chat_id,$photoLink,$caption=\null){
 		self::check();
 		$data=array('chat_id'=>$chat_id);
-		if ($caption)$data['caption']=input::iconv($caption,true);
+		if ($caption)$data['caption']=input::iconv($caption,\true);
 		$data['photo']=$photoLink;
 		return input::iconv(self::request('sendPhoto',$data));
 	}
-	static function sendMessageOrFault($chat_id,$text,$reply_markup=null){
+	static function sendMessageOrFault($chat_id,$text,$reply_markup=\null){
 		$rs=self::sendMessage($chat_id,$text,$reply_markup);
 		if (!$rs['ok'])throw new \Exception($rs['description'],$rs['error_code']);
 		return $rs;
@@ -107,13 +107,13 @@ class telegram{
 	 * @return array
 	 */
 	function getData() {
-		return json_decode(input::iconv(file_get_contents("php://input")),true);
+		return \json_decode(input::iconv(file_get_contents("php://input")),\true);
 	}
 	static function check(){
 		if (!isset(core::$data['telegram']))throw new \Exception('need set c\\core::$data[\'telegram key\'] from BotFather');
 	}
-	private static function request($api,$post=null){
-		if (is_callable(core::$data['telegram_request'])){
+	private static function request($api,$post=\null){
+		if (\is_callable(core::$data['telegram_request'])){
 			$a=core::$data['telegram_request'];
 			return $a($api,$post);
 		}else{
@@ -121,13 +121,13 @@ class telegram{
 			$proxy=array();
 			if (core::$data['telegram_proxy']){
 				$proxy=array(
-					CURLOPT_PROXY=>core::$data['telegram_proxy']['host'],
-					CURLOPT_PROXYUSERPWD=>core::$data['telegram_proxy']['auth'],
-					CURLOPT_PROXYTYPE=>core::$data['telegram_proxy']['type']
+					\CURLOPT_PROXY=>core::$data['telegram_proxy']['host'],
+					\CURLOPT_PROXYUSERPWD=>core::$data['telegram_proxy']['auth'],
+					\CURLOPT_PROXYTYPE=>core::$data['telegram_proxy']['type']
 				);
 			}
-			$rs=curl::getContent ($url,$post,null,$proxy);
-			return json_decode($rs, true);
+			$rs=curl::getContent ($url,$post,\null,$proxy);
+			return \json_decode($rs, \true);
 		}
 	}
 }

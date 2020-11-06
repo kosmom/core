@@ -19,7 +19,7 @@ class dbwork{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function filter_diap($string,$field,&$bind,$bindPrefix=null,$blockDelimeter=',',$diapDilimeter='-'){
+	static function filter_diap($string,$field,&$bind,$bindPrefix=\null,$blockDelimeter=',',$diapDilimeter='-'){
 		return self::filterDiap($string,$field,$bind,$bindPrefix,$blockDelimeter,$diapDilimeter);
 	}
 	/**
@@ -32,23 +32,23 @@ class dbwork{
 	 * @param string $diapDilimeter
 	 * @return string where array part
 	 */
-	static function filterDiap($string,$field,&$bind,$bindPrefix=null,$blockDelimeter=',',$diapDilimeter='-'){
-		if ($bindPrefix===null)$bindPrefix=$field.'_';
-		$size=sizeof($bind);
-		$blocks=explode($blockDelimeter,$string);
+	static function filterDiap($string,$field,&$bind,$bindPrefix=\null,$blockDelimeter=',',$diapDilimeter='-'){
+		if ($bindPrefix===\null)$bindPrefix=$field.'_';
+		$size=\sizeof($bind);
+		$blocks=\explode($blockDelimeter,$string);
 		// array between diap and array values
 		$subwhere=array();
 		$arrayPoint=array();
 
 		foreach($blocks as $key=>$item){
 			if ($item==='')continue;
-			$diap=explode($diapDilimeter,trim($item));
+			$diap=\explode($diapDilimeter,\trim($item));
 	//			if (!isset($diap[1])){
 	//				$array_point=$diap[0];
 	//				continue;
 	//			}
-			$min=min($diap);
-			$max=max($diap);
+			$min=\min($diap);
+			$max=\max($diap);
 			$bind[$bindPrefix.($size+$key)]=$min;
 			if ($min===$max){
 				$arrayPoint[]=':'.$bindPrefix.($size+$key);
@@ -57,16 +57,16 @@ class dbwork{
 			$subwhere[]=$field.' BETWEEN :'.$bindPrefix.($size+$key).' AND :'.$bindPrefix.($size+$key).'_max';
 			$bind[$bindPrefix.($size+$key).'_max']=$max;
 		}
-		switch (sizeof($arrayPoint)){
+		switch (\sizeof($arrayPoint)){
 			case 0:
 				break;
 			case 1:
 				$subwhere[]=$field.' = '.$arrayPoint[0];
 				break;
 			default:
-				$subwhere[]=$field.' IN ('.implode(' , ',$arrayPoint).')';
+				$subwhere[]=$field.' IN ('.\implode(' , ',$arrayPoint).')';
 		}
-		return implode(' OR ',$subwhere);
+		return \implode(' OR ',$subwhere);
 	}
 	/**
 	 * @deprecated since version 3.4
@@ -82,7 +82,7 @@ class dbwork{
 	 */
 	static function describeTable($tablename,$schema='',$db=''){
 		if ($db=='')$db=core::$data['db'];
-		if (is_array($db))$db=db::autodb($db);
+		if (\is_array($db))$db=db::autodb($db);
 		$defaultScheme=$schema?$schema:$db;
 		if (core::$debug){
 			debug::group('DBWork describeTable start');
@@ -98,7 +98,7 @@ class dbwork{
 		if (core::$data['db_describe_cache']){
 			$f=core::$data['db_describe_cache'];
 			$cache_file=$f($tablename,$schema,$db);
-			if (file_exists($cache_file)){
+			if (\file_exists($cache_file)){
 				if (core::$debug){
 				debug::consoleLog('table was described early from cache');
 				debug::groupEnd();
@@ -112,7 +112,7 @@ class dbwork{
 		switch(db::type($db)){
 			case 'mysql':
 				/************************ MYSQL *************************/
-				$tablename=strtolower($tablename);
+				$tablename=\strtolower($tablename);
 				if ($schema){
 					$sql='show create table `'.$schema.'`.`'.$tablename.'`';
 				}else{
@@ -120,16 +120,16 @@ class dbwork{
 				}
 				$rs=db::ea1($sql,'',$db);
 				$createtable=$rs['Create Table'];
-				$createtable=explode("\n",$createtable);
-				if (empty($createtable)) return false;
+				$createtable=\explode("\n",$createtable);
+				if (empty($createtable)) return \false;
 				foreach($createtable as $string){
-					$string=trim($string," \t\n\r\0,");
-					if (substr($string,0,13) == 'CREATE TABLE ') continue;
-					if (substr($string,0,9) == ') ENGINE ') break;
-					if (substr($string,0,13) == 'PRIMARY KEY ('){
+					$string=\trim($string," \t\n\r\0,");
+					if (\substr($string,0,13) == 'CREATE TABLE ') continue;
+					if (\substr($string,0,9) == ') ENGINE ') break;
+					if (\substr($string,0,13) == 'PRIMARY KEY ('){
 						// primary key finder
-						$string=substr($string,13,-1);
-						$key=explode(',',$string);
+						$string=\substr($string,13,-1);
+						$key=\explode(',',$string);
 						foreach($key as $item){
 							$primaryKey[]=input::findFirstPrepare($item);
 						}
@@ -137,10 +137,10 @@ class dbwork{
 					}
 					if (substr($string,0,11) == 'UNIQUE KEY '){
 						// primary key finder
-						$string=substr($string,11,-1);
+						$string=\substr($string,11,-1);
 						$name=input::findFirstPrepare($string);
-						$string=trim($string,' (');
-						$key=explode(',',$string);
+						$string=\trim($string,' (');
+						$key=\explode(',',$string);
 						foreach($key as $item){
 							$uniqueKey[$name][]=input::findFirstPrepare($item);
 						}
@@ -149,54 +149,54 @@ class dbwork{
 	// parsing to words
 					if (substr($string,0,1) == '`'){
 						$column=input::findFirstPrepare($string);
-						$string=trim($string);
+						$string=\trim($string);
 	//							echo $column.' - ';
 						if (in_array(substr($string,0,4),array('set(','enum'))) continue; // not working with set and enum (at present)
-						$type=substr($string,0,strpos($string,' '));
-						$string=substr($string,strlen($type));
-						$string=trim($string);
+						$type=\substr($string,0,\strpos($string,' '));
+						$string=\substr($string,\strlen($type));
+						$string=\trim($string);
 	//							echo $type.' - ';
-						$typerangepos=strpos($type,'(');
+						$typerangepos=\strpos($type,'(');
 						if ($typerangepos){
-							$type=trim($type,')');
-							$data[$column]['typerange']=substr($type,$typerangepos + 1);
-							$type=substr($type,0,$typerangepos);
+							$type=\trim($type,')');
+							$data[$column]['typerange']=\substr($type,$typerangepos + 1);
+							$type=\substr($type,0,$typerangepos);
 						}
 						$data[$column]['type']=$type;
 
-						if (substr($string,0,9) == 'unsigned '){
-							$data[$column]['unsigned']=true;
-							$string=substr($string,9);
+						if (\substr($string,0,9) == 'unsigned '){
+							$data[$column]['unsigned']=\true;
+							$string=\substr($string,9);
 						}
-						if (substr($string,0,9) == 'zerofill '){
-							$data[$column]['zerofill']=true;
-							$string=substr($string,9);
+						if (\substr($string,0,9) == 'zerofill '){
+							$data[$column]['zerofill']=\true;
+							$string=\substr($string,9);
 						}
-						if (substr($string,0,9) == 'NOT NULL '){
-							$data[$column]['notnull']=true;
-							$string=substr($string,9);
+						if (\substr($string,0,9) == 'NOT NULL '){
+							$data[$column]['notnull']=\true;
+							$string=\substr($string,9);
 						}
-						if (substr($string,0,14) == 'AUTO_INCREMENT'){
-							$data[$column]['autoincrement']=true;
-							$string=substr($string,15);
+						if (\substr($string,0,14) == 'AUTO_INCREMENT'){
+							$data[$column]['autoincrement']=\true;
+							$string=\substr($string,15);
 						}
 
-						if (substr($string,0,8) == 'DEFAULT '){
-							$string=substr($string,8);
-							if (substr($string,0,1) == "'"){
+						if (\substr($string,0,8) == 'DEFAULT '){
+							$string=\substr($string,8);
+							if (\substr($string,0,1)=="'"){
 								$data[$column]['default']=input::findFirstPrepare($string);
-								$string=trim($string);
-							}elseif (substr($string,0,5) == 'NULL '){
-								$data[$column]['default']=null;
-								$string=substr($string,5);
-							}elseif (substr($string,0,18) == 'CURRENT_TIMESTAMP '){
+								$string=\trim($string);
+							}elseif (\substr($string,0,5) =='NULL'){
+								$data[$column]['default']=\null;
+								$string=\substr($string,5);
+							}elseif (\substr($string,0,18) =='CURRENT_TIMESTAMP '){
 								$data[$column]['default']='CURRENT_TIMESTAMP';
-								$string=substr($string,18);
+								$string=\substr($string,18);
 							}
 						}
 	//echo $default.' - ';
-						if (substr($string,0,8) == 'COMMENT '){
-							$string=substr($string,8);
+						if (\substr($string,0,8)=='COMMENT '){
+							$string=\substr($string,8);
 							$data[$column]['comment']=input::findFirstPrepare($string);
 						}
 					}
@@ -206,9 +206,9 @@ class dbwork{
 			case 'oci8':
 			case 'oracle':
 				/************************* ORACLE ************************ */
-				$tablename=strtoupper($tablename);
+				$tablename=\strtoupper($tablename);
 				if ($schema){
-					$schema=strtoupper($schema);
+					$schema=\strtoupper($schema);
 					$sql="select CONSTRAINT_NAME from ALL_CONS_COLUMNS WHERE owner=:schema and table_name=:tablename and position is not null";
 					$pkConstraint=db::ea11($sql,array('tablename'=>$tablename,'schema'=>$schema),$db);
 					$sql="select atc.column_name,atc.data_type,data_length,ucc.comments,atc.nullable,atc.data_default from all_tab_columns atc inner join ALL_COL_COMMENTS ucc on atc.table_name=ucc.table_name and atc.column_name=ucc.column_name where atc.table_name = :tablename and atc.OWNER=:schema order by COLUMN_ID";
@@ -233,7 +233,7 @@ class dbwork{
 					$data[$column]['type']=$item['DATA_TYPE'];
 					$data[$column]['typerange']=$item['DATA_LENGTH'];
 					if ($item['COMMENTS']) $data[$column]['comment']=$item['COMMENTS'];
-					if ($item['NULLABLE'] == 'N') $data[$column]['notnull']=true;
+					if ($item['NULLABLE'] == 'N') $data[$column]['notnull']=\true;
 					if (@$item['DATA_DEFAULT']) $data[$column]['default']=$item['DATA_DEFAULT'];
 				}
 				break;
@@ -265,10 +265,10 @@ class dbwork{
 	 * @param boolean|null $is_update optimization if need update
 	 * @return boolean or inserted ID
 	 */
-	static function setData($tablename,$arrayIn='',$sequence=true,$db='',&$errors=true,$schema='',$is_update=null){
+	static function setData($tablename,$arrayIn='',$sequence=\true,$db='',&$errors=\true,$schema='',$is_update=\null){
 		if ($db=='')$db=core::$data['db'];
-		if (is_array($db))$db=db::autodb($db);
-		if (!$arrayIn)return false;
+		if (\is_array($db))$db=db::autodb($db);
+		if (!$arrayIn)return \false;
 		$dbType=db::type($db);
 		$strcolname=array();
 		$bind=array();
@@ -276,7 +276,7 @@ class dbwork{
 
 		$arrays=array();
 		foreach($arrayIn as $key=> $value){
-			if (is_bool($value)){
+			if (\is_bool($value)){
 				$arrays[$key]=(int)$value;
 			}elseif ($value instanceof model){
 				$arrays[$key]=(string)$value;
@@ -291,7 +291,7 @@ class dbwork{
 			debug::consoleLog('Set data to '.($schema?$schema.'.':'').$tablename);
 			debug::dir($arrays);
 		}
-		$notIsset=false;
+		$notIsset=\false;
 		$pkVals=array();
 		$sqlPkVals=array();
 		$outErrors=array();
@@ -303,7 +303,7 @@ class dbwork{
 			$upperField=$field;
 			if (isset($arrays[$upperField])){ // if key value exists
 				$pkVals[$upperField]=$arrays[$upperField];
-				if (in_array($desc['data'][$field]['type'],array('date','datetime','DATE','timestamp'))){
+				if (\in_array($desc['data'][$field]['type'],array('date','datetime','DATE','timestamp'))){
 					$sqlPkVals[]=db::dateFromDb($field,'Y-m-d H:i:s',$db).'=:'.$upperField;
 				}else{
 					$sqlPkVals[]=$field.'=:'.$upperField;
@@ -315,20 +315,20 @@ class dbwork{
 		}
 		if ($notIsset){
 			$strcolname[]=$notIsset;
-			if ($sequence === true or $sequence ===''){
+			if ($sequence === \true or $sequence ===''){
 				if (!empty($desc['data'][$notIsset]['autoincrement'])){
 					$bind[$notIsset]='';
 					$strvalues[]=':'.$notIsset;
 				}else{
 					// try find next val of numberic vals
 					// if sequence not set - find max value of key + 1
-					$sql='SELECT MAX('.$notIsset.') FROM '.($schema?db::wrapper($schema,$db).'.':'').$tablename.($sqlPkVals?' WHERE '.implode(' AND ',$sqlPkVals):'');
+					$sql='SELECT MAX('.$notIsset.') FROM '.($schema?db::wrapper($schema,$db).'.':'').$tablename.($sqlPkVals?' WHERE '.\implode(' AND ',$sqlPkVals):'');
 					$rs=(int)db::ea11($sql,$pkVals,$db);
 					$bind[$notIsset]=$pkVals[$notIsset]=$rs+1;
 					$strvalues[]=':'.$notIsset;
 					$sqlPkVals[]=$notIsset.' = :'.$notIsset;
 				}
-			}elseif (is_callable($sequence)){
+			}elseif (\is_callable($sequence)){
 				$bind[$notIsset]=$sequence();
 				$strvalues[]=':'.$notIsset;
 			}else{
@@ -336,9 +336,9 @@ class dbwork{
 			}
 		}elseif ($desc['primary_key']){
 			// check on exists row
-			if ($is_update===true){
+			if ($is_update===\true){
 				$opType=2;
-			}elseif ($is_update===null){
+			}elseif ($is_update===\null){
 				$sql='SELECT COUNT(*) FROM '.($schema?db::wrapper($schema,$db).'.':'').$tablename.' WHERE '.implode(' AND ',$sqlPkVals);
 				if (db::ea11($sql,$pkVals,$db))$opType=2; //update
 			}
@@ -360,7 +360,7 @@ class dbwork{
 				$arrays[$upperField]=$value=$rs+1;
 			}
 			$fieldName=(empty($fieldVal['comment']))?$field:$fieldVal['comment'];
-			if (empty($fieldVal['notnull']) && is_null($value) && key_exists($upperField,$arrays)){
+			if (empty($fieldVal['notnull']) && \is_null($value) && \key_exists($upperField,$arrays)){
 				$strcolname[]=$field;
 				$strvalues[]='NULL';
 			}elseif (isset($arrays[$upperField])){
@@ -386,13 +386,13 @@ class dbwork{
 						if ($fieldVal['type']=='longtext')$fieldVal['typerange']=4294967295;
 					}
 					if ((int)$fieldVal['typerange'] < mb_strlen($value,core::$charset) && $fieldVal['type'] != 'CLOB' && $fieldVal['type'] != 'LONG'){
-						$outErrors[]=translate::t('Field {field} have max length <b>{max_length}</b> charecters. You length is <b>{my_length}</b> charecters',array('field'=>$fieldName,'max_length'=>$fieldVal['typerange'],'my_length'=>mb_strlen($value)));
+						$outErrors[]=translate::t('Field {field} have max length <b>{max_length}</b> charecters. You length is <b>{my_length}</b> charecters',array('field'=>$fieldName,'max_length'=>$fieldVal['typerange'],'my_length'=>\mb_strlen($value)));
 						break;
 					}
 					$strcolname[]=$field;
-					if (strlen($value) > 3 && substr($value,0,3) == '{+}'){
+					if (\strlen($value) > 3 && substr($value,0,3) == '{+}'){
 						$strvalues[]='concat('.$field.',:'.$upperField.')';
-						$bind[$upperField]=substr($value,3);
+						$bind[$upperField]=\substr($value,3);
 					}else{
 						$strvalues[]=':'.$upperField;
 						$bind[$upperField]=$value;
@@ -410,9 +410,9 @@ class dbwork{
 						break;
 					}
 					$strcolname[]=$field;
-					if (strlen($value) > 3 && substr($value,0,3) == '{+}'){
+					if (\strlen($value) > 3 && substr($value,0,3) == '{+}'){
 						$strvalues[]=$field.'+:'.$upperField;
-						$bind[$upperField]=substr($value,3);
+						$bind[$upperField]=\substr($value,3);
 					}else{
 						$strvalues[]=':'.$upperField;
 						$bind[$upperField]=$value;
@@ -425,11 +425,11 @@ class dbwork{
 					case 'float':
 					case 'double':
 					if ($dbType=='mysql'){
-						$arrays[$upperField]=$value=str_replace(',','.',$value);
-						$is_float=preg_match('/^-?\d*[\.]?\d+$/',$value);
+						$arrays[$upperField]=$value=\str_replace(',','.',$value);
+						$is_float=\preg_match('/^-?\d*[\.]?\d+$/',$value);
 					}else{ //oracle
 						$arrays[$upperField]=$value=str_replace('.',',',$value);
-						$is_float=preg_match('/^-?\d*[\,]?\d+$/',$value);
+						$is_float=\preg_match('/^-?\d*[\,]?\d+$/',$value);
 					}
 					if ($is_float or $value == ''){
 						$strcolname[]=$field;
@@ -471,7 +471,7 @@ class dbwork{
 								$bind['core_infinity']="01.01.9999";
 								break;
 							case '':
-							case false:
+							case \false:
 							case 'NULL':
 							case self::NULL:
 								if ($fieldVal['notnull']){
@@ -482,11 +482,11 @@ class dbwork{
 								$strvalues[]='NULL';
 							break;
 							default: //default date format
-								$dat=(is_numeric($value))?$value:strtotime($value);
-							if ($dat!==false){
+								$dat=(\is_numeric($value))?$value:\strtotime($value);
+							if ($dat!==\false){
 								$strcolname[]=$upperField;
 								$strvalues[]=db::dateToDb(':'.$upperField,'d.m.Y H:i:s');
-								$bind[$upperField]=date('d.m.Y H:i:s',$dat);
+								$bind[$upperField]=\date('d.m.Y H:i:s',$dat);
 							}else{
 								$outErrors[]=translate::t('Field {field} must be set date as "DD.MM.YYYY HH:MI:SS". You set - {value}',array('field'=>$fieldName,'value'=>$value));
 							}
@@ -508,7 +508,7 @@ class dbwork{
 		// query form
 		if (core::$debug) debug::consoleLog('State: '.($opType==1?'insert':'update'));
 		if ($outErrors){
-			if ($errors===true){
+			if ($errors===\true){
 				//add errors to error
 				foreach ($outErrors as $error){
 					error::addError($error);
@@ -521,17 +521,17 @@ class dbwork{
 				debug::dir($outErrors);
 				debug::groupEnd();
 			}
-			return false;
+			return \false;
 		}
 		if ($dbType=='mysql'){
 			if ($opType == 1){ // insert
-				$sql='INSERT INTO '.($schema?db::wrapper($schema,$db).'.':'').'`'.$tablename.'` (`'.implode('`,`',$strcolname).'`) VALUES ('.implode(',',$strvalues).')';
+				$sql='INSERT INTO '.($schema?db::wrapper($schema,$db).'.':'').'`'.$tablename.'` (`'.\implode('`,`',$strcolname).'`) VALUES ('.\implode(',',$strvalues).')';
 			}elseif ($opType == 2){ //update
 				$im=array();
 				foreach($strcolname as $key=> $values){
 					$im[]=$strcolname[$key].'='.$strvalues[$key];
 				}
-				$sql='UPDATE '.($schema?db::wrapper($schema,$db).'.':'').'`'.$tablename.'` SET '.implode(',',$im).' WHERE '.implode(' AND ',$sqlPkVals);
+				$sql='UPDATE '.($schema?db::wrapper($schema,$db).'.':'').'`'.$tablename.'` SET '.\implode(',',$im).' WHERE '.\implode(' AND ',$sqlPkVals);
 			}
 			db::e($sql,$bind,$db);
 			if ($opType == 1){ // insert
@@ -541,7 +541,7 @@ class dbwork{
 					$return=db::lastId($db);
 				}
 			}else{
-				if (sizeof($pkVals)==1){
+				if (\sizeof($pkVals)==1){
 					foreach ($pkVals as $value){
 						$return =$value;
 						break;
@@ -566,7 +566,7 @@ class dbwork{
 			}
 			db::eRef($sql,$bind,$db);
 			if ($notIsset){
-				$return=isset($bind['insert_id'])?$bind['insert_id']:true;
+				$return=isset($bind['insert_id'])?$bind['insert_id']:\true;
 				if ($return==='not_inserted'){
 					if (core::$debug){
 						debug::consoleLog('Result: '.$return,error::INFO);
@@ -575,8 +575,8 @@ class dbwork{
 					throw new \Exception('DBWORK: Insert record error');
 				}
 			}else{
-				$return=true;
-				if (sizeof($pkVals)==1){
+				$return=\true;
+				if (\sizeof($pkVals)==1){
 					foreach ($pkVals as $value){
 						$return =$value;
 						break;
@@ -608,7 +608,7 @@ class dbwork{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function set_mass_data($tablename,$arrayIn=array(),$parentArrayIn=array(),$clearbefore=true,$sequence='',$db='',$schema=''){
+	static function set_mass_data($tablename,$arrayIn=array(),$parentArrayIn=array(),$clearbefore=\true,$sequence='',$db='',$schema=''){
 		return self::setMassData($tablename,$arrayIn,$parentArrayIn,$clearbefore,$sequence,$db,$schema);
 	}
 	/**
@@ -621,7 +621,7 @@ class dbwork{
 	 * @param string $db connection name
 	 * @return array ids of key fields
 	 */
-	static function setMassData($tablename,$arrayIn=array(),$parentArrayIn=array(),$clearbefore=true,$sequence='',$db='',$schema=''){
+	static function setMassData($tablename,$arrayIn=array(),$parentArrayIn=array(),$clearbefore=\true,$sequence='',$db='',$schema=''){
 		//$tablename=strtoupper($tablename);
 		if (core::$debug) debug::group('DBWork SetMassData start');
 		if ($clearbefore) self::delData($tablename,$parentArrayIn,$db);
@@ -634,7 +634,7 @@ class dbwork{
 				debug::dir($merge);
 			}
 			// for each element need set data. Get struct once
-			$error=true;
+			$error=\true;
 			$out[]=self::setData($tablename,$merge,$sequence,$db,$error,$schema);
 			if (core::$debug) debug::groupEnd();
 		}
@@ -649,17 +649,17 @@ class dbwork{
 	 * @param boolean $listfields
 	 * @return string
 	 */
-	static function story($tablename,$keys,$listfields=false){
+	static function story($tablename,$keys,$listfields=\false){
 		$bind=array();
 		$strbind=array();
 		foreach($keys as $key=> $value){
 			$strbind[$key]=$key.'=:'.$key;
 			$bind[$key]=$value;
 		}
-		$sql='SELECT * FROM '.$tablename.($keys?' WHERE '.implode(' and ',$strbind):'');
+		$sql='SELECT * FROM '.$tablename.($keys?' WHERE '.\implode(' and ',$strbind):'');
 		$rs=db::ea1($sql,$bind);
 		$difference=array();
-		if ($rs && sizeof(self::$storyData)){
+		if ($rs && \sizeof(self::$storyData)){
 			foreach($rs as $key=> $value){
 				if (!isset(self::$storyData[$key])){
 					$difference[$key]=array('new'=>$value);
@@ -673,7 +673,7 @@ class dbwork{
 			$textdif=array();
 			foreach($difference as $key=> $value){
 				if (isset($listfields[$key])){
-					if (is_array($listfields[$key])){
+					if (\is_array($listfields[$key])){
 						// if has listfields - get name of difference keys
 						$textdif[]=$listfields[$key][$value['new']];
 					}else{
@@ -688,7 +688,7 @@ class dbwork{
 			$textdif=array();
 			foreach($rs as $key=> $value){
 				if (isset($listfields[$key])){
-					if (is_array($listfields[$key])){
+					if (\is_array($listfields[$key])){
 						$textdif[]=$listfields[$key][$value['new']];
 					}else{
 						$textdif[]=$listfields[$key].' - '.$value['new'];
@@ -725,14 +725,14 @@ class dbwork{
 		$diff=array();
 		$descripions=array();
 		foreach($old as $key=> $item){
-			if (substr($key,-18) == '_STORY_DESCRIPTION'){
-				$descriptions[substr($key,0,-18)]=$item;
+			if (\substr($key,-18) == '_STORY_DESCRIPTION'){
+				$descriptions[\substr($key,0,-18)]=$item;
 				continue;
 			}
 			if ($new[$key] != $item) $diff[$key]=$item;
 		}
 		foreach($new as $key=> $item){
-			if (substr($key,-18) == '_STORY_DESCRIPTION') continue;
+			if (\substr($key,-18) == '_STORY_DESCRIPTION') continue;
 			if ($old[$key] != $item) $diff[$key]=$item;
 		}
 		foreach($diff as $key=> $item){
@@ -742,7 +742,7 @@ class dbwork{
 				'column_name'=>$key,
 				'data'=>db::NOW,
 				'val'=>$item,
-				'ip'=>  request::ip(),
+				'ip'=>request::ip(),
 				'login'=>$login,
 				'key_field'=>$id,
 				'textval'=>isset($descriptions[$key])?$descriptions[$key]:$item,
@@ -761,14 +761,14 @@ class dbwork{
 		return self::delData($tablename,$arrayIn,$db);
 	}
 	static function delData($tablename,$arrayIn=array(),$db=''){
-		if (sizeof($arrayIn) == 0) return false;
+		if (\sizeof($arrayIn)==0) return \false;
 		$bind=array();
 		$strToDel=array();
-		foreach($arrayIn as $key=> $value){
+		foreach($arrayIn as $key=>$value){
 			$bind[$key]=$value;
 			$strToDel[]=$key.'=:'.$key;
 		}
-		$sql='DELETE FROM '.$tablename.($strToDel?' WHERE '.implode(' AND ',$strToDel):'');
+		$sql='DELETE FROM '.$tablename.($strToDel?' WHERE '.\implode(' AND ',$strToDel):'');
 		return db::e($sql,$bind,$db);
 	}
 }

@@ -13,14 +13,14 @@ class responce{
 	 * @param string|null $value
 	 * @return super|false
 	 */
-	static function header($code,$value=null){
-		if (headers_sent())return false;
+	static function header($code,$value=\null){
+		if (\headers_sent())return \false;
 		if ($value){
-			header($code.': '.$value);
+			\header($code.': '.$value);
 			return new super();
 		}
 		if (isset(self::$http_status_codes[$code])){
-			header($_SERVER['SERVER_PROTOCOL'].' '.$code.' '.self::$http_status_codes[$code]);
+			\header($_SERVER['SERVER_PROTOCOL'].' '.$code.' '.self::$http_status_codes[$code]);
 		}elseif (core::$debug){
 			debug::trace('Redirect header mistmatch in dictionary',error::WARNING,$code);
 		}
@@ -32,28 +32,28 @@ class responce{
 	 * @param string $url redirect URL
 	 * @param integer $header redirect with header
 	 */
-	static function redirect($url=null,$header=''){
+	static function redirect($url=\null,$header=''){
 		if (core::$ajax)ajax::redirect($url);
 		if (core::$debug && empty(core::$data['miss_debug_redirect'])){
 			debug::trace('Redirect debug mode',error::INFO,array('url'=>$url,'header'=>$header));
-			if (headers_sent())debug::trace('Redirect. Headers already sended',error::WARNING);
-			die('<a href="'.iconv('utf-8','windows-1251',$url).'"><h1>'.translate::t('Core Debug mode: Click to continue').'</h1></a><style>h1{position:relative;top:50%;}a{text-align:center;}a,body,html{font-family:arial;width:100%;position:absolute;top:0px;height:100%;padding:0;border:0;margin:0;outline:none;cursor:pointer;}</style>'.mvc::drawJs(true));
+			if (\headers_sent())debug::trace('Redirect. Headers already sended',error::WARNING);
+			die('<a href="'.\iconv('utf-8','windows-1251',$url).'"><h1>'.translate::t('Core Debug mode: Click to continue').'</h1></a><style>h1{position:relative;top:50%;}a{text-align:center;}a,body,html{font-family:arial;width:100%;position:absolute;top:0px;height:100%;padding:0;border:0;margin:0;outline:none;cursor:pointer;}</style>'.mvc::drawJs(\true));
 		}
 		if (!headers_sent()){
 			if ($header!='')self::header($header);
 			if ($url=='')$url=$_SERVER['REQUEST_URI'];
-			header('Location: '.$url);
+			\header('Location: '.$url);
 		}
 		$url=$url==''?'location.href':"'".$url."'";
 		die('<script>location.replace('.$url.');</script><noscript><meta http-equiv="Refresh" content="0;URL='.input::htmlspecialchars($url).'"></noscript>');
 	}
 	static function redirectToHttps(){
-		if (request::protocol()=='http://')self::redirect ('https://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].($_SERVER['QUERY_STRING']===''?'':$_SERVER['QUERY_STRING']));
+		if (request::protocol()=='http://')self::redirect('https://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].($_SERVER['QUERY_STRING']===''?'':$_SERVER['QUERY_STRING']));
 	}
 	static function redirectToHttp(){
-		if (request::protocol()=='https://')self::redirect ('http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].($_SERVER['QUERY_STRING']===''?'':$_SERVER['QUERY_STRING']));
+		if (request::protocol()=='https://')self::redirect('http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].($_SERVER['QUERY_STRING']===''?'':$_SERVER['QUERY_STRING']));
 	}
 	static function setTimeout($seconds=0){
-		set_time_limit($seconds);
+		\set_time_limit($seconds);
 	}
 }

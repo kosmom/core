@@ -9,8 +9,8 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	protected $_c; // container
 	protected $_p=0; // position
 
-	function __construct($array=null){
-		if (is_array($array))$this->_c= \SplFixedArray::fromArray($array);
+	function __construct($array=\null){
+		if (\is_array($array))$this->_c= \SplFixedArray::fromArray($array);
 	}
 
 	function offsetExists($offset){
@@ -18,11 +18,11 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	}
 
 	function offsetGet($offset){
-		return $this->offsetExists($offset)?$this->_c[$offset]:null;
+		return $this->offsetExists($offset)?$this->_c[$offset]:\null;
 	}
 
 	function offsetSet($offset, $value){
-		if (is_null($offset)){
+		if (\is_null($offset)){
 			$this->_c[]=$value;
 		}else{
 			$this->_c[$offset]=$value;
@@ -61,11 +61,11 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	}
 
 	function count(){
-		return count($this->_c);
+		return \count($this->_c);
 	}
 
 	function serialize(){
-		return serialize($this->_c);
+		return \serialize($this->_c);
 	}
 
 	function json_encode(){
@@ -76,11 +76,11 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	}
 
 	function unserialize($data){
-		$this->_c=unserialize($data);
+		$this->_c=\unserialize($data);
 	}
 
-	function __invoke(array $data=null){
-		if (is_null($data))return $this->toArray();
+	function __invoke(array $data=\null){
+		if (\is_null($data))return $this->toArray();
 		$this->_c=$data;
 	}
 
@@ -88,11 +88,11 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 		return $this->_c->toArray();
 	}
 
-	function group($key, $val=false){
+	function group($key, $val=\false){
 		return datawork::group($this, $key, $val);
 	}
 
-	function tree($keyField, $parentField, $childrenName='children', $mainbranch=null){
+	function tree($keyField, $parentField, $childrenName='children', $mainbranch=\null){
 		return datawork::tree($this->toArray(), $keyField, $parentField, $childrenName, $mainbranch);
 	}
 
@@ -105,12 +105,12 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	}
 
 	function dd(){
-		var_dump($this->toArray());
+		\var_dump($this->toArray());
 		die();
 	}
 
 	function last(){
-		return end($this->_c);
+		return \end($this->_c);
 	}
 
 	function toObject(){
@@ -120,7 +120,7 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	function __toString(){
 		return input::json_encode($this->_c);
 	}
-	function where($field,$prop,$value=null){
+	function where($field,$prop,$value=\null){
 		if ($prop=='='){
 			return $this->out(array_filter($this->toArray(),function($row) use ($field,$value){
 				return ($row[$field]==$value);
@@ -134,7 +134,7 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 
 	function chunk($size){
 		$chunks=array();
-		foreach (array_chunk($this->toArray(),$size) as $chunk){
+		foreach (\array_chunk($this->toArray(),$size) as $chunk){
 			$chunks[]=new static($chunk);
 		}
 		return $chunks;

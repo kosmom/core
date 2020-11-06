@@ -12,18 +12,18 @@ class ajax {
 	 * If empty answer - then error
 	 * @var boolean
 	 */
-	static $answer_needed = true;
+	static $answer_needed = \true;
 
 	static function init(){
-		core::$ajax=true;
+		core::$ajax=\true;
 		if (@$_POST['_partition_content']){
-			core::$partition=true;
+			core::$partition=\true;
 		}else{
-			set_error_handler('\\c\\ajax::errorHandler');
+			\set_error_handler('\\c\\ajax::errorHandler');
 		}
 		// if charset not utf-8 - convert
 		if (core::$charset!=core::UTF8)$_POST=input::iconv($_POST);
-		if (core::$debug)debug::group(date('H:i:s').' Core Ajax request'.(core::$partition?' (Partition mode)':''), error::WARNING,false,false);
+		if (core::$debug)debug::group(date('H:i:s').' Core Ajax request'.(core::$partition?' (Partition mode)':''), error::WARNING,\false,\false);
 	}
 
 	/**
@@ -33,12 +33,12 @@ class ajax {
 		return self::errorHandler($errno,$errstr,$errfile,$errline);
 	}
 	static function errorHandler($errno, $errstr, $errfile, $errline){
-		if (!(error_reporting() & $errno))return;
+		if (!(\error_reporting() & $errno))return;
 		switch ($errno) {
-			case E_USER_ERROR:
+			case \E_USER_ERROR:
 				self::consoleGroup('FATAL ERROR'.$errstr, error::ERROR);
 				break;
-			case E_USER_WARNING:
+			case \E_USER_WARNING:
 				self::consoleGroup('WARNING ERROR'.$errstr, error::WARNING);
 				break;
 			default:
@@ -46,8 +46,8 @@ class ajax {
 		}
 		self::consoleLog('Error in '.$errline.' string of '.$errfile);
 		self::consoleGroupEnd();
-		if ($errno==E_USER_ERROR && core::$ajax)ajax::render();
-		return false;
+		if ($errno==\E_USER_ERROR && core::$ajax)ajax::render();
+		return \false;
 	}
 
 	static function getAct(){
@@ -83,14 +83,14 @@ class ajax {
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function add_action($type,$data=null) {
+	static function add_action($type,$data=\null) {
 		self::addAction($type,$data);
 	}
-	static function addAction($type,$data=null) {
+	static function addAction($type,$data=\null) {
 		if (core::$debug)debug::trace('Add ajax action '.$type,error::INFO,$data);
 		if (core::$ajax){ // && !core::$partition
 			if ($data instanceof model or $data instanceof collection)$data=$data->toArray();
-			if (!is_array($data))$data=array('_val'=>$data);
+			if (!\is_array($data))$data=array('_val'=>$data);
 			$data['_type']=$type;
 			self::$answer[] = $data;
 		}else{
@@ -98,11 +98,11 @@ class ajax {
 		}
 	}
 
-	static function redirect($location=null) {
-		if ($location===null)$location=$_SERVER['REQUEST_URI'];
-		if (substr($location,0,4)!='http')$location=($_SERVER['REQUEST_SCHEME']?$_SERVER['REQUEST_SCHEME']:'http').'://'.$_SERVER['HTTP_HOST'].$location;
+	static function redirect($location=\null) {
+		if ($location===\null)$location=$_SERVER['REQUEST_URI'];
+		if (\substr($location,0,4)!='http')$location=($_SERVER['REQUEST_SCHEME']?$_SERVER['REQUEST_SCHEME']:'http').'://'.$_SERVER['HTTP_HOST'].$location;
 		self::$answer[] = array('_type' => 'redirect', 'redirect' => $location);
-		self::render(true);
+		self::render(\true);
 	}
 
 	/**
@@ -157,10 +157,10 @@ class ajax {
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function console_group($header,$type=error::INFO,$collapsed=true) {
+	static function console_group($header,$type=error::INFO,$collapsed=\true) {
 		self::consoleGroup($header, $type, $collapsed);
 	}
-	static function consoleGroup($header,$type=error::INFO,$collapsed=true) {
+	static function consoleGroup($header,$type=error::INFO,$collapsed=\true) {
 		self::$answer[] = array('_type' => 'console_group', 'data' => $header,'text_type'=>$type,'collapsed'=>$collapsed);
 	}
 
@@ -187,29 +187,29 @@ class ajax {
 				foreach (error::success() as $item)self::$answer[] = array('_type' => 'message', 'message' => $item, 'type' => error::SUCCESS);
 			}
 			// todo: think about need answer when was not ajax actions
-			if ($answerNeeded===null)$answerNeeded=self::$answer_needed;
+			if ($answerNeeded===\null)$answerNeeded=self::$answer_needed;
 			if ($answerNeeded && empty(self::$answer))self::$answer[] = array('_type' => 'message', 'message' => 'Action not supported', 'type' => error::ERROR);
 		}
 		if (core::$debug) {
-			array_unshift(self::$answer, debug::debugOutput());
+			\array_unshift(self::$answer, debug::debugOutput());
 			self::consoleLog('Core MVC debug finished', error::INFO);
 			self::consoleGroupEnd();
 		}
 	}
 	static function renderOutLoad(){
-		return '<script>core_ajax_process('.self::renderOut(false,false).')</script>';
+		return '<script>core_ajax_process('.self::renderOut(\false,\false).')</script>';
 	}
-	static function renderOut($redirect=false,$answerNeeded=null){
+	static function renderOut($redirect=\false,$answerNeeded=\null){
 		self::renderPrepare($redirect,$answerNeeded);
 		return input::jsonEncode(self::$answer);
 	}
-	static function render($redirect = false,$answerNeeded=null) {
+	static function render($redirect = \false,$answerNeeded=\null) {
 		self::renderPrepare ($redirect,$answerNeeded);
-		header_remove('Content-Length');
+		\header_remove('Content-Length');
 		if (@core::$data['ajax_gzip']){
-			header('content-encoding: gzip');
-			header('Vary: Accept-Encoding');
-			die(gzencode(input::jsonEncode(self::$answer),9));
+			\header('content-encoding: gzip');
+			\header('Vary: Accept-Encoding');
+			die(\gzencode(input::jsonEncode(self::$answer),9));
 		}
 		die(input::jsonEncode(self::$answer));
 	}

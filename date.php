@@ -17,17 +17,17 @@ class date{
 		if ($format!='')self::$format=$format;
 	}
 	static function smartdate($ddmmyy_hhmi){
-		if (date('Y-m-d')==substr($ddmmyy_hhmi,0,10))return input::iconv('Сегодня').' '.substr($ddmmyy_hhmi,11,5);
-		if (date('Y-m-d',time()-60*60*24)==substr($ddmmyy_hhmi,0,10))return input::iconv('Вчера').' '.substr($ddmmyy_hhmi,11,5);
-		return substr($ddmmyy_hhmi,8,2).'.'.substr($ddmmyy_hhmi,5,2).'.'.substr($ddmmyy_hhmi,0,4);
+		if (\date('Y-m-d')==\substr($ddmmyy_hhmi,0,10))return input::iconv('Сегодня').' '.\substr($ddmmyy_hhmi,11,5);
+		if (\date('Y-m-d',\time()-60*60*24)==\substr($ddmmyy_hhmi,0,10))return input::iconv('Вчера').' '.\substr($ddmmyy_hhmi,11,5);
+		return \substr($ddmmyy_hhmi,8,2).'.'.\substr($ddmmyy_hhmi,5,2).'.'.\substr($ddmmyy_hhmi,0,4);
 	}
 	static function showdate($parameter='now',$from="now"){
-		return date(self::$format,strtotime($parameter,strtotime($from)));
+		return \date(self::$format,\strtotime($parameter,\strtotime($from)));
 	}
 	static function weekday($from='now'){
-		$date=strtotime($from);
-		if ($date===false)throw new \Exception('date recognize error');
-		return date('N',$date);
+		$date=\strtotime($from);
+		if ($date===\false)throw new \Exception('date recognize error');
+		return \date('N',$date);
 	}
 	static function is_weekend($from='now'){
 		return self::weekday($from)>5;
@@ -42,24 +42,24 @@ class date{
 	 * @param null|string $inputFormat input format of datetime
 	 * @return string
 	 */
-	static function date($outFormat='d.m.Y',$time=null,$inputFormat=null){
-		if (core::$charset!=core::UTF8)$outFormat=iconv(core::$charset,core::UTF8,$outFormat);
-		if ($inputFormat===null){
-			if ($time===null)$time=time();
+	static function date($outFormat='d.m.Y',$time=\null,$inputFormat=\null){
+		if (core::$charset!=core::UTF8)$outFormat=\iconv(core::$charset,core::UTF8,$outFormat);
+		if ($inputFormat===\null){
+			if ($time===\null)$time=time();
 		}else{
-			$h=(($pos=strpos($inputFormat,'HH'))!==false)?(int)substr($time,$pos,2):date('H');
-			$i=date('i');
-			if (($pos=strpos($inputFormat,'II'))!==false)$i=(int)substr($time,$pos,2);
-			if (($pos=strpos($inputFormat,'MI'))!==false)$i=(int)substr($time,$pos,2);
-			$s=(($pos=strpos($inputFormat,'SS'))!==false)?(int)substr($time,$pos,2):date('s');
-			$d=(($pos=strpos($inputFormat,'DD'))!==false)?(int)substr($time,$pos,2):date('j');
-			$m=(($pos=strpos($inputFormat,'MM'))!==false)?(int)substr($time,$pos,2):date('n');
-			$Y=(($pos=strpos($inputFormat,'YYYY'))!==false)?(int)substr($time,$pos,4):date('Y');
+			$h=(($pos=\strpos($inputFormat,'HH'))!==\false)?(int)\substr($time,$pos,2):\date('H');
+			$i=\date('i');
+			if (($pos=\strpos($inputFormat,'II'))!==\false)$i=(int)\substr($time,$pos,2);
+			if (($pos=\strpos($inputFormat,'MI'))!==\false)$i=(int)\substr($time,$pos,2);
+			$s=(($pos=\strpos($inputFormat,'SS'))!==\false)?(int)\substr($time,$pos,2):\date('s');
+			$d=(($pos=\strpos($inputFormat,'DD'))!==\false)?(int)\substr($time,$pos,2):\date('j');
+			$m=(($pos=\strpos($inputFormat,'MM'))!==\false)?(int)\substr($time,$pos,2):\date('n');
+			$Y=(($pos=\strpos($inputFormat,'YYYY'))!==\false)?(int)\substr($time,$pos,4):\date('Y');
 			if ($m){
-				$days=cal_days_in_month(CAL_GREGORIAN,$m,$Y);
+				$days=\cal_days_in_month(\CAL_GREGORIAN,$m,$Y);
 				if ($d>$days)$d=$days;
 			}
-			$time=mktime($h,$i,$s,$m,$d,$Y);
+			$time=\mktime($h,$i,$s,$m,$d,$Y);
 		}
 		$out=$outFormat;
 		if (empty($outFormat))return $time;
@@ -143,29 +143,29 @@ class date{
 			11=>'Ноя',
 			12=>'Дек',
 		),'n',$time);
-		$out=str_replace('~','М',$out);
-		if (core::$charset!=core::UTF8)$out=iconv(core::UTF8,core::$charset,$out);
-		return date($out,$time);
+		$out=\str_replace('~','М',$out);
+		if (core::$charset!=core::UTF8)$out=\iconv(core::UTF8,core::$charset,$out);
+		return \date($out,$time);
 	}
 	private static function dateReplaceBlock($out,$letter,$array,$date_letter,$time){
 		$count=0;
-		if (mb_strpos($out,$letter,0,core::$charset)===false)return $out;
-		$out=str_replace('\\'.$letter,'{{````}}',$out,$count);
-		$out=str_replace($letter,$array[date($date_letter,$time)],$out);
-		if ($count)return str_replace('{{````}}','\\'.$letter,$out,$count);
+		if (\mb_strpos($out,$letter,0,core::$charset)===\false)return $out;
+		$out=\str_replace('\\'.$letter,'{{````}}',$out,$count);
+		$out=\str_replace($letter,$array[\date($date_letter,$time)],$out);
+		if ($count)return \str_replace('{{````}}','\\'.$letter,$out,$count);
 		return $out;
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function rus_month($number=null){
+	static function rus_month($number=\null){
 		return self::rusMonth($number);
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function rusMonth($number=null){
-		if ($number===null)$number=date('n');
+	static function rusMonth($number=\null){
+		if ($number===\null)$number=\date('n');
 		$number=(int)$number;
 		if ($number==1)return 'января';
 		if ($number==2)return 'февраля';
@@ -182,13 +182,13 @@ class date{
 		return $number;
 	}
 	static function to_timestamp($value){
-		if (is_numeric($value))return $value;
+		if (\is_numeric($value))return $value;
 		if ($value instanceof \DateTime)return $value->getTimestamp();
-		return strtotime($value);
+		return \strtotime($value);
 	}
 	static function to_datetime($value){
 		if ($value instanceof \DateTime)return $value;
-		if (is_numeric($value))return new \DateTime(date('d.m.Y H:i:s',$value));
+		if (\is_numeric($value))return new \DateTime(date('d.m.Y H:i:s',$value));
 		return new \DateTime($value);
 	}
 }

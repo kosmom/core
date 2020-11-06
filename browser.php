@@ -10,7 +10,7 @@ class browser{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function get($userAgent = null){
+	static function get($userAgent = \null){
 		return request::getBrowser($userAgent);
 	}
 

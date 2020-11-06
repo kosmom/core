@@ -30,17 +30,17 @@ class form_bootstrap{
 		}elseif (\c\core::$data['render']=='bootstrap4'){
 			$baseGroup.=' row';
 		}
-		if (\c\core::$data['render']=='bootstrap4' && in_array($item['type'],array('checkbox','boolean','radio')))$baseGroup='form-check';
+		if (\c\core::$data['render']=='bootstrap4' && \in_array($item['type'],array('checkbox','boolean','radio')))$baseGroup='form-check';
 		if (isset($item['group_classes'])){
-			if (is_callable($item['group_classes'])){
+			if (\is_callable($item['group_classes'])){
 				$classes=$item['group_classes']($item,$this->form->getData());
 			}else{
 				$classes=$item['group_classes'];
 			}
 
-			if (is_string($classes))$classes=explode(' ',$classes);
+			if (\is_string($classes))$classes=\explode(' ',$classes);
 			//array only
-			$classes=array_merge(array($baseGroup),$classes);
+			$classes=\array_merge(array($baseGroup),$classes);
 		}else{
 			$classes=array($baseGroup);
 		}
@@ -48,19 +48,19 @@ class form_bootstrap{
 
 		$attributes=array();
 		if (isset($item['group_attributes'])){
-			if (is_callable($item['group_attributes'])){
+			if (\is_callable($item['group_attributes'])){
 				$attributes=$item['group_attributes']($item,$this->form->getData());
-			}elseif (is_array($item['group_attributes'])){
+			}elseif (\is_array($item['group_attributes'])){
 				foreach ($item['group_attributes'] as $key=>$attribute){
-					if (is_callable($attribute)){
+					if (\is_callable($attribute)){
 						$attributes[$key]=$attribute($item,$this->form->getData());
 					}else{
 						$attributes[$key]=$attribute;
 					}
 				}
 			}
-			if (is_string($attributes)){
-				$attr= explode(' ', $attributes);
+			if (\is_string($attributes)){
+				$attr=\explode(' ', $attributes);
 			}else{
 				foreach ($attributes as $key=>$val){
 					$attr[]=\c\input::htmlspecialchars($key).'="'.\c\input::htmlspecialchars($val).'"';
@@ -68,7 +68,7 @@ class form_bootstrap{
 			}
 		}
 
-		return ' <div class="'.implode(' ',$classes).'" '.(@$attr? implode(' ', $attr):'').'>';
+		return ' <div class="'.\implode(' ',$classes).'" '.(@$attr?\implode(' ', $attr):'').'>';
 	}
 	function renderFieldFormGroupEnd($item){
 		if ($item['type']=='hidden')return '';
@@ -104,7 +104,7 @@ class form_bootstrap{
 		foreach ($this->form->prop['input_classes_array'] as $key=>$val){
 			$classes[]='col-'.$key.'-'.$val;
 		}
-		return '<div class="'.implode(' ',$classes).'">';
+		return '<div class="'.\implode(' ',$classes).'">';
 	}
 
 	private function inputGroupPrefix($item){
@@ -136,7 +136,7 @@ class form_bootstrap{
 			$value['min']=(isset($renderValue['min'])?'value="'.\c\input::htmlspecialchars($renderValue['min']).'" ':'');
 			$value['max']=(isset($renderValue['max'])?'value="'.\c\input::htmlspecialchars($renderValue['max']).'" ':'');
 		}else{
-			$value=($renderValue!=='' && is_string($renderValue))?'value="'.\c\input::htmlspecialchars($renderValue).'" ':'';
+			$value=($renderValue!=='' && \is_string($renderValue))?'value="'.\c\input::htmlspecialchars($renderValue).'" ':'';
 		}
 		$placeholder='';
 		if (isset($item['placeholder'])){
@@ -146,21 +146,21 @@ class form_bootstrap{
 
 		if (isset($item['inputmask'])){
 			$mask=$item['inputmask'];
-			if (is_array($item['inputmask'])){
+			if (\is_array($item['inputmask'])){
 				$masks=array();
 				foreach ($item['inputmask'] as $maskKey=>$mask){
 					$masks[]="'".$maskKey."':'".$mask."'";
 				}
-				$item['attributes']['data-inputmask']=implode(',',$masks);
+				$item['attributes']['data-inputmask']=\implode(',',$masks);
 			}elseif($mask=='email' or $mask=='mail' or $mask=='phone' or $mask=='ip' or $mask=='date' or $mask=='mm/dd/yyyy'){
 				if ($mask=='mail')$mask=='email';
 				$item['attributes']['data-inputmask']="'alias':'".$mask."'";
-			}elseif (substr($mask,0,1)=="'"){
+			}elseif (\substr($mask,0,1)=="'"){
 				$item['attributes']['data-inputmask']=$item['inputmask'];
 			}else{
 				$item['attributes']['data-inputmask']="'mask':'".$mask."'";
 			}
-			if (is_array(@$item['classes'])){
+			if (\is_array(@$item['classes'])){
 				$item['classes'][]='inputmask';
 			}else{
 				@$item['classes'].=' inputmask';
@@ -171,16 +171,16 @@ class form_bootstrap{
 		if (@$item['disabled'])$item['attributes']['disabled']='disabled';
 		if (@$item['readonly'])$item['attributes']['readonly']='readonly';
 		$attributes='';
-		if (isset($item['attributes']) && is_array($item['attributes'])){
+		if (isset($item['attributes']) && \is_array($item['attributes'])){
 				$attributes=array();
 			foreach($item['attributes'] as $key=>$val){
 				$attributes[]=$key.'="'.\c\input::htmlspecialchars($val).'"';
 			}
-			$attributes=implode(' ',$attributes).' ';
+			$attributes=\implode(' ',$attributes).' ';
 		}
 		$classes='';
 		if (isset($item['classes'])){
-			if (is_array($item['classes'])){
+			if (\is_array($item['classes'])){
 				foreach($item['classes'] as $key=>$val){
 					$classes.=' '.\c\input::htmlspecialchars($val);
 				}
@@ -188,21 +188,21 @@ class form_bootstrap{
 				$classes.=' '.\c\input::htmlspecialchars($item['classes']);
 			}
 		}
-		$arg=array('name'=>$renderName,'attributes'=>$attributes,'value'=>$value,'classes'=>$classes,'multiple'=>false,'placeholder'=>$placeholder);
+		$arg=array('name'=>$renderName,'attributes'=>$attributes,'value'=>$value,'classes'=>$classes,'multiple'=>\false,'placeholder'=>$placeholder);
 		if (isset(\c\core::$data['form_render'][@$item['type']])){
-			if (is_callable(\c\core::$data['form_render'][$item['type']])){
+			if (\is_callable(\c\core::$data['form_render'][$item['type']])){
 				$a=\c\core::$data['form_render'][$item['type']];
 				$a=$a($item,$arg);
-				if (is_string($a))return $a;
+				if (\is_string($a))return $a;
 				$item=$a;
-			}elseif (is_callable(\c\core::$data['form_render'][$item['type']][$item['render']])){
+			}elseif (\is_callable(\c\core::$data['form_render'][$item['type']][$item['render']])){
 				$a=\c\core::$data['form_render'][$item['type']][$item['render']];
 				$a=$a($item,$arg);
-				if (is_string($a))return $a;
+				if (\is_string($a))return $a;
 				$item=$a;
 			}
 		}
-		if (is_callable($item['render']))return $item['render']($item,$arg);
+		if (\is_callable($item['render']))return $item['render']($item,$arg);
 		if (@$item['type']=='hidden')return '<input'.($classes?' class="'.$classes.'"':'').' name="'.$renderName.'" type="'.$item['type'].'" '.$attributes.$value.'/>';
 		
 		$out=$this->inputGroupPrefix($item);
@@ -228,9 +228,9 @@ class form_bootstrap{
 			case 'select':
 				$multiple=!empty($item['multiple']);
 				if ($item['render']=='auto'){
-					if (sizeof($item['values'])>10 || (!$required && !$multiple)){
+					if (\sizeof($item['values'])>10 || (!$required && !$multiple)){
 						$item['render']='select';
-					}elseif ($this->form->prop['type']=='form-inline' || sizeof($item['values'])>5){
+					}elseif ($this->form->prop['type']=='form-inline' || \sizeof($item['values'])>5){
 						if ($multiple){
 							$item['render']='check';
 						}else{
@@ -246,8 +246,8 @@ class form_bootstrap{
 				}
 
 				if ($multiple && isset($item['value'])){
-					if (is_string($item['value']))$item['value']=array($item['value']);
-					$valArr=array_flip($item['value']);
+					if (\is_string($item['value']))$item['value']=array($item['value']);
+					$valArr=\array_flip($item['value']);
 				}
 
 				switch ($item['render']){
@@ -353,8 +353,8 @@ class form_bootstrap{
 					break;
 				case 'file':
 					$multiple=!empty($item['multiple']);
-					$has_file=@$item['value'] && is_file($item['value']);
-					$out.=($has_file?'<img src="'.$item['value'].'?time='.time().'" style="max-width: 100%;display: block;">':'').'<input name="'.$renderName.($multiple?'[]':'').'"'.($multiple?' multiple':'').' type="file" '.$attributes.$placeholder.($has_file?'':$required).'/>'.(isset($item['fill']) && is_callable($item['fill'])?$item['fill']($this->form->getData()):'');
+					$has_file=@$item['value'] && \is_file($item['value']);
+					$out.=($has_file?'<img src="'.$item['value'].'?time='.time().'" style="max-width: 100%;display: block;">':'').'<input name="'.$renderName.($multiple?'[]':'').'"'.($multiple?' multiple':'').' type="file" '.$attributes.$placeholder.($has_file?'':$required).'/>'.(isset($item['fill']) && \is_callable($item['fill'])?$item['fill']($this->form->getData()):'');
 					break;
 				case 'capcha':
 					$out.='<img src="'.$item['url'].'" style="max-width: 100%;display: block;"><input class="form-control'.$classes.'" name="'.$renderName.'" type="text" '.$attributes.$placeholder.$required.'/>';
@@ -370,14 +370,14 @@ class form_bootstrap{
 								$out.='<label>'.$item['range_before_text'].'</label> <input name="'.$renderName.'[min]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.$attributes.$placeholder.$required.$value['min'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 //var_dump($attributes);
-								$out.=' <label>'.$item['range_to_text'].'</label> <input name="'.$renderName.'[max]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.str_replace('id=', 'id2=', $attributes).$placeholder.$required.$value['max'].'/>';
+								$out.=' <label>'.$item['range_to_text'].'</label> <input name="'.$renderName.'[max]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.\str_replace('id=', 'id2=', $attributes).$placeholder.$required.$value['max'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 							}else{
 								$out.='<div class="row"><div class="col-xs-6">';
 								$out.=$item['range_before_text'].' <input name="'.$renderName.'[min]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.$attributes.$placeholder.$required.$value['min'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 								$out.='</div><div class="col-xs-6">';
-								$out.=$item['range_to_text'].' <input name="'.$renderName.'[max]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.str_replace('id=', 'id2=', $attributes).$placeholder.$required.$value['max'].'/>';
+								$out.=$item['range_to_text'].' <input name="'.$renderName.'[max]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.\str_replace('id=', 'id2=', $attributes).$placeholder.$required.$value['max'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 								$out.='</div></div>';
 							}
@@ -456,7 +456,7 @@ class form_bootstrap{
 								$out.='<input name="'.$renderName.'[min]" type="'.$item['type'].'" class="form-control'.$classes.'" '.$attributes.$placeholder.$required.$value['min'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 								$out.='</div><div class="col-xs-6">';
-								$out.='<input name="'.$renderName.'[max]" type="'.$item['type'].'" class="form-control'.$classes.'" '.str_replace('id=', 'id2=', $attributes).$placeholder.$required.$value['max'].'/>';
+								$out.='<input name="'.$renderName.'[max]" type="'.$item['type'].'" class="form-control'.$classes.'" '.\str_replace('id=', 'id2=', $attributes).$placeholder.$required.$value['max'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 								$out.='</div></div>';
 							}else{

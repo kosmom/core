@@ -81,18 +81,18 @@ class filedata{
 	 * @param array $data
 	 */
 	static function savedata($filename,$data){
-		file_put_contents($filename,'<?php return '.self::varExportMin($data).';');
+		\file_put_contents($filename,'<?php return '.self::varExportMin($data).';');
 	}
 
 	private static function varExportMin($var) {
-		if (is_array($var)) {
+		if (\is_array($var)) {
 			$toImplode = array();
 			foreach ($var as $key => $value) {
-				$toImplode[] = var_export($key, true).'=>'.self::varExportMin($value);
+				$toImplode[] = \var_export($key, \true).'=>'.self::varExportMin($value);
 			}
-			return 'array('.implode(',', $toImplode).')';
+			return 'array('.\implode(',', $toImplode).')';
 		} else {
-			return var_export($var, 1);
+			return \var_export($var, 1);
 		}
 	}
 	/**
@@ -102,7 +102,7 @@ class filedata{
 	 */
 	static function rmdir($dir){
 		self::empt($dir);
-		return rmdir($dir);
+		return \rmdir($dir);
 	}
 	/**
 	 * Same as rmdir
@@ -117,13 +117,13 @@ class filedata{
 	 * @param string $dir
 	 */
 	static function empt($dir){
-		foreach (array_diff(scandir($dir), array('.','..')) as $file) {
-			is_dir($dir.'/'.$file) ? self::rmdir($dir.'/'.$file) : unlink($dir.'/'.$file);
+		foreach (\array_diff(\scandir($dir), array('.','..')) as $file) {
+			\is_dir($dir.'/'.$file) ? self::rmdir($dir.'/'.$file) : \unlink($dir.'/'.$file);
 		}
 	}
 	static function clean($pattern,$mTimeAgo=2592000){
-		foreach (glob($pattern) as $file){
-			if (filemtime($file)<time()-$mTimeAgo)unlink ($file);
+		foreach (\glob($pattern) as $file){
+			if (\filemtime($file)<\time()-$mTimeAgo)\unlink($file);
 		}
 	}
 	
@@ -133,19 +133,19 @@ class filedata{
 	 * @param string $mask preg match mask of filename
 	 * @return array|boolean
 	 */
-	static function filelist($src_dir,$mask='',$callback=null){
-		if (!is_dir($src_dir))return false;
-		$dir = opendir($src_dir);
+	static function filelist($src_dir,$mask='',$callback=\null){
+		if (!\is_dir($src_dir))return \false;
+		$dir = \opendir($src_dir);
 		$out=array();
-		while(false!==($file=readdir($dir))) {
+		while(\false!==($file=\readdir($dir))) {
 			if (( $file == '.' ) || ( $file == '..' ))continue;
-			if ( is_dir($src_dir.DIRECTORY_SEPARATOR.$file) ) {
-				$out+=self::filelist($src_dir.DIRECTORY_SEPARATOR.$file,$mask,$callback);
-			}elseif (!$mask || preg_match($mask, $file)){
-				$out[$src_dir.DIRECTORY_SEPARATOR.$file]=is_callable($callback)?$callback($src_dir.DIRECTORY_SEPARATOR.$file,$file,$src_dir):true;
+			if (\is_dir($src_dir.\DIRECTORY_SEPARATOR.$file)){
+				$out+=self::filelist($src_dir.\DIRECTORY_SEPARATOR.$file,$mask,$callback);
+			}elseif (!$mask || \preg_match($mask, $file)){
+				$out[$src_dir.\DIRECTORY_SEPARATOR.$file]=\is_callable($callback)?$callback($src_dir.\DIRECTORY_SEPARATOR.$file,$file,$src_dir):\true;
 			}
 		}
-		closedir($dir);
+		\closedir($dir);
 		return $out;
 	}
 	
@@ -155,18 +155,18 @@ class filedata{
 	 * @param string $dst destitation directory
 	 */
 	static function copy($src,$dst){
-		if (!is_dir($src))return false;
-		$dir = opendir($src);
-		@mkdir($dst);
-		while(false!==($file=readdir($dir))){
+		if (!\is_dir($src))return \false;
+		$dir = \opendir($src);
+		@\mkdir($dst);
+		while(\false!==($file=\readdir($dir))){
 			if (($file == '.') || ($file == '..' ))continue;
-			if (is_dir($src.DIRECTORY_SEPARATOR.$file)) {
-				self::copy($src.DIRECTORY_SEPARATOR.$file,$dst.DIRECTORY_SEPARATOR.$file);
+			if (\is_dir($src.\DIRECTORY_SEPARATOR.$file)) {
+				self::copy($src.\DIRECTORY_SEPARATOR.$file,$dst.\DIRECTORY_SEPARATOR.$file);
 			} else {
-				copy($src.DIRECTORY_SEPARATOR.$file,$dst.DIRECTORY_SEPARATOR.$file);
+				\copy($src.\DIRECTORY_SEPARATOR.$file,$dst.\DIRECTORY_SEPARATOR.$file);
 			}
 		}
-		closedir($dir);
+		\closedir($dir);
 	}
 
 	/**
@@ -175,14 +175,14 @@ class filedata{
 	 * @return string
 	 */
 	static function extension($filename){
-		return pathinfo($filename, PATHINFO_EXTENSION);
+		return \pathinfo($filename, \PATHINFO_EXTENSION);
 	}
-	static function readfile($path,$filename,$attachment=true,$type=null){
-		if (!file_exists($path))throw new \Exception('file not exists');
-		if ($type===null)header('Content-Type: '.($type?(self::$mime_types[$type]?self::$mime_types[$type]:$type): mime_content_type($path)));
-		header('Content-Transfer-Encoding: binary');
-		header('Content-Disposition: '.($attachment?'attachment;':'').' filename="'.$filename.'"');
-		readfile($path);
+	static function readfile($path,$filename,$attachment=\true,$type=\null){
+		if (!\file_exists($path))throw new \Exception('file not exists');
+		if ($type===\null)header('Content-Type: '.($type?(self::$mime_types[$type]?self::$mime_types[$type]:$type):\mime_content_type($path)));
+		\header('Content-Transfer-Encoding: binary');
+		\header('Content-Disposition: '.($attachment?'attachment;':'').' filename="'.$filename.'"');
+		\readfile($path);
 		die();
 	}
 	/**
@@ -191,32 +191,32 @@ class filedata{
 	 * @return string|boolean
 	 */
 	static function mime_content_type($filename){
-		if ($type=@mime_content_type($filename))return $type;
+		if ($type=@\mime_content_type($filename))return $type;
 		if ($type=self::$mime_types[self::extension($filename)])return $type;
-		return false;
+		return \false;
 	}
 	static function appendDataPart($filename, $data){
-		$pos = @filesize($filename);
-		$append = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-		$appendLen = strlen($append);
-		error::log($filename, $append.$appendLen.strlen($appendLen));
+		$pos = @\filesize($filename);
+		$append = \json_encode($data, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE);
+		$appendLen = \strlen($append);
+		error::log($filename, $append.$appendLen.\strlen($appendLen));
 	}
-	static function readLastDataPart($handlerOrPath, $offset = null){
+	static function readLastDataPart($handlerOrPath, $offset = \null){
 		$handler = self::getHandler($handlerOrPath, $offset);
-		fseek($handler, -1, ftell($handler) ? SEEK_CUR : SEEK_END);
-		$char = (int) fgetc($handler);
-		fseek($handler, -1 - $char, SEEK_CUR);
-		$pos = (int) fgets($handler, $char + 1);
-		fseek($handler, -$char - $pos, SEEK_CUR);
-		$val = fread($handler, $pos);
-		fseek($handler, -$pos - 1, SEEK_CUR);
+		\fseek($handler, -1,\ftell($handler) ? \SEEK_CUR : \SEEK_END);
+		$char = (int) \fgetc($handler);
+		\fseek($handler, -1 - $char, \SEEK_CUR);
+		$pos = (int) \fgets($handler, $char + 1);
+		\fseek($handler, -$char - $pos, \SEEK_CUR);
+		$val = \fread($handler, $pos);
+		\fseek($handler, -$pos - 1, \SEEK_CUR);
 		return $val;
 	}
-	static function getHandler($handlerOrPath, $offset = null){
-		if (!is_string($handlerOrPath))return $handlerOrPath;
+	static function getHandler($handlerOrPath,$offset=\null){
+		if (!\is_string($handlerOrPath))return $handlerOrPath;
 		if (isset(self::$dataPartHandlers[$handlerOrPath]))return self::$dataPartHandlers[$handlerOrPath];
-		self::$dataPartHandlers[$handlerOrPath] = fopen($handlerOrPath, 'r');
-		if ($offset)fseek(self::$dataPartHandlers[$handlerOrPath], $offset);
+		self::$dataPartHandlers[$handlerOrPath]=\fopen($handlerOrPath, 'r');
+		if ($offset)\fseek(self::$dataPartHandlers[$handlerOrPath], $offset);
 		return self::$dataPartHandlers[$handlerOrPath];
 	}
 }

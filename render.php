@@ -9,12 +9,12 @@ class render{
 
 	private static $container=0;
 
-	static function container($fluid=false){
+	static function container($fluid=\false){
 		if (self::$container++)return;
 		?><div class="container<?=$fluid?'-fluid':''?>"><?php
 	}
 	static function containerFluid(){
-		return self::container(true);
+		return self::container(\true);
 	}
 	static function containerClose(){
 		if (!self::$container--)return;
@@ -58,12 +58,12 @@ class render{
 				}
 				return $answer;
 			default:
-				if (file_exists($type))return include $type;
+				if (\file_exists($type))return include $type;
 				throw new \Exception('not set render template');
 		}
 	}
 
-	static function form($form=null){
+	static function form($form=\null){
 		return forms::render($form);
 	}
 }

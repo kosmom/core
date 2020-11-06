@@ -43,7 +43,7 @@ class rss{
 		}
 		foreach ($data as $value){
 			if (empty($value['author']))$value['author']='';
-			$out.=self::PrintBody($value['title'],$value['link'],$value['description'].(isset($value['description2'])?$value['description2']:''),$value['category'],date("r",strtotime($value['pubdate'])),$value['author']);
+			$out.=self::PrintBody($value['title'],$value['link'],$value['description'].(isset($value['description2'])?$value['description2']:''),$value['category'],\date("r",\strtotime($value['pubdate'])),$value['author']);
 		}
 		return $out.'</channel></rss>';
 	}
