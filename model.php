@@ -229,7 +229,7 @@ class model implements \Iterator{
 			if ($exception){
 				throw new \Exception($exception);
 			}else{
-				throw new \Exception($ex);
+				throw new \Exception($exc);
 			}
 		}
 
@@ -263,6 +263,7 @@ class model implements \Iterator{
 		}
 		$errors=array();
 		if ($result)$this->pk_value=dbwork::setData($this->getTableName(),$result,$this->sequence,$this->getConnectionsAlter(),$errors,$this->getSchemeName());
+	    if (core::$data['db_exception'] && $errors)throw new \Exception($errors[0]);
 //model::setData($this,$this->pk_value,$result);
 		$this->storage=\null;
 		if ($this->mode!='row')$this->find($this->pk_value);
