@@ -163,7 +163,6 @@ class dbwork{
 							$type=\substr($type,0,$typerangepos);
 						}
 						$data[$column]['type']=$type;
-
 						if (\substr($string,0,9) == 'unsigned '){
 							$data[$column]['unsigned']=\true;
 							$string=\substr($string,9);
@@ -186,7 +185,7 @@ class dbwork{
 							if (\substr($string,0,1)=="'"){
 								$data[$column]['default']=input::findFirstPrepare($string);
 								$string=\trim($string);
-							}elseif (\substr($string,0,5) =='NULL'){
+							}elseif (\substr($string,0,5) =='NULL '){
 								$data[$column]['default']=\null;
 								$string=\substr($string,5);
 							}elseif (\substr($string,0,18) =='CURRENT_TIMESTAMP '){
