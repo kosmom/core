@@ -19,6 +19,7 @@ class telegram{
 	const EMOJI_FIREWORKS="\xF0\x9F\x8E\x86"; 
 	
 	const PARSE_MODE_MARKDOWN='Markdown';
+	const PARSE_MODE_MARKDOWN2='MarkdownV2';
 	const PARSE_MODE_HTML='HTML';
 	const PARSE_MODE_NONE=\null;
 	
@@ -101,6 +102,9 @@ class telegram{
 	}
 	static function getWebhookInfo(){
 	    return self::request('getWebhookInfo');
+	}
+	static function getChat($chat_id){
+	    return input::iconv(self::request('getChat',array('chat_id'=>$chat_id)));
 	}
 	/**
 	 * get Webhook data
