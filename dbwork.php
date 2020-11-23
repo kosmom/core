@@ -404,7 +404,7 @@ class dbwork{
 					case 'tinyint':
 					case 'bigint':
 					case 'mediumint':
-						if(!preg_match('#^\d+$#',$value)){
+						if(!preg_match('#^\d+$#',$value) && $value!==''){
 						$outErrors[]=translate::t('Field {field} have number format. You try set <b>{value}</b> value',array('field'=>$fieldName,'value'=>input::htmlspecialchars($value)));
 						break;
 					}
