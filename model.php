@@ -371,7 +371,7 @@ class model implements \Iterator{
 			return $sql?'('.$sql.')':'';
 		}
 		if (@$where['expression'] && $where['expression']!==\true)return $where['expression'];
-		return $where['field'].' '.$where['prop'].' '.$where['value'];
+		return db::wrapper($where['field'],$this->getConnections()).' '.$where['prop'].' '.$where['value'];
 	}
 	/**
 	 * Set filter in raw format
