@@ -236,7 +236,7 @@ class model implements \Iterator{
 		
 	}
 	function clearCache(){
-		unset(model::$cache[get_called_class()]);
+		unset(model::$cache[\get_called_class()]);
 	}
 	function save(){
 		if ($this->readonly)throw new \Exception('Model is readonly');
@@ -625,7 +625,7 @@ class model implements \Iterator{
 	}
 
 	static function toObject(){
-		$name=get_called_class();
+		$name=\get_called_class();
 		return new $name;
 	}
 
@@ -646,8 +646,8 @@ class model implements \Iterator{
 		$hash=$this->calculateCache();
 		$pk=$this->getPrimaryField();
 		$is_full=empty($this->queryWhere);
-		if (isset(model::$cache[get_called_class()][$hash])){
-			return new collection_object(model::$cache[get_called_class()][$hash],get_called_class(),$pk,$is_full);
+		if (isset(model::$cache[\get_called_class()][$hash])){
+			return new collection_object(model::$cache[\get_called_class()][$hash],\get_called_class(),$pk,$is_full);
 		}
 		// if get from collection - mass request with "in" and group
 		if ($this->collectionSource){
@@ -685,9 +685,9 @@ class model implements \Iterator{
 				model::setData($this,$row[$pk],$row);
 			}
 			// set cache
-			model::$cache[get_called_class()][$hash]=datawork::group($rs,'[]',$pk);
+			model::$cache[\get_called_class()][$hash]=datawork::group($rs,'[]',$pk);
 		}
-		return new collection_object(model::$cache[get_called_class()][$hash],get_called_class(),$pk,$is_full);
+		return new collection_object(model::$cache[\get_called_class()][$hash],\get_called_class(),$pk,$is_full);
 	}
 
 	private function getWhereSqlPart(){
@@ -745,7 +745,7 @@ class model implements \Iterator{
 			return model::$cache[\get_called_class()][$hash];
 		}
 		$sql='SELECT '.$aggregate.'('.($parameter===\null?'*':$parameter).') from '.$this->getScemeWithTable().' t'.$this->getWhereSqlPart();
-		return model::$cache[get_called_class()][$hash]=(float)db::ea11($sql,$this->queryBind,$this->getConnections(), $this->cacheTimeout);
+		return model::$cache[\get_called_class()][$hash]=(float)db::ea11($sql,$this->queryBind,$this->getConnections(), $this->cacheTimeout);
 	}
 	function globalScope(){
 	}
@@ -828,10 +828,10 @@ class model implements \Iterator{
 		return $name;
 	}
 	function relationMorphToMany($model,$entity_id_field,$entity_type_field=\null){
-		return $this->relation($model,$entity_id_field)->where($entity_type_field,'=',get_called_class());
+		return $this->relation($model,$entity_id_field)->where($entity_type_field,'=',\get_called_class());
 	}
 	function relationMorphToOne($model,$entity_id_field,$entity_type_field=\null){
-		return $this->relationToOne($model,$entity_id_field)->where($entity_type_field,'=',get_called_class());
+		return $this->relationToOne($model,$entity_id_field)->where($entity_type_field,'=',\get_called_class());
 	}
 	function relationInner($model,$foreign_key=\null,$local_key=\null){
 		return $this->relation($model,$foreign_key,$local_key,\true);
@@ -1049,7 +1049,8 @@ class model implements \Iterator{
 			}
 			return $out;
 		}
-		if (array_key_exists($field, self::$durty[$modelName][$pk])) return self::$durty[$modelName][$pk][$field];
+		if (isset(self::$durty[$modelName][$pk][$field])) return self::$durty[$modelName][$pk][$field];
+		if (\array_key_exists($field, self::$durty[$modelName][$pk])) return self::$durty[$modelName][$pk][$field];
 		if (@$model->fields[$field]['get']){
 			return self::$durty[$modelName][$pk][$field]=$model->calculateValue($field,self::$base[$modelName][$pk][$field],self::$base[$modelName][$pk]);
 		}
@@ -1064,7 +1065,8 @@ class model implements \Iterator{
 			}
 			return $out;
 		}
-		if (array_key_exists($field, self::$durty[$modelName][$pk])) return self::$durty[$modelName][$pk][$field];
+		if (isset(self::$durty[$modelName][$pk][$field])) return self::$durty[$modelName][$pk][$field];
+		if (\array_key_exists($field, self::$durty[$modelName][$pk])) return self::$durty[$modelName][$pk][$field];
 		if (isset(self::$base[$modelName][$pk][$field])){
 			if (@$model->fields[$field]['get']){
 				return self::$durty[$modelName][$pk][$field]=$model->calculateValue($field,self::$base[$modelName][$pk][$field],self::$base[$modelName][$pk]);
