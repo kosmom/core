@@ -848,7 +848,7 @@ class model implements \Iterator{
 			if ($generator->getPrimaryField()==$local_key){
 				$baseCollection=$this->collectionSource;
 			}else{
-				$baseCollection=new collection_object(\array_values(datawork::group($this->collectionSource->toArray(),$local_key,$local_key)),$this->collectionSource->generator,$local_key);
+				$baseCollection=new collection_object(\array_unique(datawork::group($this->collectionSource->toArray(),'[]',$local_key)),$this->collectionSource->generator,$local_key);
 			}
 		}
 		$obj=new $model(\null, $baseCollection);
@@ -1043,9 +1043,16 @@ class model implements \Iterator{
 	static function getData($model,$pk,$field=\null){
 		$modelName=\is_object($model)?\get_class($model):$model;
 		if ($field===\null){
+			// fast way
+			if (empty($model->fields)) {
+				if (!isset(self::$durty[$modelName][$pk])){
+					return self::$durty[$modelName][$pk]=self::$base[$modelName][$pk];
+		        }
+		        return \array_merge(self::$base[$modelName][$pk],self::$durty[$modelName][$pk]);
+			}
 			$out=array();
 			foreach (self::$base[$modelName][$pk] as $field=>$value){
-				$out[$field]=self::getData($model, $pk,$field);
+				$out[$field]=self::getData($modelName,$pk,$field);
 			}
 			return $out;
 		}
@@ -1056,15 +1063,8 @@ class model implements \Iterator{
 		}
 		return @self::$durty[$modelName][$pk][$field]=self::$base[$modelName][$pk][$field];
 	}
-	static function getDataOrFail($model,$pk,$field=\null){
+	static function getDataOrFail($model,$pk,$field){
 		$modelName=\is_object($model)?\get_class($model):$model;
-		if ($field===\null){
-			$out=array();
-			foreach (self::$base[$modelName][$pk] as $field=>$value){
-				$out[$field]=self::getDataOrFail($model, $pk,$field);
-			}
-			return $out;
-		}
 		if (isset(self::$durty[$modelName][$pk][$field])) return self::$durty[$modelName][$pk][$field];
 		if (\array_key_exists($field, self::$durty[$modelName][$pk])) return self::$durty[$modelName][$pk][$field];
 		if (isset(self::$base[$modelName][$pk][$field])){
@@ -1076,11 +1076,11 @@ class model implements \Iterator{
 		throw new \Exception('no data');
 	}
 	static function setData($model,$pk,$values){
-		$modelName=get_class($model);
+		$modelName=\get_class($model);
 		self::$base[$modelName][$pk]=$values;
 	}
 	static function setDataCell($model,$pk,$cell,$value){
-		$modelName=get_class($model);
+		$modelName=\get_class($model);
 		self::$durty[$modelName][$pk][$cell]=$value;
 	}
 }
