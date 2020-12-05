@@ -2,7 +2,7 @@
 namespace c\factory;
 
 class db_oracle {
-	private $execute_mode=OCI_COMMIT_ON_SUCCESS;
+	private $execute_mode=\OCI_COMMIT_ON_SUCCESS;
 	private static $date_formats=array(
 		'd'=>'DD',
 		'm'=>'MM',
@@ -87,7 +87,7 @@ class db_oracle {
 			}else{
 				\c\debug::trace('BIND: None',\false);
 			}
-			$start=microtime(\true);
+			$start=\microtime(\true);
 		}
 		$stmt = oci_parse($this -> connect, $sql);
 		if(!$stmt){
@@ -417,7 +417,7 @@ function execute_assoc_1($sql, $bind = array()){
 
 	function date_to_db($value,$format=\null){
 		if ($value===\null)return 'SYSDATE';
-		if ($format)return 'TO_DATE('.$value.",'".strtr($format,$this::$date_formats)."')";
+		if ($format)return 'TO_DATE('.$value.",'".\strtr($format,$this::$date_formats)."')";
 		if (!\is_numeric($value))$value=\strtotime($value);
 		return "TO_DATE('".\date('Y-m-d H:i:s',$value)."','YYYY-MM-DD HH24:MI:SS')";
 	}

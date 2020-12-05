@@ -161,7 +161,7 @@ class db_mysql {
 			}
 			// explain
 			\c\debug::group('Explain select');
-			$this->affected_rows=mysqli_affected_rows($this->connect);
+			$this->affected_rows=\mysqli_affected_rows($this->connect);
 			$this->num_rows=@\mysqli_num_rows($_result);
 			$this->insert_id=\mysqli_insert_id($this->connect);
 			@\mysqli_free_result($_result);
@@ -169,7 +169,7 @@ class db_mysql {
 			\c\debug::groupEnd();
 			\c\debug::groupEnd();
 		}else{
-			@mysqli_free_result($_result);
+			@\mysqli_free_result($_result);
 		}
 		return $_data;
 	}

@@ -1,21 +1,20 @@
 <?php
 namespace c\factory;
 
-class db_pgsql {
+class db_sqlsrv {
 	private static $date_formats=array(
-		'd'=>'DD',
-		'm'=>'MM',
-		'y'=>'YY',
-		'Y'=>'YYYY',
-		'H'=>'HH24',
-		'i'=>'MI',
-		's'=>'SS'
-		);
+		'd'=>'%d',
+		'm'=>'%m',
+		'y'=>'%y',
+		'Y'=>'%Y',
+		'H'=>'%H',
+		'i'=>'%i',
+		's'=>'%s'
+	);
 	var $data;
 	var $cn;
 	private $insert_id;
-	private $num_rows;
-	private $affected_rows;
+	private $stmt;
 	private $connect;
 	var $m_result=\false; // have last query result
 	var $error_resume=\false;
@@ -28,46 +27,41 @@ class db_pgsql {
 	function wrapper($object){
 		return '`'.$object.'`';
 	}
-	private function charset_mach(){
+	private function charset_mastmach(){
 		if (isset($this->data['charset']))return $this->data['charset'];
 		switch (\strtoupper(\c\core::$charset)){
-			case \c\core::UTF8:return 'UTF8';
-			default: return 'cp1251';
+			case \c\core::UTF8:return 'UTF-8';
+			default: return 'windows-1251';
 		}
 	}
 
 	function connect(){
-		if ($this->data['persistent']){
-			$this->connect = \pg_pconnect('host='.$this->data['host'].(isset($this->data['port'])?' port='.$this->data['port']:'').' dbname='.$this->data['name'].' user='. $this->data['login'].' password='. $this->data['password']." options='--client_encoding='".$this->charset_mach()."'");
-		}else{
-			$this->connect = \pg_connect('host='.$this->data['host'].(isset($this->data['port'])?' port='.$this->data['port']:'').' dbname='.$this->data['name'].' user='. $this->data['login'].' password='. $this->data['password']." options='--client_encoding='".$this->charset_mach()."'");
-		}
-		if (!$this->connect)throw new \Exception('PgSQL connection error '.\pg_last_error());
+		$options=array('Database'=>$this->data['name'],"UID"=>$this->data['login'],"PWD"=>$data['password']);
+		if ($this->data['charset'])$options['CharacterSet']=$this->charset_mastmach();
+		@$this->connect = \sqlsrv_connect($this->data['host'],$options);
+		if (!$this->connect)throw new \Exception('Sqlsrv connection error '.\print_r(\sqlsrv_errors(),true));
 		if (\c\core::$debug){
-			\c\debug::group('Connection to '.($this->cn?$this->cn:'PgSQL'),\c\error::SUCCESS);
+			\c\debug::trace('Connection to '.($this->cn?$this->cn:'SQLSrv'),\c\error::SUCCESS);
 			@\c\core::$data['stat']['db_connections']++;
-			$out=array();
-			\c\debug::dir($out);
-			\c\debug::groupEnd();
 		}
 	}
 	function disconnect(){
-		\pg_close($this->connect);
+		\sqlsrv_close($this->connect);
 	}
 	function beginTransaction(){
-		$this->execute('begin');
+		\sqlsrv_begin_transaction($this->connect);
 	}
 	function commit(){
-		$this->execute('commit');
+		\sqlsrv_commit($this->connect);
 	}
 	function rollback(){
-		$this->execute('rollback');
+		\sqlsrv_rollback($this->connect);
 	}
 	function bind($sql,$bind=array()){
 		if (\sizeof($bind)==0 or !\is_array($bind))return $sql;
 		$bind2=array();
 		foreach ($bind as $key=>$value){
-			$bind2[':'.$key]=($value==='' || $value===\c\db::NULL || $value===\NULL?'NULL':"'".\pg_escape_string($this->connect,$value)."'");
+			$bind2[':'.$key]=($value==='' || $value===\c\db::NULL || $value===\NULL?'NULL':"'".\mysqli_real_escape_string($this->connect,$value)."'");
 		}
 		return \strtr($sql,$bind2);
 	}
@@ -77,12 +71,12 @@ class db_pgsql {
 	function execute_assoc($sql,$bind=array(),$mode='ea'){
 		if (\c\core::$debug){
 			@\c\core::$data['stat']['db_queryes']++;
-			\c\debug::group('PgSQL query');
+			\c\debug::group('SQLSrv query');
 			if (\ltrim($sql)!=$sql){
 				\c\debug::trace('clear whitespaces at begin of query for correct work. Autocorrect in debug mode',\c\error::ERROR);
 				$sql=\ltrim($sql);
 			}
-			\c\debug::trace('Connection: '.$this->cn,\false);
+			\c\debug::trace('Connection: '.$this->connect,\false);
 			\c\debug::trace('SQL: '.$sql,\false);
 			if ($bind){
 				\c\debug::dir(array('BIND:'=>$bind));
@@ -92,30 +86,35 @@ class db_pgsql {
 			$start=\microtime(\true);
 		}
 		$sql=$this->bind($sql,$bind);
-		//echo $sql;
-		@$_result = pg_query($this->connect,$sql);
+		$this->stmt=@$stmt = \sqlsrv_query($this->connect,$sql);
+		
 		if (\c\core::$debug){
 			\c\debug::consoleLog('Query execute for '.\round((\microtime(\true)-$start)*1000,2).' ms');
 			$start=\microtime(\true);
 		}
-		if(!$_result){
+		if(!$stmt){
 			if (\c\core::$debug){
-				\c\debug::trace('Query error: '. \pg_errormessage($this->connect),\c\error::ERROR);
+				\c\debug::trace('Query error: '.\sqlsrv_errors(),\c\error::ERROR);
 				\c\debug::groupEnd();
-				\c\debug::trace('PgSQL error: '. \pg_errormessage($this->connect),\c\error::ERROR);
+				\c\debug::trace('SqlSrv error: '.\sqlsrv_errors(),\c\error::ERROR);
 			}
 			if (empty(\c\core::$data['db_exception']))return \false;
-			throw new \Exception('SQL execute error');
+			throw new \Exception('SQL execute error: '.\sqlsrv_errors());
 		}
-		$subsql=\strtolower(\substr($sql,0,4));
+		$subsql=strtolower(substr($sql,0,4));
 		$_data = array();
 		if (isset($this->result_array[$subsql])){
 			switch ($mode){
 				case 'ea':
-					$_data=\pg_fetch_all($_result);
+					$data=array();
+					while ($_row = \sqlsrv_fetch_array ($stmt,\SQLSRV_FETCH_ASSOC))$_data[] = $_row;
+					break;
+				case 'e':
+					$data=array();
+					while ($_row = \sqlsrv_fetch_array ($stmt))$_data[] = $_row;
 					break;
 				case 'ea1':
-					$_data=\pg_fetch_assoc($_result, 0);
+					$_data=\sqlsrv_fetch_array($stmt,\SQLSRV_FETCH_ASSOC);
 					break;
 			}
 			if (\c\core::$debug)\c\debug::trace('Result fetch get '.\round((\microtime(\true)-$start)*1000,2).' ms');
@@ -131,7 +130,7 @@ class db_pgsql {
 					}else{
 						\c\debug::group('Query result. Count: '.\sizeof($_data),\c\error::INFO,\sizeof($_data)>10);
 						\c\debug::table(\array_slice($_data,0,30));
-						if (\sizeof($_data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
+						if (sizeof($_data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
 					}
 					\c\debug::groupEnd();
 				}else{
@@ -140,64 +139,54 @@ class db_pgsql {
 			}else{
 				\c\debug::trace('Affected '.$this->rows().' rows',\false);
 			}
-			// explain
-			\c\debug::group('Explain select');
-			$this->affected_rows=\pg_affected_rows($_result);
-			$this->num_rows= \pg_num_rows($_result);
-			$this->insert_id= \pg_last_oid($_result);
-			\pg_free_result($_result);
-			\c\debug::table($this->explain($sql));
-			\c\debug::groupEnd();
-			\c\debug::groupEnd();
 		}else{
-			\pg_free_result($_result);
+			\sqlsrv_free_stmt($stmt);
 		}
 		return $_data;
 	}
 	function ea1($sql,$bind=array()){
 		return $this->execute_assoc($sql,$bind,'ea1');
 	}
-	function db_limit($sql, $from=0, $count=0){
-		return $sql.' LIMIT '.\intval($count).' OFFSET '.\intval($from);
+	function db_limit($sql,$from=0,$count=0,$_order_fild='1',$_order_dir='DESC'){
+		if ($_order_dir == "DESC"){
+			$o1="ASC";
+			$o2="DESC";
+		}else{
+			$o1="DESC";
+			$o2="ASC";
+		}
+		if ($from != 0) return "SELECT * FROM (SELECT TOP ".$count." * FROM (SELECT TOP ".($from + $count)." * FROM (".$sql.") DBLIMIT1 ORDER BY ".$_order_fild." ".$o2.") DBLIMIT2 ORDER BY ".$_order_fild." ".$o1.") DBLIM";
+		else return "SELECT TOP ".($from + $count)." * FROM (".$sql.") DBLIMIT2 ";
 	}
 	function getLenResult(){
-		if (\c\core::$debug)return $this->num_rows;
-		if ($this->m_result)return \pg_num_rows($this -> m_result);
-		return 0;
+		return \sqlsrv_num_rows($this->stmt);
 	}
 	function insertId(){
-		if (\c\core::$debug)return $this->insert_id;
-		return \pg_last_oid($this->m_result);
+		return \false;
 	}
 	function rows(){
-		if (\c\core::$debug)return $this->affected_rows;
-		return \pg_affected_rows($this->result);
+		return \sqlsrv_rows_affected($this->stmt);
 	}
-	function explain($sql,$bind=array()){
-		$sql='explain '.$this->bind($sql,$bind);
-		$_result = \pg_query($this->connect,$sql);
-		if(!$_result)return \false;
-		$_data=\pg_fetch_all($_result);
-		\pg_free_result($_result);
-		return $_data;
+	function explain(){
+		return \false;
 	}
 	function query($sql,$bind){
 		$sql=$this->bind($sql,$bind);
-		return \pg_query($this->connect,$sql);
+		return $this->stmt= \sqlsrv_query($this->connect,$sql);
 	}
-	function fa($_result){
-		$row=\pg_fetch_assoc($_result);
-		if (empty($row))\pg_free_result($_result);
+	function fa($stmt){
+		$row=\sqlsrv_fetch_array ($stmt,\SQLSRV_FETCH_ASSOC);
+		if (empty($row))\sqlsrv_free_stmt($stmt);
 		return $row;
 	}
 	function date_from_db($value,$format){
 		$format=\strtr($format,self::$date_formats);
-		return "TO_CHAR(".$value.",'".$format."')";
+		return "date_format(".$value.",'".$format."')";
 	}
 	function date_to_db($value,$format=\null){
 		if ($value===\null)return 'now()';
-		if ($format)return "to_timestamp(".$value.",'".\strtr($format,self::$date_formats)."')";
+		if ($format)return "STR_TO_DATE(".$value.",'".\strtr($format,self::$date_formats)."')";
 		if (!\is_numeric($value))$value=\strtotime($value);
-		return "to_timestamp('".\date('Y-m-d H:i:s',$value)."','YYYY-MM-DD HH24:MI:SS')";
+		return "STR_TO_DATE('".\date('Y-m-d H:i:s',$value)."','%Y-%m-%d %H:%i:%s')";
 	}
 }
