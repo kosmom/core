@@ -848,7 +848,7 @@ class model implements \Iterator{
 			if ($generator->getPrimaryField()==$local_key){
 				$baseCollection=$this->collectionSource;
 			}else{
-				$baseCollection=new collection_object(\array_unique(datawork::group($this->collectionSource->toArray(),'[]',$local_key)),$this->collectionSource->generator,$local_key);
+				$baseCollection=new collection_object(\array_unique($this->collectionSource->pluck($local_key)),$this->collectionSource->generator,$local_key);
 			}
 		}
 		$obj=new $model(\null, $baseCollection);
@@ -859,7 +859,7 @@ class model implements \Iterator{
 			return $to_one?$obj->first():$obj;
 		}else{
 			// if full
-			if (!empty($this->queryWhere) || $is_inner)$obj->where($foreign_key, \array_unique(datawork::group($this->get()->toArray(),'[]',$local_key)));
+			if (!empty($this->queryWhere) || $is_inner)$obj->where($foreign_key, \array_unique($this->get()->pluck($local_key)));
 			// switch to new model with search case
 			return $obj;
 		}
