@@ -122,7 +122,7 @@ class db_mysql {
 						$_data=\mysqli_fetch_all($_result,\MYSQLI_ASSOC);
 					}else{
 						$data=array();
-						while ($_row = \mysqli_fetch_array ($_result,\MYSQLI_ASSOC))$_data[] = $_row;
+						while ($_row = \mysqli_fetch_assoc($_result))$_data[] = $_row;
 					}
 					break;
 				case 'e':
@@ -200,7 +200,7 @@ class db_mysql {
 			$_data=\mysqli_fetch_all($_result,\MYSQLI_ASSOC);
 		}else{
 			$data=array();
-			while ($_row = \mysqli_fetch_array ($_result,\MYSQLI_ASSOC))$_data[] = $_row;
+			while ($_row = \mysqli_fetch_assoc ($_result))$_data[] = $_row;
 		}
 		\mysqli_free_result($_result);
 		return $_data;
