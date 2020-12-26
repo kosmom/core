@@ -131,7 +131,7 @@ class form_bootstrap{
 			if (!isset($item['attributes']['step']))$item['attributes']['step']='.0000001';
 			$item['value']= str_replace(',', '.', @$item['value']);
 		}
-		$renderValue=isset($item['value'])?is_callable($item['value'])?$item['value']($item):$item['value']:@$item['default'];
+		$renderValue=isset($item['value'])?(!is_string($item['value']) && is_callable($item['value']))?$item['value']($item):$item['value']:@$item['default'];
 		if (@$item['range']){
 			$value['min']=(isset($renderValue['min'])?'value="'.\c\input::htmlspecialchars($renderValue['min']).'" ':'');
 			$value['max']=(isset($renderValue['max'])?'value="'.\c\input::htmlspecialchars($renderValue['max']).'" ':'');

@@ -236,7 +236,7 @@ class table{
 			$cb=core::$data['table_header_render_callback'];
 			$rs=$cb($rs);
 		}
-		if (!empty($input['header'][$key]['sort'])) return '<a class="table-sort" href="'.input::getLink(array('sort'=>$key,'order'=>$_GET['order'] || $_GET['sort'] != $key?\false:'desc')).'">'.$rs.'</a>';
+		if (!empty($input['header'][$key]['sort'])) return '<a class="table-sort" href="'.input::getLink(array('sort'=>$key,'order'=>@$_GET['order'] || @$_GET['sort'] != $key?\false:'desc')).'">'.$rs.'</a>';
 		return $rs;
 	}
 	private function drawCellLabel($item){
