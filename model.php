@@ -81,7 +81,7 @@ class model implements \Iterator{
 	}
 	function on_after_update($base=\null){
 	}
-	function on_before_save(){
+	function on_before_save($base=\null){
 	}
 	function on_after_save($base=\null){
 	}
@@ -250,10 +250,12 @@ class model implements \Iterator{
 		}
 		if ($isCreate){
 			$this->on_before_create();
-		}else{
-			$this->on_before_update();
+			$base = array();
+		} else {
+			$base = $this->pk_value ? model::getRawData($this, $this->pk_value) : array();
+			$this->on_before_update($base);
 		}
-		$this->on_before_save();
+		$this->on_before_save($base);
 		$this->mode=$mode;
 		$base=$this->pk_value?model::getRawData($this,$this->pk_value):[];
 		$result=$values=$this->pk_value?model::getChanged($this,$this->pk_value):$this->storage;
