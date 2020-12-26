@@ -81,7 +81,7 @@ class debug{
 	}
 	
 	private static function getBacktrace(){
-		if (!self::$bugtrace_file_from)self::$bugtrace_file_from=\strlen(dirname($_SERVER['SCRIPT_FILENAME']));
+		if (!self::$bugtrace_file_from)self::$bugtrace_file_from=\strlen(mvc::$base__DIR__)+1;
 		$out=debug_backtrace(\false);
 		\array_shift($out);
 		$debug=\array_shift($out);
