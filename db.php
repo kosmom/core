@@ -407,4 +407,13 @@ class db{
 		self::getConfig();
 		return self::$db_config[core::$env][$db]['name'];
 	}
+	
+	static function getAllConnectSchemes(){
+		self::getConfig();
+		$dbs = self::$db_config[core::$env];
+		foreach ($dbs as &$db) {
+	      unset($db['password']);
+	    }
+	    return $dbs;
+	}
 }
