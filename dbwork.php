@@ -127,7 +127,6 @@ class dbwork{
 					if (\substr($string,0,13) == 'CREATE TABLE ') continue;
 					if (\substr($string,0,9) == ') ENGINE ') break;
 					if (\substr($string,0,13) == 'PRIMARY KEY ('){
-						// primary key finder
 						$string=\substr($string,13,-1);
 						$key=\explode(',',$string);
 						foreach($key as $item){
@@ -136,7 +135,6 @@ class dbwork{
 						continue;
 					}
 					if (substr($string,0,11) == 'UNIQUE KEY '){
-						// primary key finder
 						$string=\substr($string,11,-1);
 						$name=input::findFirstPrepare($string);
 						$string=\trim($string,' (');
@@ -146,6 +144,31 @@ class dbwork{
 						}
 						continue;
 					}
+					if (substr($string, 0, 4) == 'KEY ') {
+						$string = substr($string, 4, -1);
+						$name = input::findFirstPrepare($string);
+						$string = trim($string, ' (');
+						$key = explode(',', $string);
+						foreach ($key as $item) {
+						  $indexKey[$name][] = input::findFirstPrepare($item);
+						}
+						continue;
+					  }
+					  if (substr($string, 0, 11) == 'CONSTRAINT ') {
+						$re = '/CONSTRAINT `(.*)` FOREIGN KEY \(`(.*)`\) REFERENCES `(.*)` \(`(.*)`\)( ON DELETE (.*)( ON UPDATE (.*))?)?/';
+						$matches = array();
+						if (\preg_match_all($re, $string, $matches, \PREG_SET_ORDER, 0)) {
+						  $matches = $matches[0];
+						  $foreignKey[$matches[1]] = array('table' => $matches[3], 'mainfield' => $matches[2], 'referencefield' => $matches[4]);
+						  if (isset($matches[6])) {
+							$foreignKey[$matches[1]]['on delete'] = $matches[6];
+						  }
+						  if (isset($matches[8])) {
+							$foreignKey[$matches[1]]['on update'] = $matches[8];
+						  }
+						}
+						continue;
+					  }
 	// parsing to words
 					if (substr($string,0,1) == '`'){
 						$column=input::findFirstPrepare($string);
@@ -239,11 +262,12 @@ class dbwork{
 			default:
 				throw new \Exception('no database type found');
 		}
+		
+		$rs=array('data'=>$data,'primary_key'=>$primaryKey,'unique_key'=>$uniqueKey,'foreign_key'=>$foreignKey,'key'=>$indexKey);
 		if (core::$debug){
-			debug::dir(array('result'=>array('data'=>$data,'primary_key'=>$primaryKey,'unique_key'=>$uniqueKey)));
+			debug::dir(array('result'=>$rs));
 			debug::groupEnd();
 		}
-		$rs=array('data'=>$data,'primary_key'=>$primaryKey,'unique_key'=>$uniqueKey);
 		if (isset($cache_file))filedata::savedata ($cache_file, $rs);
 		return self::$describeStorage[$db][$defaultScheme][$tablename]=$rs;
 	}
