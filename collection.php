@@ -40,6 +40,10 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	function rewind(){
 		$this->_p=0;
 	}
+	
+	function exists(){
+		return $this->count()>0;
+	}
 
 	/**
 	 * @return array
