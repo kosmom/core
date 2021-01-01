@@ -144,11 +144,11 @@ class dbwork{
 						}
 						continue;
 					}
-					if (substr($string, 0, 4) == 'KEY ') {
-						$string = substr($string, 4, -1);
+					if (\substr($string, 0, 4) == 'KEY ') {
+						$string = \substr($string, 4, -1);
 						$name = input::findFirstPrepare($string);
-						$string = trim($string, ' (');
-						$key = explode(',', $string);
+						$string = \trim($string, ' (');
+						$key = \explode(',', $string);
 						foreach ($key as $item) {
 						  $indexKey[$name][] = input::findFirstPrepare($item);
 						}
@@ -362,7 +362,7 @@ class dbwork{
 			if ($is_update===\true){
 				$opType=2;
 			}elseif ($is_update===\null){
-				$sql='SELECT COUNT(*) FROM '.($schema?db::wrapper($schema,$db).'.':'').$tablename.' WHERE '.implode(' AND ',$sqlPkVals);
+				$sql='SELECT COUNT(*) FROM '.($schema?db::wrapper($schema,$db).'.':'').$tablename.' WHERE '.\implode(' AND ',$sqlPkVals);
 				if (db::ea11($sql,$pkVals,$db))$opType=2; //update
 			}
 		}
@@ -413,7 +413,7 @@ class dbwork{
 						break;
 					}
 					$strcolname[]=$field;
-					if (\strlen($value) > 3 && substr($value,0,3) == '{+}'){
+					if (\strlen($value) > 3 && \substr($value,0,3) == '{+}'){
 						$strvalues[]='concat('.$field.',:'.$upperField.')';
 						$bind[$upperField]=\substr($value,3);
 					}else{
@@ -428,12 +428,12 @@ class dbwork{
 					case 'tinyint':
 					case 'bigint':
 					case 'mediumint':
-						if(!preg_match('#^\d+$#',$value) && $value!==''){
+						if(!\preg_match('#^\d+$#',$value) && $value!==''){
 						$outErrors[]=translate::t('Field {field} have number format. You try set <b>{value}</b> value',array('field'=>$fieldName,'value'=>input::htmlspecialchars($value)));
 						break;
 					}
 					$strcolname[]=$field;
-					if (\strlen($value) > 3 && substr($value,0,3) == '{+}'){
+					if (\strlen($value) > 3 && \substr($value,0,3) == '{+}'){
 						$strvalues[]=$field.'+:'.$upperField;
 						$bind[$upperField]=\substr($value,3);
 					}else{
@@ -451,7 +451,7 @@ class dbwork{
 						$arrays[$upperField]=$value=\str_replace(',','.',$value);
 						$is_float=\preg_match('/^-?\d*[\.]?\d+$/',$value);
 					}else{ //oracle
-						$arrays[$upperField]=$value=str_replace('.',',',$value);
+						$arrays[$upperField]=$value=\str_replace('.',',',$value);
 						$is_float=\preg_match('/^-?\d*[\,]?\d+$/',$value);
 					}
 					if ($is_float or $value == ''){
@@ -479,7 +479,7 @@ class dbwork{
 					case 'date':
 					case 'timestamp':
 					case 'datetime':
-						switch (trim($value)){
+						switch (\trim($value)){
 							case db::NOW:
 								$strcolname[]=$upperField;
 								if ($dbType=='mysql'){
@@ -579,13 +579,13 @@ class dbwork{
 			if ($notIsset) $bind['insert_id']='aaaaaaaaaaaaaaa';
 
 			if ($opType == 1){ // insert
-				$sql='INSERT INTO '.($schema?db::wrapper($schema,$db).'.':'').$tablename.' ('.implode(',',$strcolname).') VALUES ('.implode(',',$strvalues).') '.($notIsset?'RETURNING '.$notIsset.' INTO :insert_id':'');
+				$sql='INSERT INTO '.($schema?db::wrapper($schema,$db).'.':'').$tablename.' ('.\implode(',',$strcolname).') VALUES ('.\implode(',',$strvalues).') '.($notIsset?'RETURNING '.$notIsset.' INTO :insert_id':'');
 			}elseif ($opType == 2){ // update
 				$im=array();
 				foreach($strcolname as $key=> $values){
 					$im[]=$strcolname[$key].'='.$strvalues[$key];
 				}
-				$sql='UPDATE '.($schema?db::wrapper($schema,$db).'.':'').$tablename.' SET '.implode(',',$im).' WHERE '.implode(' AND ',$sqlPkVals).($notIsset?' RETURNING '.$notIsset.' INTO :insert_id':'');
+				$sql='UPDATE '.($schema?db::wrapper($schema,$db).'.':'').$tablename.' SET '.\implode(',',$im).' WHERE '.\implode(' AND ',$sqlPkVals).($notIsset?' RETURNING '.$notIsset.' INTO :insert_id':'');
 			}
 			db::eRef($sql,$bind,$db);
 			if ($notIsset){
@@ -625,7 +625,7 @@ class dbwork{
 	static function setDataOrFail($tablename,$arrayIn='',$sequence='',$db='',$schema=''){
 		$errors=array();
 		$rs=self::setData($tablename,$arrayIn,$sequence,$db,$errors,$schema);
-		if ($errors)  throw new \Exception(translate::t('Errors during record').': '.implode(',',$errors));
+		if ($errors)  throw new \Exception(translate::t('Errors during record').': '.\implode(',',$errors));
 		return $rs;
 	}
 	/**
