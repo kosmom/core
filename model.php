@@ -1059,7 +1059,7 @@ class model implements \Iterator{
 			return $out;
 		}
 		if (isset(self::$durty[$modelName][$pk][$field])) return self::$durty[$modelName][$pk][$field];
-		if (\array_key_exists($field, self::$durty[$modelName][$pk])) return self::$durty[$modelName][$pk][$field];
+		if (isset(self::$durty[$modelName][$pk]) && \array_key_exists($field, self::$durty[$modelName][$pk])) return self::$durty[$modelName][$pk][$field];
 		if (@$model->fields[$field]['get']){
 			return self::$durty[$modelName][$pk][$field]=$model->calculateValue($field,self::$base[$modelName][$pk][$field],self::$base[$modelName][$pk]);
 		}
@@ -1068,7 +1068,7 @@ class model implements \Iterator{
 	static function getDataOrFail($model,$pk,$field){
 		$modelName=\is_object($model)?\get_class($model):$model;
 		if (isset(self::$durty[$modelName][$pk][$field])) return self::$durty[$modelName][$pk][$field];
-		if (\array_key_exists($field, self::$durty[$modelName][$pk])) return self::$durty[$modelName][$pk][$field];
+		if (isset(self::$durty[$modelName][$pk]) && \array_key_exists($field, self::$durty[$modelName][$pk])) return self::$durty[$modelName][$pk][$field];
 		if (isset(self::$base[$modelName][$pk][$field])){
 			if (@$model->fields[$field]['get']){
 				return self::$durty[$modelName][$pk][$field]=$model->calculateValue($field,self::$base[$modelName][$pk][$field],self::$base[$modelName][$pk]);
