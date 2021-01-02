@@ -120,8 +120,8 @@ class error{
 	 * @return integer
 	 */
 	static function count($type=self::ERROR){
-			if (empty($_SESSION['errors']))return 0;
-			return @\count($_SESSION['errors'][self::toType($type)]);
+		if (empty($_SESSION['errors']))return 0;
+		return @\count((array)$_SESSION['errors'][self::toType($type)]);
 	}
 	static function size($type=self::ERROR){
 		return self::count($type);

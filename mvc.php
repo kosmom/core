@@ -12,7 +12,7 @@ class mvc{
 	static $links;
 	static $file_links;
 	static $canonical_links;
-	static $url_links;
+	static $url_links=array();
 	static $links_string='';
 	static $noHeader=\false;
 	static $noBody=\false;
@@ -105,7 +105,7 @@ class mvc{
 	 *
 	 * @var string|boolean content for included pages (if it have)
 	 */
-	static $content=\false;
+	static $content=\true;
 	private static $folder;
 	private static $nextFolder;
 	
@@ -137,7 +137,7 @@ class mvc{
 
 	static function content(){
 		self::$jsHard=\true;
-		if (self::$content===\false){
+		if (self::$content===\true){
 			// find next folder after that
 			// autosearch next folder when no controllerPage
 			if (empty(self::$nextFolder))self::controllerPageInstant(rtrim (self::$folder,'\\/'));
@@ -145,9 +145,9 @@ class mvc{
 			self::$nextFolder=\null;
 			if (!\is_dir(self::$folder)){
 				self::$folder=\null;
-				return \false;
+				return \true;
 			}
-			self::$content='true';
+			self::$content='_';
 			$dir=self::getRealDir(self::$folder);
 			if (self::$search_css_js && !\file_exists($dir.'index.php')){
 				if (\file_exists($dir.'index.css'))self::addCss($dir.'index.css');
@@ -155,10 +155,10 @@ class mvc{
 			}
 			self::$current__DIR__=\realpath($dir);
 		}
-		if (!self::$folder)return \false; // same folder drive to the end
+		if (!self::$folder)return \true; // same folder drive to the end
 
 		switch (self::$content){
-		case 'true':
+		case '_':
 			if (self::$search_config && \file_exists(self::$folder.'config.php')){
 				self::$content='config.php';
 				return self::$folder.self::$content;
@@ -200,7 +200,7 @@ class mvc{
 				if (\file_exists($dir.'index.css'))self::addCss($dir.'index.css');
 				if (\file_exists($dir.'index.js'))self::addJs($dir.'index.js');
 			}
-			return self::$isRoute=self::$content=\false;
+			return self::$isRoute=self::$content=\true;
 		default:
 			self::$content='index.php';
 			return self::$folder.self::$content;
@@ -1150,7 +1150,7 @@ echo '>';
 		self::$page_counter=1;
 		self::$title=array();
 		self::$folder=\null;
-		self::$content=\false;
+		self::$content=\true;
 		self::$story=array(array('link'=>''));
 		self::$routeMatch=\false;
 		self::$routeAs=\null;
