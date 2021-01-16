@@ -760,7 +760,7 @@ class model implements \Iterator{
 		return db::wrapper($this->getSchemeName(),$this->getConnections()) .'.'.db::wrapper($this->getTableName(),$this->getConnections());
 	}
 	function exists(){
-		$sql="select exists(".$this->getSql().") as 'exists' from dual";
+		$sql="select exists(".$this->getSql().") as e from dual";
 		return (bool)db::ea11($sql,$this->queryBind,$this->getConnections());
 	}
 	function getSql(){
