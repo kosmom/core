@@ -230,7 +230,7 @@ class mvc{
 		if (\is_array($routeParams))$route=$routeParams+$route;
 
 		// save possible routes in buffer
-		if (isset($route['as']))self::$routes[$route['as']]=array('url'=>self::url($route['dir']).$route['url'],'prepared'=>0);
+		if (isset($route['as']))self::$routes[$route['as']]=array('url'=>self::getUrl($route['dir']).$route['url'],'prepared'=>0);
 
 		// if route is found - new route ignored
 		if (self::$routeMatch)return \false;
@@ -396,10 +396,6 @@ class mvc{
 			self::$base__DIR__=$__DIR__;
 			self::$next_dir=array($__DIR__.\DIRECTORY_SEPARATOR.self::$appFolder);
 		}
-		if (!isset($_SERVER['REDIRECT_URL'])){
-			$q=\strpos($_SERVER['REQUEST_URI'], '?');
-			$_SERVER['REDIRECT_URL']=$q===\false?$_SERVER['REQUEST_URI']:\substr($_SERVER['REQUEST_URI'],0, $q);
-		}
 		if (request::isCmd()){
 			global $argv;
 			if (@\strpos($argv[1], '?')!==\false){ //parse get params
@@ -412,9 +408,13 @@ class mvc{
 			$_SERVER['REDIRECT_URL']=\str_replace('\\', '/', $_SERVER['REDIRECT_URL']);
 			self::$links_string=\ltrim($_SERVER['REDIRECT_URL'],'/');
 		}else{
+			if (!isset($_SERVER['REDIRECT_URL'])){
+				$q=\strpos($_SERVER['REQUEST_URI'], '?');
+				$_SERVER['REDIRECT_URL']=$q===\false?$_SERVER['REQUEST_URI']:\substr($_SERVER['REQUEST_URI'],0, $q);
+			}
 			self::$links_string=\substr(\ltrim(@$_SERVER['REDIRECT_URL'],'\\/'), \strlen(self::$basefolder));
 		}
-		self::$realHost=isset($_SERVER['HTTP_X_FORWARDED_HOST'])?$_SERVER['HTTP_X_FORWARDED_HOST']:$_SERVER['HTTP_HOST'];
+		self::$realHost=isset($_SERVER['HTTP_X_FORWARDED_HOST'])?$_SERVER['HTTP_X_FORWARDED_HOST']:@$_SERVER['HTTP_HOST'];
 		if (core::$charset!=core::UTF8)self::$links_string=iconv('utf-8',core::$charset,self::$links_string);
 		self::$links=\explode('/',self::$links_string);
 		self::getConfig();
@@ -819,7 +819,6 @@ echo '>';
 	}
 	/**
 	 * Get addition route vars from current directory
-	 * @deprecated Use getParamsAsArray method
 	 * @return array
 	 */
 	static function getVars(){
@@ -833,7 +832,7 @@ echo '>';
 	 * @deprecated since version 3.4
 	 */
 	static function get_params(){
-		return self::getParams();
+		return self::getParamAsString();
 	}
 	/**
 	 * Get addition route strinng from current directory
@@ -894,7 +893,7 @@ echo '>';
 	 * Show menu array from subpages. Get data from comments in begin of file
 	 * @param string $__DIR__ current __DIR__
 	 * @param array|null $additionMenu array of addition menu
-	 * @param number|null $level Number menu levels as submenu
+	 * @param int|null $level Number menu levels as submenu
 	 * @return array|fileprop[]|boolean Struct of subpages or false if no array
 	 */
 	static function getMenu($__DIR__=\null,$additionMenu=\null,$level=1){

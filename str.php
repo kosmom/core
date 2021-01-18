@@ -29,7 +29,7 @@ class str{
 	 */
 	function substring ($string, $start, $end=\null) {
 		if(empty($end))return $this->substr($string, $start);
-		return self::substr($string, $end - $start);
+		return $this->substr($string, $end - $start);
 	}
 	function charAt($point){
 		return \substr($this->val,$point,1);

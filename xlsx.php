@@ -229,7 +229,7 @@ class xlsx{
 	}
 	private static function checkFile($source){
 		$zip = new \ZipArchive;
-		if ($zip->open($source) !== \TRUE)throw new \Exception('Wrong file extension. You may set only XLSX files');
+		if ($zip->open($source) !== \true)throw new \Exception('Wrong file extension. You may set only XLSX files');
 		return $zip;
 	}
 	private static function getXLSX($source,$sheet=1){

@@ -471,8 +471,8 @@ class translate{
 			}
 		}
 		$out=$str;
-		if ($rus_chars>0 && $weight_eng>=$weight_rus)$out= self::change_keyboard($str,\false,\true);
-		if ($eng_chars>0 && $weight_rus>=$weight_eng)$out= self::change_keyboard($str,\true,\true);
+		if ($rus_chars>0 && $weight_eng>=$weight_rus)$out= self::changeKeyboard($str,\false,\true);
+		if ($eng_chars>0 && $weight_rus>=$weight_eng)$out= self::changeKeyboard($str,\true,\true);
 		if (!$utf8 && core::$charset!=core::UTF8)$out=\iconv(core::UTF8,core::$charset,$out);
 		return $out;
 	}

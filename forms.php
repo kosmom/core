@@ -237,7 +237,7 @@ class forms{
 	/**
 	 * Set form to horizontal view
 	 * @param array $labelClassesArray example: array('sm'=>2,'xs'=>4,'md'=>1,'lg'=>4)
-	 * @param array|number $inputClassesArray example: array('sm'=>2,'xs'=>4,'md'=>1,'lg'=>4) or number max cells in row
+	 * @param array|int $inputClassesArray example: array('sm'=>2,'xs'=>4,'md'=>1,'lg'=>4) or number max cells in row
 	 * @param string $form
 	 */
 	static function formHorizontal($labelClassesArray,$inputClassesArray=12,$form=\null){

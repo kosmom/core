@@ -64,7 +64,7 @@ class curl{
 	static private function addCh($task_id){
 		$ch = \curl_init();
 		$options = array(
-			\CURLOPT_RETURNTRANSFER => \TRUE,
+			\CURLOPT_RETURNTRANSFER => \true,
 			//CURLOPT_HEADERFUNCTION=>'self::done',
 		);
 		//if (isset(self::$tasks[$task_id]['callback']))$options[CURLOPT_HEADERFUNCTION]=self::$tasks[$task_id]['callback'];

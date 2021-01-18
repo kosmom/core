@@ -172,7 +172,7 @@ class db{
 	
 	/**
 	 * Fetch assoc hydrator after db::query
-	 * @param number|boolean $queryNumber
+	 * @param int|boolean $queryNumber
 	 * @return array|false
 	 */
 	static function fa($queryNumber=\false){

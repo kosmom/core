@@ -253,9 +253,9 @@ class input{
 	 */
 	static function findFirstPrepare(&$string){
 		$symbol=\mb_substr($string,0,1,core::$charset);
-		$delimeter=self::findFirst(\mb_substr($string,1,\NULL,core::$charset),$symbol);
+		$delimeter=self::findFirst(\mb_substr($string,1,\null,core::$charset),$symbol);
 		$out=\mb_substr($string,1,$delimeter,core::$charset);
-		$string=\mb_substr($string,$delimeter+2,\NULL,core::$charset);
+		$string=\mb_substr($string,$delimeter+2,\null,core::$charset);
 		return \str_replace($symbol.$symbol,$symbol,$out);
 	}
 	/**

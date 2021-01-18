@@ -121,10 +121,10 @@ class pics{
 	}
 	/**
 	 * crop picture
-	 * @param number $x left position
-	 * @param number $y top position
-	 * @param number|null $width width
-	 * @param number|null $height height
+	 * @param int $x left position
+	 * @param int $y top position
+	 * @param int|null $width width
+	 * @param int|null $height height
 	 * @return pic
 	 */
 	static function crop($x,$y,$width=\null,$height=\null,$pic=\null){

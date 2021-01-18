@@ -522,7 +522,7 @@ class models{
 		return $this;
 	}
 	function on($field,$prop,$value=\null){
-		$this->whereCondition($field,$prop,$value,$alias,\true);
+		$this->whereCondition($field,$prop,$value,\null,\true);
 		return $this;
 	}
 	private function bindFind($field,$value){

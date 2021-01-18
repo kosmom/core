@@ -284,10 +284,10 @@ class pic{
 	}
 	/**
 	 * crop picture
-	 * @param number $x left position
-	 * @param number $y top position
-	 * @param number|null $width width
-	 * @param number|null $height height
+	 * @param int $x left position
+	 * @param int $y top position
+	 * @param int|null $width width
+	 * @param int|null $height height
 	 */
 	function crop($x,$y,$width=\null,$height=\null){
 		if (($x>$this->x) && ($y>$this->y))return $this;
@@ -330,8 +330,8 @@ class pic{
 
 	/**
 	 * crop center frame of picture
-	 * @param number $x width
-	 * @param number $y height
+	 * @param int $x width
+	 * @param int $y height
 	 */
 	function cropCenter($x,$y=\null){
 		if ($y===\null)$y=$x;

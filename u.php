@@ -256,9 +256,9 @@ class u{
 		self::$signs=\abs(\intval($count));
 	}
 	static function zip($name){
-		$tmp=\dirname($_FILES[self::$file]['tmp_name']).'/'.\md5(\uniqid(\rand(),\TRUE));
+		$tmp=\dirname($_FILES[self::$file]['tmp_name']).'/'.\md5(\uniqid(\rand(),\true));
 		$zip = new \ZipArchive();
-		if ($zip->open($tmp, \ZipArchive::CREATE)!==\TRUE)throw new \Exception('Error while creating of zip file');
+		if ($zip->open($tmp, \ZipArchive::CREATE)!==\true)throw new \Exception('Error while creating of zip file');
 		$zip->addFile(self::get_tmp_name(),iconv('windows-1251', 'cp866', self::getname()));
 		$zip->close();
 		$_FILES[self::$file]['tmp_name']=$tmp;

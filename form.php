@@ -119,7 +119,7 @@ class form implements \ArrayAccess{
 	/**
 	 * Get object of subform structure
 	 * @param string $name subform field key name
-	 * @param null|number counter counter of subform
+	 * @param null|int counter counter of subform
 	 */
 	function getSubform($name,$counter=\null){
 		if (!isset($this->fields[$name]))throw new \Exception('form element is miss');
@@ -321,7 +321,7 @@ class form implements \ArrayAccess{
 	/**
 	 * Set form to horizontal render mode
 	 * @param array $labelClassesArray example: array('sm'=>2,'xs'=>4,'md'=>1,'lg'=>4)
-	 * @param array|number $inputClassesArray example: array('sm'=>2,'xs'=>4,'md'=>1,'lg'=>4) or number max cells in row
+	 * @param array|int $inputClassesArray example: array('sm'=>2,'xs'=>4,'md'=>1,'lg'=>4) or number max cells in row
 	 * @param string $form
 	 */
 	function formHorizontal($labelClassesArray,$inputClassesArray=12){
@@ -679,8 +679,8 @@ class form implements \ArrayAccess{
 	}
 	/**
 	 * Render part of form with position between min and max
-	 * @param number $min
-	 * @param number $max
+	 * @param int $min
+	 * @param int $max
 	 * @return string html render part of form
 	 */
 	function renderFieldsByPosition($min=0,$max=999){
