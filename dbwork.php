@@ -404,9 +404,9 @@ class dbwork{
 					}
 					if (!$fieldVal['typerange']){
 						if ($fieldVal['type']=='tinytext')$fieldVal['typerange']=256;
-						if ($fieldVal['type']=='text')$fieldVal['typerange']=65535;
-						if ($fieldVal['type']=='mediumtext')$fieldVal['typerange']=16777215;
-						if ($fieldVal['type']=='longtext')$fieldVal['typerange']=4294967295;
+						elseif ($fieldVal['type']=='text')$fieldVal['typerange']=65535;
+						elseif ($fieldVal['type']=='mediumtext')$fieldVal['typerange']=16777215;
+						elseif ($fieldVal['type']=='longtext')$fieldVal['typerange']=4294967295;
 					}
 					if ((int)$fieldVal['typerange'] < mb_strlen($value,core::$charset) && $fieldVal['type'] != 'CLOB' && $fieldVal['type'] != 'LONG'){
 						$outErrors[]=translate::t('Field {field} have max length <b>{max_length}</b> charecters. You length is <b>{my_length}</b> charecters',array('field'=>$fieldName,'max_length'=>$fieldVal['typerange'],'my_length'=>\mb_strlen($value)));
@@ -432,6 +432,32 @@ class dbwork{
 						$outErrors[]=translate::t('Field {field} have number format. You try set <b>{value}</b> value',array('field'=>$fieldName,'value'=>input::htmlspecialchars($value)));
 						break;
 					}
+					
+					$max = null;
+					if ($fieldVal['type'] == 'tinyint') $max = 127;
+					elseif ($fieldVal['type'] == 'smallint') $max = 32767;
+					elseif ($fieldVal['type'] == 'mediumint') $max = 8388607;
+					elseif ($fieldVal['type'] == 'int') $max = 2147483647;
+					elseif ($fieldVal['type'] == 'bigint') $max = 9223372036854775807;
+
+					if ($max) {
+						if ($fieldVal['unsigned']) {
+							$min = 0;
+							$max = $max * 2 + 1;
+						} else {
+							$min = -$max - 1;
+							$min *= 2;
+						}
+						if ($value < $min) {
+							$outErrors[] = translate::t('Field {field} must be greather {min}. You try set <b>{value}</b> value', array('min' => $min, 'field' => $fieldName, 'value' => input::htmlspecialchars($value)));
+							break;
+						}
+						if ($value > $max) {
+							$outErrors[] = translate::t('Field {field} must be less {max}. You try set <b>{value}</b> value', array('max' => $max, 'field' => $fieldName, 'value' => input::htmlspecialchars($value)));
+							break;
+						}
+					}
+					
 					$strcolname[]=$field;
 					if (\strlen($value) > 3 && \substr($value,0,3) == '{+}'){
 						$strvalues[]=$field.'+:'.$upperField;
