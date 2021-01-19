@@ -346,6 +346,7 @@ class model implements \Iterator{
 		if ($this->isRowMode()){
 			$this->on_before_delete();
 			$sql='DELETE from '.$this->getScemeWithTable().$this->getWhereSqlPart();
+			if ($this->limitCount || $this->limitStart) $sql = db::limit($sql, $this->limitStart, $this->limitCount, $this->getConnections());
 			$rs=db::e($sql,$this->queryBind,$this->getConnections());
 			$this->on_after_delete();
 		}else{ //model
@@ -355,6 +356,7 @@ class model implements \Iterator{
 			}
 
 			$sql='DELETE from '.$this->getScemeWithTable().$this->getWhereSqlPart();
+			if ($this->limitCount || $this->limitStart) $sql = db::limit($sql, $this->limitStart, $this->limitCount, $this->getConnections());
 			$rs=db::e($sql,$this->queryBind,$this->getConnections());
 
 			foreach ($datas as $data){
@@ -379,6 +381,7 @@ class model implements \Iterator{
 			$this->queryBind['cu_'.$field]=$value;
 		}
 		$sql='update '.$this->getScemeWithTable().' set '.implode(',',$set).$this->getWhereSqlPart();
+		if ($this->limitCount || $this->limitStart) $sql = db::limit($sql, $this->limitStart, $this->limitCount, $this->getConnections());
 		return db::e($sql,$this->queryBind,$this->getConnections());
 	}
 	private function sqlExpression($where){
@@ -797,7 +800,7 @@ class model implements \Iterator{
 				$types[]=$fieldName.' "'.$fieldKey.'"';
 			}
 		}
-		$return = ($this->getTableName()?"SELECT t.*".($types?','.\implode(',',$types):'')." from ".$this->getScemeWithTable().' t' : "").$this->getWhereSqlPart();
+		$sql = ($this->getTableName()?"SELECT t.*".($types?','.\implode(',',$types):'')." from ".$this->getScemeWithTable().' t' : "").$this->getWhereSqlPart();
 
 		if ($this->queryOrders){
 			$orders=array();
@@ -808,10 +811,10 @@ class model implements \Iterator{
 					$orders[]=($data['func']?$data['func'].'(':'').$field.($data['func']?')':'').$data['order'];
 				}
 			}
-			$return.=' ORDER BY '.\implode(',',$orders);
+			$sql.=' ORDER BY '.\implode(',',$orders);
 		}
-		if ($this->limitCount || $this->limitStart)$return=db::limit($return,$this->limitStart,$this->limitCount,$this->getConnections());
-		return $return;
+		if ($this->limitCount || $this->limitStart)$sql=db::limit($sql,$this->limitStart,$this->limitCount,$this->getConnections());
+		return $sql;
 	}
 
 	function limit($start,$count=0){

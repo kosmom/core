@@ -68,7 +68,7 @@ class db_mysql {
 		if (\sizeof($bind)==0 or !\is_array($bind))return $sql;
 		$bind2=array();
 		foreach ($bind as $key=>$value){
-			$bind2[':'.$key]=($value==='' || $value===\c\db::NULL || $value===\NULL?'NULL':"'".\mysqli_real_escape_string($this->connect,$value)."'");
+			$bind2[':'.$key]=($value==='' || $value===\c\db::NULL || $value===\null?'NULL':"'".\mysqli_real_escape_string($this->connect,$value)."'");
 		}
 		return \strtr($sql,$bind2);
 	}
@@ -157,7 +157,7 @@ class db_mysql {
 					\c\debug::trace('No results found',\c\error::WARNING);
 				}
 			}else{
-				\c\debug::trace('Affected '.$this->rows().' rows',\false);
+				\c\debug::trace('Affected '.\mysqli_affected_rows($this->connect).' rows', \false);
 			}
 			// explain
 			\c\debug::group('Explain select');
@@ -177,7 +177,8 @@ class db_mysql {
 		return $this->execute_assoc($sql,$bind,'ea1');
 	}
 	function db_limit($sql, $from=0, $count=0){
-		return $sql.' LIMIT '.\intval($from).', '.\intval($count);
+		$count=\intval($count);
+		return $sql.' LIMIT '.\intval($from).($count?', '.$count:'');
 	}
 	function getLenResult(){
 		if (\c\core::$debug)return $this->num_rows;
