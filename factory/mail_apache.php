@@ -3,9 +3,9 @@ namespace c\factory;
 
 class mail_apache{
 	var $From='';
-	var $Reply='';
-	var $Cc='';
-	var $BCc='';
+	var $Reply=array();
+	var $Cc=array();
+	var $BCc=array();
 	var $Host='';
 	var $UserName='';
 	var $Password='';
