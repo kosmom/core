@@ -293,7 +293,7 @@ class model implements \Iterator{
 	 * @param string $order asc/desc
 	 * @param int $prior order priority
 	 * @param string|boolean $func sql function
-	 * @param string|boolead $expression sql raw expression
+	 * @param string|boolean $expression sql raw expression
 	 * @return static
 	 * @throws \Exception
 	 */
@@ -306,7 +306,7 @@ class model implements \Iterator{
 	 * @param string $order asc/desc
 	 * @param int $prior order priority
 	 * @param string|boolean $func sql function
-	 * @param string|boolead $expression sql raw expression
+	 * @param string|boolean $expression sql raw expression
 	 * @return static
 	 * @throws \Exception
 	 */
@@ -321,6 +321,25 @@ class model implements \Iterator{
 	function orderBy($field,$order='',$prior=999,$func=\false,$expression=\false){
 		if (!isset($this))return self::toObject()->order($field,$order,$prior,$func,$expression);
 		return $this->order($field,$order,$prior,$func,$expression);
+	}
+	/**
+	 * Set order to query with expression
+	 * @param string $expression sql raw expression
+	 * @param array $bind
+	 * @param string $order asc/desc
+	 * @param int $prior order priority
+	 * @param string|boolean $func sql function
+	 * @return static
+	 * @throws \Exception
+	 */
+	function orderByRaw($expression,$bind=array(),$order='',$prior=999){
+		if (!isset($this))return self::toObject()->orderByRaw($expression,$bind,$order,$prior);
+		if (!\in_array($order,array('','asc','desc')))throw new \Exception('sort order status wrong');
+		if ($order=='asc')$order='';
+		if ($order=='desc')$order=' desc';
+		$this->queryOrders[$prior][]=array('order'=>$order,'expression'=>$expression);
+		if (\is_array($bind))$this->queryBind+=$bind;
+		return $this;
 	}
 	function delete(){
 		if (!isset($this))return self::toObject()->delete();
