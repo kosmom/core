@@ -13,7 +13,7 @@ class model implements \Iterator{
 	var $primaryField; // primary key PK (or can be set in fields var)
 	var $fields=array();
 
-	var $mode='model'; // or row
+	var $isRowMode=false;
 
 	private $collectionSource;
 	private $storage; // storage before set storage class
@@ -70,9 +70,9 @@ class model implements \Iterator{
 	}
 
 	function isRowMode(){
-		return ($this->mode!='model');
+		return $this->isRowMode;
 	}
-
+	
 	function on_before_create(){
 	}
 	function on_after_create(){
@@ -241,8 +241,8 @@ class model implements \Iterator{
 	function save(){
 		if ($this->readonly)throw new \Exception('Model is readonly');
 		// only for row mode
-		$mode=$this->mode;
-		$this->mode='row';
+		$mode=$this->isRowMode;
+		$this->isRowMode=true;
 		$isCreate=1;
 		try {
 			if ($this->pk_value && ($this->toObject()->findOrFail($this->pk_value)))$isCreate=0;
@@ -256,7 +256,7 @@ class model implements \Iterator{
 			$this->on_before_update($base);
 		}
 		$this->on_before_save($base);
-		$this->mode=$mode;
+		$this->isRowMode=$mode;
 		$base=$this->pk_value?model::getRawData($this,$this->pk_value):[];
 		$result=$values=$this->pk_value?model::getChanged($this,$this->pk_value):$this->storage;
 		foreach ($this->fields as $fieldKey=>$fieldVal){
@@ -268,7 +268,7 @@ class model implements \Iterator{
 	    if (core::$data['db_exception'] && $errors)throw new \Exception($errors[0]);
 //model::setData($this,$this->pk_value,$result);
 		$this->storage=\null;
-		if ($this->mode!='row')$this->find($this->pk_value);
+		if (!$this->isRowMode)$this->find($this->pk_value);
 		if ($isCreate){
 			$this->on_after_create();
 		}else{
@@ -343,13 +343,13 @@ class model implements \Iterator{
 	}
 	function delete(){
 		if (!isset($this))return self::toObject()->delete();
-		if ($this->isRowMode()){
+		if ($this->isRowMode){
 			$this->on_before_delete();
 			$sql='DELETE from '.$this->getScemeWithTable().$this->getWhereSqlPart();
 			if ($this->limitCount || $this->limitStart) $sql = db::limit($sql, $this->limitStart, $this->limitCount, $this->getConnections());
 			$rs=db::e($sql,$this->queryBind,$this->getConnections());
 			$this->on_after_delete();
-		}else{ //model
+		}else{ //model mode
 			$datas=$this->get();
 			foreach ($datas as $data){
 				$data->on_before_delete();
@@ -615,7 +615,7 @@ class model implements \Iterator{
 		// no hash. big data and no storage
 		$rs=db::query($this->getSql(),$this->queryBind,$this->getConnections());
 		while ($row=db::fa($rs)){
-			$name->mode='row';
+			$name->isRowMode=true;
 			$name->fill($row);
 			//$name->pk_value=$pk_value;
 			\call_user_func($callback,$name);
@@ -843,7 +843,7 @@ class model implements \Iterator{
 	 * @throws \Exception
 	 */
 	function replicate(){
-		if (!$this->isRowMode())throw new \Exception('replicate possible only in row mode');
+		if (!$this->isRowMode)throw new \Exception('replicate possible only in row mode');
 		$name=\get_called_class();
 		$name=new $name;
 		$source=$this->toArray();
@@ -878,7 +878,7 @@ class model implements \Iterator{
 		$obj=new $model(\null, $baseCollection);
 		if ($foreign_key===\null)$foreign_key=$obj->getPrimaryField();
 
-		if ($this->isRowMode()){
+		if ($this->isRowMode){
 			$obj->where($foreign_key,$this->$local_key);
 			return $to_one?$obj->first():$obj;
 		}else{
@@ -934,7 +934,7 @@ class model implements \Iterator{
 		$this->where($this->getPrimaryField(),$pk_value);
 		if (!\is_array($pk_value)){
 			$this->pk_value=$pk_value;
-			$this->mode='row';
+			$this->isRowMode=true;
 		}
 		return $this;
 	}
