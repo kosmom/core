@@ -131,10 +131,10 @@ class db_mssql{
 		return $_data;
 	}
 	function prepare($str){
-			$str = \str_replace("'", "''", $str);
-			$str = \str_replace("\\", "\\\\", $str);
-			return $str;
-		}
+		$str = \str_replace("'", "''", $str);
+		$str = \str_replace("\\", "\\\\", $str);
+		return $str;
+	}
 	function execute_assoc($sql,$bind){
 		return $this->execute($sql,$bind,'ea');
 	}

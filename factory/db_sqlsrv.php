@@ -60,12 +60,17 @@ class db_sqlsrv {
 		if (\sizeof($bind)==0 or !\is_array($bind))return $sql;
 		$bind2=array();
 		foreach ($bind as $key=>$value){
-			$bind2[':'.$key]=($value==='' || $value===\c\db::NULL || $value===\null?'NULL':"'".\mysqli_real_escape_string($this->connect,$value)."'");
+			$bind2[':'.$key]=($value==='' || $value===\c\db::NULL || $value===\null?'NULL':"'".$this->prepare($value)."'");
 		}
 		return \strtr($sql,$bind2);
 	}
 	function execute($sql, $bind=array()){
 		return $this->execute_assoc($sql,$bind,'e');
+	}
+	function prepare($str){
+		$str = \str_replace("'", "''", $str);
+		$str = \str_replace("\\", "\\\\", $str);
+		return $str;
 	}
 	function execute_assoc($sql,$bind=array(),$mode='ea'){
 		if (\c\core::$debug){
