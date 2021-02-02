@@ -57,6 +57,7 @@ class request{
 	
 	static function protocol($SERVER=\null){
 		if ($SERVER===\null)$SERVER=$_SERVER;
+		if (self::isCmd($SERVER)) return false;
 		return 'http'.((!empty($SERVER['HTTPS']) && $SERVER['HTTPS'] !== 'off' || $SERVER['SERVER_PORT'] == 443) ? 's' : '').'://';
 	}
 

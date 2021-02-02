@@ -37,7 +37,6 @@ class curl{
 		\curl_setopt($c, \CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17');
 		\curl_setopt($c, \CURLOPT_RETURNTRANSFER, 1);
 		\curl_setopt($c, \CURLOPT_FOLLOWLOCATION, 1);
-		\curl_setopt($c, \CURLOPT_VERBOSE, 1);
 		if ($options)\curl_setopt_array($c, $options);
 		$rs = \curl_exec($c);
 		if ($rs===\false)throw new \Exception(\curl_error($c));
