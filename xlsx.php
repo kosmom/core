@@ -65,10 +65,10 @@ class xlsx{
 			if (!isset($row[$column])) continue;
 			if ($row[$column] === '') continue;
 
-			if (\gettype($row[$column])!='string'){ // && substr($row[$column],0,1) != '0'
-				self::$outbuffer.='<c r="'.self::$colnumber[$number].($rownum + 1).'" t="n"><v>'.$row[$column].'</v></c>';
-			}elseif ($row[$column] instanceof \DateTime){
+			if ($row[$column] instanceof \DateTime){
 				self::$outbuffer.='<c r="'.self::$colnumber[$number].($rownum + 1).'" t="n" s="1"><v>'.(($row[$column]->getTimestamp()+10800)/86400+25569).'</v></c>';
+			}elseif (\gettype($row[$column])!='string'){ // && substr($row[$column],0,1) != '0'
+				self::$outbuffer.='<c r="'.self::$colnumber[$number].($rownum + 1).'" t="n"><v>'.$row[$column].'</v></c>';
 			}else{
 				self::$count++;
 				if (!isset(self::$unic[$row[$column]])) self::$unic[$row[$column]]=++self::$unicCount;
