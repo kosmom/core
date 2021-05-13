@@ -474,11 +474,12 @@ class dbwork{
 					case 'float':
 					case 'double':
 					if ($dbType=='mysql'){
+						$value = \str_replace(',', '.', $value);
 						if ($fieldVal['unsigned'] && $value<0) {
 							$outErrors[] = translate::t('Field {field} must be greather {min}. You try set <b>{value}</b> value', array('min' => 0, 'field' => $fieldName, 'value' => input::htmlspecialchars($value)));
 							break;
 						}
-						$arrays[$upperField]=$value=\str_replace(',','.',$value);
+						$arrays[$upperField]=$value;
 						$is_float=\preg_match('/^-?\d*[\.]?\d+$/',$value);
 					}else{ //oracle
 						$arrays[$upperField]=$value=\str_replace('.',',',$value);
