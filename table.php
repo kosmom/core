@@ -105,7 +105,8 @@ class table{
 		}
 		$out='<table'.($input['classes']?' class="'.(\is_array($input['classes'])?\implode(' ',$input['classes']):$input['classes']).'"':'').$attributes.'>';
 		if ($input['show_header']) $out.=$this->renderHeader($input);
-		return $out.$this->renderBody($input).'</table>';
+		return $out.$this->renderBody($input).$this->renderFooter($input).'</table>';
+		
 	}
 	/**
 	 * @deprecated since version 3.4
@@ -344,6 +345,21 @@ class table{
 		if (!\is_array($this->header[$key]))return $this->cellHtmlConvert($value,$key);
 		if (!isset($this->header[$key]['values']))return $this->cellHtmlConvert($value,$key);
 		return @$this->header[$key]['values'][$value]?$this->header[$key]['values'][$value]:$this->cellHtmlConvert($value,$key);
+	}
+	function renderFooter($input){
+		if (!isset($input['header'])) $input['header']=$this->header;
+		foreach($input['header'] as $key=> $coll){
+			if (isset($coll['footer'])){
+				$found=1;
+				break;
+			}
+		}
+		if (empty($found))return '';
+		$out='<tfoot>';
+		foreach($input['header'] as $key=> $coll){
+			$out.='<td>'.(\is_callable($coll['footer'])?$coll['footer']():$coll['footer']).'</td>';
+		}
+		return $out.'</tfoot>';
 	}
 	/**
 	 * @deprecated since version 3.4
