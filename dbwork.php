@@ -571,7 +571,7 @@ class dbwork{
 				$errors=$outErrors;
 			}
 			if (core::$debug){
-				debug::consoleLog('Have '.sizeof($outErrors).' errors. Break',error::ERROR);
+				debug::consoleLog('Have '.\sizeof($outErrors).' errors. Break',error::ERROR);
 				debug::dir($outErrors);
 				debug::groupEnd();
 			}
@@ -589,6 +589,9 @@ class dbwork{
 			}
 			db::e($sql,$bind,$db);
 			if ($opType == 1){ // insert
+				if ($notIsset===\false && \count($desc['primary_key'])==1 && isset($bind[$desc['primary_key'][0]])){
+					$notIsset=$desc['primary_key'][0];
+			    }
 				if (isset($bind[$notIsset]) && $bind[$notIsset]!==''){
 					$return=$bind[$notIsset];
 				}else{
