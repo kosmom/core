@@ -214,6 +214,9 @@ class dbwork{
 							}elseif (\substr($string,0,18) =='CURRENT_TIMESTAMP '){
 								$data[$column]['default']='CURRENT_TIMESTAMP';
 								$string=\substr($string,18);
+							}elseif (\is_numeric(\explode(" ",$string)[0])){
+								$data[$column]['default']=\explode(" ",$string)[0];
+								$string=\substr($string,\strlen($data[$column]['default'])+1);
 							}
 						}
 	//echo $default.' - ';
