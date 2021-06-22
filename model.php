@@ -443,6 +443,15 @@ class model implements \Iterator{
 		return self::toObject()->whereIn($field,$arrayIn);
 	}
 	/**
+	 * Set filter as "not in" to query
+	 * @param string $field
+	 * @param array $value
+	 * @return static
+	 */
+	static function whereNotInStatic($field,$arrayIn){
+		return self::toObject()->whereNotIn($field,$arrayIn);
+	}
+	/**
 	 * Set filter as In to query
 	 * @param string $field
 	 * @param array $value
@@ -451,6 +460,17 @@ class model implements \Iterator{
 	function whereIn($field,$arrayIn){
 		if (!isset($this))return self::toObject()->whereIn($field,$arrayIn);
 		$this->whereCondition($field,'in',$arrayIn);
+		return $this;
+	}
+	/**
+	 * Set filter as "not in" to query
+	 * @param string $field
+	 * @param array $value
+	 * @return static
+	 */
+	function whereNotIn($field,$arrayIn){
+		if (!isset($this))return self::toObject()->whereIn($field,$arrayIn);
+		$this->whereCondition($field,'not in',$arrayIn);
 		return $this;
 	}
 	/**
