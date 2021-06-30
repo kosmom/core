@@ -79,7 +79,7 @@ if ($this->filelist){
 Content-Type: text/html; charset=UTF-8
 Content-Transfer-Encoding: base64
 
-'.\chunk_split(base64_encode($this->body)).'
+'.\chunk_split(\base64_encode($this->body)).'
 ';
 foreach ($this->filelist as $filename=>$content){
 	$type=\c\filedata::mime_content_type($filename);
@@ -90,15 +90,15 @@ Content-transfer-encoding: base64'.($content['cid']?'
 Content-ID: <'.$content['cid'].'>':'').'
 Content-Disposition: '.($content['cid'] && \substr($type,0,5)=='image'?'inline':'attachment').'; filename*="'.\str_replace("+"," ",\urlencode(\c\input::iconv($filename,\true))).'"
 
-'.\chunk_split(base64_encode($content['name'])).'
+'.\chunk_split(\base64_encode($content['name'])).'
 ';
 }
 $this->body.='--'.$this->separator.'--
 ';
 }else{
-	$header.="Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: base64\r\n";
-   $this->body=\chunk_split(\base64_encode($this->body));
+	$header.="Content-Type: text/html; charset=UTF-8\r\n";
+	$header.="Content-Transfer-Encoding: base64\r\n";
+	$this->body=\chunk_split(\base64_encode($this->body));
 }
 
 $size_msg=\strlen($header."\r\n".$this->body);
@@ -130,7 +130,7 @@ if($code != 250)throw new \Exception('Error DATA2 '.$code);
 			$success=0;
 		}
 
-		if (isset($smtp_conn))fclose($smtp_conn);
+		if (isset($smtp_conn))\fclose($smtp_conn);
 		return $success;
 	}
 
