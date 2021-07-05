@@ -372,16 +372,21 @@ class model implements \Iterator{
 		if (db::rows($this->getConnections()))return $this;
 		return $this->create($paramsUpdate+$paramsCreate);
 	}
-	function update($params){
-		if (!array($params)) throw new \Exception('Params must be array');
+	/**
+	* Update request
+	* @param string|array $params key-value or key string
+	* @param any $value value is params is string
+	*/
+	function update($params,$value=\null){
+		if (is_string($params))$params=array($params=>$value);
 		if (!isset($this))return self::toObject()->update($params);
 		$set=array();
-		foreach ($params as $field=>$value){
+		foreach ($params as $field=>$value) {
 			$set[]=$field.'=:cu_'.$field;
 			$this->queryBind['cu_'.$field]=$value;
 		}
 		$sql='update '.$this->getScemeWithTable().' set '.implode(',',$set).$this->getWhereSqlPart();
-		if ($this->limitCount || $this->limitStart) $sql = db::limit($sql, $this->limitStart, $this->limitCount, $this->getConnections());
+		if ($this->limitCount || $this->limitStart)$sql=db::limit($sql, $this->limitStart,$this->limitCount,$this->getConnections());
 		return db::e($sql,$this->queryBind,$this->getConnections());
 	}
 	private function sqlExpression($where){
@@ -416,8 +421,7 @@ class model implements \Iterator{
 	 * @param array $bind
 	 * @return static
 	 */
-	static function whereRawStatic($sqlPart, $bind = array())
-	{
+	static function whereRawStatic($sqlPart,$bind=array()){
 		return self::toObject()->whereRaw($sqlPart, $bind);
 	}
 	
@@ -430,7 +434,7 @@ class model implements \Iterator{
 	function whereInRaw($sqlPart,$arrayIn){
 		if (!isset($this))return self::toObject()->whereInRaw($sqlPart,$arrayIn);
 		$sqlInPart=db::in($this->queryBind,$arrayIn);
-		$this->queryWhere[]=array('expression'=>\str_replace('(:in)','('.$sqlInPart.')', $sqlPart),'conjunction'=>$this->nextConjunction());
+		$this->queryWhere[]=array('expression'=>\str_replace('(:in)','('.$sqlInPart.')',$sqlPart),'conjunction'=>$this->nextConjunction());
 		return $this;
 	}
 	/**
