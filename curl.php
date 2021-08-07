@@ -21,19 +21,15 @@ class curl{
 		\curl_setopt($c, \CURLOPT_REFERER, $URL);
 		if ($post){
 			\curl_setopt($c, \CURLOPT_POST, 1);
-			if (\is_array($post)){
-				\curl_setopt($c, \CURLOPT_POSTFIELDS, \http_build_query($post));
-			}else{
-				\curl_setopt($c, \CURLOPT_POSTFIELDS, $post);
-			}
+			\curl_setopt($c, \CURLOPT_POSTFIELDS, $post);
 		}
 		if ($cookieFile){
 			\curl_setopt($c, \CURLOPT_COOKIEJAR, $cookieFile);
 			\curl_setopt($c, \CURLOPT_COOKIEFILE, $cookieFile);
 		}
 		\curl_setopt($c, \CURLOPT_SSL_VERIFYPEER, \false);
-		\curl_setopt ($c, \CURLOPT_SSL_VERIFYHOST, 0);
-		\curl_setopt ($c, \CURLOPT_SSL_VERIFYPEER, 0); 
+		\curl_setopt($c, \CURLOPT_SSL_VERIFYHOST, 0);
+		\curl_setopt($c, \CURLOPT_SSL_VERIFYPEER, 0); 
 		\curl_setopt($c, \CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17');
 		\curl_setopt($c, \CURLOPT_RETURNTRANSFER, 1);
 		\curl_setopt($c, \CURLOPT_FOLLOWLOCATION, 1);

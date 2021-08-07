@@ -85,10 +85,18 @@ class telegram{
 	static function sendPhoto($chat_id,$photoLink,$caption=\null){
 		self::check();
 		$data=array('chat_id'=>$chat_id);
+		$options=array();
 		if ($caption)$data['caption']=input::iconv($caption,\true);
-		$data['photo']=$photoLink;
-		return input::iconv(self::request('sendPhoto',$data));
+		if (\is_file($photoLink)){
+		    $data['photo']= \curl_file_create(\realpath($photoLink));
+		    $options[\CURLOPT_HTTPHEADER]=array("Content-Type" => "multipart/form-data");
+		    $options[\CURLOPT_SAFE_UPLOAD]=true;
+		}else{
+		    $data['photo']=$photoLink;
+		}
+		return input::iconv(self::request('sendPhoto',$data,$options));
 	}
+
 	static function sendMessageOrFault($chat_id,$text,$reply_markup=\null){
 		$rs=self::sendMessage($chat_id,$text,$reply_markup);
 		if (!$rs['ok'])throw new \Exception($rs['description'],$rs['error_code']);
@@ -116,21 +124,18 @@ class telegram{
 	static function check(){
 		if (!isset(core::$data['telegram']))throw new \Exception('need set c\\core::$data[\'telegram key\'] from BotFather');
 	}
-	private static function request($api,$post=\null){
+	private static function request($api,$post=\null,$options=array()){
 		if (\is_callable(core::$data['telegram_request'])){
 			$a=core::$data['telegram_request'];
 			return $a($api,$post);
 		}else{
 			$url='https://api.telegram.org/bot'.core::$data['telegram'].'/'.$api;
-			$proxy=array();
 			if (core::$data['telegram_proxy']){
-				$proxy=array(
-					\CURLOPT_PROXY=>core::$data['telegram_proxy']['host'],
-					\CURLOPT_PROXYUSERPWD=>core::$data['telegram_proxy']['auth'],
-					\CURLOPT_PROXYTYPE=>core::$data['telegram_proxy']['type']
-				);
+				$options[\CURLOPT_PROXY]=core::$data['telegram_proxy']['host'];
+				$options[\CURLOPT_PROXYUSERPWD]=core::$data['telegram_proxy']['auth'];
+				$options[\CURLOPT_PROXYTYPE]=core::$data['telegram_proxy']['type'];
 			}
-			$rs=curl::getContent ($url,$post,\null,$proxy);
+			$rs=curl::getContent($url,$post,\null,$options);
 			return \json_decode($rs, \true);
 		}
 	}
