@@ -134,7 +134,7 @@ class dbwork{
 						}
 						continue;
 					}
-					if (substr($string,0,11) == 'UNIQUE KEY '){
+					if (\substr($string,0,11) == 'UNIQUE KEY '){
 						$string=\substr($string,11,-1);
 						$name=input::findFirstPrepare($string);
 						$string=\trim($string,' (');
@@ -170,11 +170,10 @@ class dbwork{
 						continue;
 					  }
 	// parsing to words
-					if (substr($string,0,1) == '`'){
+					if (\substr($string,0,1) == '`'){
 						$column=input::findFirstPrepare($string);
 						$string=\trim($string);
 	//							echo $column.' - ';
-						if (in_array(substr($string,0,4),array('set(','enum'))) continue; // not working with set and enum (at present)
 						$type=\substr($string,0,\strpos($string,' '));
 						$string=\substr($string,\strlen($type));
 						$string=\trim($string);
@@ -184,6 +183,7 @@ class dbwork{
 							$type=\trim($type,')');
 							$data[$column]['typerange']=\substr($type,$typerangepos + 1);
 							$type=\substr($type,0,$typerangepos);
+							if ($type=='set' or $type=='enum')$data[$column]['typerange']=65335;
 						}
 						$data[$column]['type']=$type;
 						if (\substr($string,0,9) == 'unsigned '){
@@ -396,6 +396,8 @@ class dbwork{
 					case 'CLOB':
 					case 'LONG':
 					case 'varchar':
+					case 'enum':
+					case 'set':
 					case 'char':
 					case 'text':
 					case 'mediumtext':
