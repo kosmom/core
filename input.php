@@ -120,7 +120,7 @@ class input{
 //						$var=iconv('utf-8', core::$charset, $var);
 						break;
 					case 'ucfirst':
-						$var=\mb_strtoupper(\mb_substr($var,0,1,core::$charset),core::$charset).\mb_substr($var,1,\mb_strlen($var,core::$charset)-1,core::$charset);
+						$var=self::ucfirst($var);
 						break;
 					case 'ucwords':
 						$var=\mb_convert_case($var, \MB_CASE_TITLE, core::$charset);
@@ -240,6 +240,11 @@ class input{
 		} while ($quote==$finish);
 		return $finish;
 	}
+	
+	static function ucfirst($var){
+		return \mb_strtoupper(\mb_substr($var,0,1,core::$charset),core::$charset).\mb_substr($var,1,\mb_strlen($var,core::$charset)-1,core::$charset);
+	}
+				
 	/**
 	 * @deprecated since version 3.4
 	 */
