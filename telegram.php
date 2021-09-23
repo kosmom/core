@@ -88,13 +88,27 @@ class telegram{
 		$options=array();
 		if ($caption)$data['caption']=input::iconv($caption,\true);
 		if (\is_file($photoLink)){
-		    $data['photo']= \curl_file_create(\realpath($photoLink));
-		    $options[\CURLOPT_HTTPHEADER]=array("Content-Type" => "multipart/form-data");
-		    $options[\CURLOPT_SAFE_UPLOAD]=true;
+			$data['photo']=\curl_file_create(\realpath($photoLink));
+			$options[\CURLOPT_HTTPHEADER]=array("Content-Type"=>"multipart/form-data");
+			$options[\CURLOPT_SAFE_UPLOAD]=true;
 		}else{
-		    $data['photo']=$photoLink;
+			$data['photo']=$photoLink;
 		}
 		return input::iconv(self::request('sendPhoto',$data,$options));
+	}
+	static function sendDocument($chat_id,$link,$caption=\null){
+		self::check();
+		$data=array('chat_id'=>$chat_id);
+		$options=array();
+		if ($caption)$data['caption']=input::iconv($caption,\true);
+		if (\is_file($link)){
+			$data['document']=\curl_file_create(\realpath($link));
+			$options[\CURLOPT_HTTPHEADER]=array("Content-Type"=>"multipart/form-data");
+			$options[\CURLOPT_SAFE_UPLOAD]=true;
+		}else{
+			$data['document']=$link;
+		}
+		return input::iconv(self::request('sendDocument',$data,$options));
 	}
 
 	static function sendMessageOrFault($chat_id,$text,$reply_markup=\null){
@@ -140,18 +154,18 @@ class telegram{
 		}
 	}
 	static function checkAuth($auth_data){
-		$check_hash = $auth_data['hash'];
+		$check_hash=$auth_data['hash'];
 		unset($auth_data['hash']);
-		$data_check_arr = [];
-		foreach ($auth_data as $key => $value) {
-			$data_check_arr[] = $key.'='.$value;
+		$data_check_arr=[];
+		foreach ($auth_data as $key=>$value){
+			$data_check_arr[]=$key.'='.$value;
 		}
 		\sort($data_check_arr);
-		$data_check_string = \implode("\n", $data_check_arr);
-		$secret_key = \hash('sha256', core::$data['telegram'], true);
-		$hash = \hash_hmac('sha256', $data_check_string, $secret_key);
-		if (\strcmp($hash, $check_hash) !== 0)return \false;
-		if ((\time() - $auth_data['auth_date']) > 86400)return \false;
+		$data_check_string=\implode("\n", $data_check_arr);
+		$secret_key=\hash('sha256',core::$data['telegram'],true);
+		$hash=\hash_hmac('sha256',$data_check_string,$secret_key);
+		if (\strcmp($hash,$check_hash)!==0)return \false;
+		if ((\time()-$auth_data['auth_date'])>86400)return \false;
 		return \true;
 	}
 }
