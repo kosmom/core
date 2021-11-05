@@ -570,6 +570,7 @@ class input{
 	static function phoneDigits($number){
 		$n=\trim($number);
 		if (\substr($n,0,2)=='+7')$n='8'.\substr($n,2);
+		if (\substr($n,0,2)=='7(')$n='8('.\substr($n,2);
         return \preg_replace('/[^0-9]/', '', $n);
 	}
 	static function phone($number){
