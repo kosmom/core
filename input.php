@@ -563,8 +563,7 @@ class input{
 		'!'=>' ! ',
 		'”'=>' ',
 		));
-		// todo: regexp
-		while (\strpos($text,'  '))$text=\str_replace('  ',' ',$text);
+		$text=\preg_replace('/\s\s+/', ' ', $text);
 		return \str_replace('""','',$text);
 	}
 	static function phoneDigits($number){
@@ -586,8 +585,7 @@ class input{
 	 * Transform numbers in text field with delimeters "-" and "," in array
 	 */
 	static function numbers($numbers){
-		// todo:: regexp replace mulsisigns like ',,,'
-		$docs=\str_replace(";",'',\str_replace(',,',',',\trim($numbers,", \t\n\r\0\x0B")));
+		$docs=\str_replace(";",'',\preg_replace('/,+/', ',', \trim($numbers,", \t\n\r\0\x0B")));
 		$docarc=\explode(',',$docs);
 		$tirearray=array();
 		foreach ($docarc as $key=>$value){
