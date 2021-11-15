@@ -138,15 +138,23 @@ class model implements \Iterator{
 		}
 		return \true;
 	}
-	function __set($name,$value){
+	function __set($field,$value){
 		$val=$value;
-		if (!empty($this->fields[$name]['readonly']))throw new \Exception('Field is readonly');
-		if (isset($this->fields[$name]['set']))$val=\call_user_func($this->fields[$name]['set'],$val);
+		if (!empty($this->fields[$field]['readonly']))throw new \Exception('Field is readonly');
+		if (isset($this->fields[$field]['set']))$val=\call_user_func($this->fields[$field]['set'],$val);
 		if ($this->pk_value){
-			model::setDataCell($this,$this->pk_value,$name,$val);
+			model::setDataCell($this,$this->pk_value,$field,$val);
 		}else{
-			$this->storage[$name]=$val;
+			$this->storage[$field]=$val;
 		}
+	}
+	/**
+	 * Set model var
+	 * @return model
+	 */
+	function set($field,$value){
+		$this->__set($field,$value);
+		return $this;
 	}
 	function getConnections(){
 		if ($this->connection)return $this->connection;
@@ -170,7 +178,7 @@ class model implements \Iterator{
 	* @throws \Exception
 	*/
 	function fillOrFail($array){
-		if (!\is_array($array))  throw new \Exception('Model fill no array data');
+		if (!\is_array($array)) throw new \Exception('Model fill no array data');
 		foreach($array as $key=> $value)$this->__set($key,$value);
 		return $this;
 	}
@@ -232,9 +240,8 @@ class model implements \Iterator{
 				throw new \Exception($exc);
 			}
 		}
-
-		
 	}
+	
 	function clearCache(){
 		unset(model::$cache[\get_called_class()]);
 	}
