@@ -34,10 +34,10 @@ class model implements \Iterator{
 	}
 
 	private function calculateCache(){
-		return \md5(json_encode(array($this->queryWhere,$this->queryBind,$this->queryOrders)));
+		return \md5(\json_encode(array($this->queryWhere,$this->queryBind,$this->queryOrders)));
 	}
 	private function calculateAggregateCache($aggregate,$parameter){
-		return \md5(json_encode(array($this->queryWhere,$this->queryBind,$aggregate,$parameter)));
+		return \md5(\json_encode(array($this->queryWhere,$this->queryBind,$aggregate,$parameter)));
 	}
 	
 	function withCache($seconds=\null){
@@ -385,7 +385,7 @@ class model implements \Iterator{
 	* @param any $value value is params is string
 	*/
 	function update($params,$value=\null){
-		if (is_string($params))$params=array($params=>$value);
+		if (\is_string($params))$params=array($params=>$value);
 		if (!isset($this))return self::toObject()->update($params);
 		$set=array();
 		foreach ($params as $field=>$value) {
@@ -397,7 +397,7 @@ class model implements \Iterator{
 		return db::e($sql,$this->queryBind,$this->getConnections());
 	}
 	private function sqlExpression($where){
-		if (is_callable($where['field']) && !is_string($where['field'])){
+		if (\is_callable($where['field']) && !\is_string($where['field'])){
 			$model = new model();
 			$model->queryBind=$this->queryBind;
 			$model->connection=$this->connection;
