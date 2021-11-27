@@ -36,8 +36,8 @@ class model implements \Iterator{
 	private function calculateCache(){
 		return \md5(\json_encode(array($this->queryWhere,$this->queryBind,$this->queryOrders)));
 	}
-	private function calculateAggregateCache($aggregate,$parameter){
-		return \md5(\json_encode(array($this->queryWhere,$this->queryBind,$aggregate,$parameter)));
+	private function calculateAggregateCache($aggregate){
+		return \md5(\json_encode(array($this->queryWhere,$this->queryBind,$aggregate)));
 	}
 	
 	function withCache($seconds=\null){
@@ -756,27 +756,27 @@ class model implements \Iterator{
 	
 	function count($distinctField=\null){
 		if (!isset($this))return self::toObject()->count($distinctField);
-		return $this->aggregate('count', $distinctField);
+		return $this->aggregate('count('.($distinctField===\null?'*':$distinctField).')');
 	}
 	function max($field){
 		if (!isset($this))return self::toObject()->max($field);
-		return $this->aggregate('max', $field);
+		return $this->aggregate('max('.$field.')');
 	}
 	function min($field){
 		if (!isset($this))return self::toObject()->min($field);
-		return $this->aggregate('min', $field);
+		return $this->aggregate('min('.$field.')');
 	}
 	function avg($field){
 		if (!isset($this))return self::toObject()->avg($field);
-		return $this->aggregate('avg', $field);
+		return $this->aggregate('avg('.$field.')');
 	}
 	function sum($field){
 		if (!isset($this))return self::toObject()->sum($field);
-		return $this->aggregate('sum', $field);
+		return $this->aggregate('sum('.$field.')');
 	}
-	private function aggregate($aggregate,$parameter){
+	function aggregate($aggregateSql){
 		$this->globalScope();
-		$hash=$this->calculateAggregateCache($aggregate, $parameter);
+		$hash=$this->calculateAggregateCache($aggregateSql);
 		if (isset(model::$cache[\get_called_class()][$hash]))return model::$cache[\get_called_class()][$hash];
 
 		if ($this->collectionSource && isset($this->collectionSource->keys()[1])){
@@ -788,19 +788,19 @@ class model implements \Iterator{
 			\array_shift($this->queryBind);
 			$collection_elements=$this->collectionSource->keys();
 			if (!$this->collectionSource->is_full)$this->where($field, $collection_elements);
-			$sql='SELECT '.$field.' f,'.$aggregate.'('.($parameter===\null?'*':$parameter).') a from '.$this->getScemeWithTable().$this->getWhereSqlPart().' group by '.$field;
+			$sql='SELECT '.$field.' f,'.$aggregateSql.' a from '.$this->getScemeWithTable().$this->getWhereSqlPart().' group by '.$field;
 			$rs=db::ea($sql,$this->queryBind,$this->getConnections());
 			$rs=datawork::group($rs,'f','a');
 			$this->queryWhere=$tempWhere;
 			$this->queryBind=$tempBind;
 			foreach ($collection_elements as $row){
 				$this->queryBind[$field]=$row;
-				model::$cache[\get_called_class()][$this->calculateAggregateCache($aggregate, $parameter)]=isset($rs[$row])?(float)$rs[$row]:\false;
+				model::$cache[\get_called_class()][$this->calculateAggregateCache($aggregateSql)]=isset($rs[$row])?$rs[$row]:\false;
 			}
 			return model::$cache[\get_called_class()][$hash];
 		}
-		$sql='SELECT '.$aggregate.'('.($parameter===\null?'*':$parameter).') from '.$this->getScemeWithTable().' t'.$this->getWhereSqlPart();
-		return model::$cache[\get_called_class()][$hash]=(float)db::ea11($sql,$this->queryBind,$this->getConnections(), $this->cacheTimeout);
+		$sql='SELECT '.$aggregateSql.' from '.$this->getScemeWithTable().' t'.$this->getWhereSqlPart();
+		return model::$cache[\get_called_class()][$hash]=db::ea11($sql,$this->queryBind,$this->getConnections(), $this->cacheTimeout);
 	}
 	function globalScope(){
 	}
