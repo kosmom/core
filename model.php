@@ -778,7 +778,13 @@ class model implements \Iterator{
 		$this->globalScope();
 		$hash=$this->calculateAggregateCache($aggregateSql);
 		if (isset(model::$cache[\get_called_class()][$hash]))return model::$cache[\get_called_class()][$hash];
-
+		if (\is_array($aggregateSql)){
+			foreach ($aggregateSql as $key => $val){
+				$sqlString[]=$val.' '.$key;
+			}
+			$sql='SELECT '.\implode(',',$sqlString).' from '.$this->getScemeWithTable().' t'.$this->getWhereSqlPart();
+			return model::$cache[\get_called_class()][$hash]=db::ea1($sql,$this->queryBind,$this->getConnections(), $this->cacheTimeout);
+		}
 		if ($this->collectionSource && isset($this->collectionSource->keys()[1])){
 			// get whole request with group by expression
 			$tempWhere=$this->queryWhere;
