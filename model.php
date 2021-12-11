@@ -14,6 +14,8 @@ class model implements \Iterator{
 	var $fields=array();
 
 	var $isRowMode=false;
+	var $selectFields=null;
+	var $tableAlias='t';
 
 	private $collectionSource;
 	private $storage; // storage before set storage class
@@ -21,6 +23,8 @@ class model implements \Iterator{
 	private $collectionAutoGet;
 	private $cacheTimeout;
 	var $nextConjunction = 'AND';
+	var $isSubquery=false;
+	var $whereHasMode=false;
 
 	private function nextConjunction(){
 		$return = $this->nextConjunction;
@@ -291,8 +295,8 @@ class model implements \Iterator{
 	private $limitCount=0;
 	private $queryOrders=array();
 	private $queryWhere=array();
-	private $queryBind=array();
-	private $bindCounter=0;
+	var $queryBind=array();
+	var $bindCounter=0;
 
 	/**
 	 * Set order to query
@@ -398,7 +402,8 @@ class model implements \Iterator{
 	}
 	private function sqlExpression($where){
 		if (\is_callable($where['field']) && !\is_string($where['field'])){
-			$model = new model();
+			$model = new $this;
+			$model->isSubquery=true;
 			$model->queryBind=$this->queryBind;
 			$model->connection=$this->connection;
 			$where['field']($model);
@@ -744,14 +749,27 @@ class model implements \Iterator{
 		}
 		return new collection_object(model::$cache[\get_called_class()][$hash],\get_called_class(),$pk,$is_full);
 	}
-
+	function whereHas($relation,$query=null){
+		// where exists
+		$this->whereHasMode=true;
+		$relation=$this->$relation();
+		//var_dump($relation);
+		if ($query){
+			$relation->where($query);
+		}
+		$this->queryBind=$relation->queryBind;
+		$this->bindCounter=$relation->bindCounter;
+		$this->whereHasMode=false;
+		$this->whereRaw('exists('.$relation->getSql().')');
+		return $this;
+	}
 	private function getWhereSqlPart(){
 		if (!$this->queryWhere)return '';
 		$wheres=array();
 		foreach ($this->queryWhere as $key=>$where){
 			$wheres[]=($key?' '.$where['conjunction'].' ':'').$this->sqlExpression($where);
 		}
-		return ($this->getTableName() ? ' WHERE ' : '') .\implode('', $wheres);
+		return ($this->isSubquery?'':' WHERE ').\implode('', $wheres);
 	}
 	
 	function count($distinctField=\null){
@@ -782,7 +800,7 @@ class model implements \Iterator{
 			foreach ($aggregateSql as $key => $val){
 				$sqlString[]=$val.' '.$key;
 			}
-			$sql='SELECT '.\implode(',',$sqlString).' from '.$this->getScemeWithTable().' t'.$this->getWhereSqlPart();
+			$sql='SELECT '.\implode(',',$sqlString).' from '.$this->getScemeWithTable().' '.$this->tableAlias.$this->getWhereSqlPart();
 			return model::$cache[\get_called_class()][$hash]=db::ea1($sql,$this->queryBind,$this->getConnections(), $this->cacheTimeout);
 		}
 		if ($this->collectionSource && isset($this->collectionSource->keys()[1])){
@@ -805,7 +823,7 @@ class model implements \Iterator{
 			}
 			return model::$cache[\get_called_class()][$hash];
 		}
-		$sql='SELECT '.$aggregateSql.' from '.$this->getScemeWithTable().' t'.$this->getWhereSqlPart();
+		$sql='SELECT '.$aggregateSql.' from '.$this->getScemeWithTable().' '.$this->tableAlias.$this->getWhereSqlPart();
 		return model::$cache[\get_called_class()][$hash]=db::ea11($sql,$this->queryBind,$this->getConnections(), $this->cacheTimeout);
 	}
 	function globalScope(){
@@ -825,7 +843,14 @@ class model implements \Iterator{
 	function getSql(){
 		$this->globalScope();
 		$types=array();
-		if ($this->fields)foreach ($this->fields as $fieldKey=>$fieldVal){
+		$selectSql=$this->tableAlias.".*";
+		if ($this->selectFields){
+			$selectSql="";
+			foreach ($this->selectFields as $alias=>$field){
+				$fieldPart[]=$field.($field==$alias?'':(' '.$alias));
+			}
+			$selectSql=\implode(',',$fieldPart);
+		}elseif ($this->fields)foreach ($this->fields as $fieldKey=>$fieldVal){
 			if (@$fieldVal['type']=='date'){
 				$fieldName=isset($fieldVal['dbname'])?$fieldVal['dbname']:$fieldKey;
 				$types[]=db::dateFromDb($fieldName,'Y-m-d',$this->getConnections()).' "'.$fieldKey.'"';
@@ -836,8 +861,9 @@ class model implements \Iterator{
 				$fieldName=isset($fieldVal['dbname'])?$fieldVal['dbname']:$fieldKey;
 				$types[]=$fieldName.' "'.$fieldKey.'"';
 			}
+			if ($types)$selectSql.=','.\implode(',',$types);
 		}
-		$sql = ($this->getTableName()?"SELECT t.*".($types?','.\implode(',',$types):'')." from ".$this->getScemeWithTable().' t' : "").$this->getWhereSqlPart();
+		$sql = (!$this->isSubquery?"SELECT ".$selectSql." from ".$this->getScemeWithTable().' '.$this->tableAlias:"").$this->getWhereSqlPart();
 
 		if ($this->queryOrders){
 			$orders=array();
@@ -899,23 +925,30 @@ class model implements \Iterator{
 	}
 	function relation($model,$foreign_key=\null,$local_key=\null,$is_inner=\false,$to_one=\false){
 		// уххх
-
 		if ($local_key===\null)$local_key=$this->getPrimaryField();
 
-		// get base collection from keys
-		$baseCollection=\null;
-		if ($this->collectionSource){
-			$generator=new $this->collectionSource->generator;
-			if ($generator->getPrimaryField()==$local_key){
-				$baseCollection=$this->collectionSource;
-			}else{
-				$baseCollection=new collection_object(\array_unique($this->collectionSource->pluck($local_key)),$this->collectionSource->generator,$local_key);
+		if (!$this->whereHasMode){
+			// get base collection from keys
+			$baseCollection=\null;
+			if ($this->collectionSource){
+				$generator=new $this->collectionSource->generator;
+				if ($generator->getPrimaryField()==$local_key){
+					$baseCollection=$this->collectionSource;
+				}else{
+					$baseCollection=new collection_object(\array_unique($this->collectionSource->pluck($local_key)),$this->collectionSource->generator,$local_key);
+				}
 			}
 		}
 		$obj=new $model(\null, $baseCollection);
 		if ($foreign_key===\null)$foreign_key=$obj->getPrimaryField();
-
-		if ($this->isRowMode){
+		if ($this->whereHasMode){
+			$obj->select('1');
+			$obj->tableAlias='t'.$this->bindCounter++;
+//			$obj->queryBind=$this->queryBind;
+//			$obj->bindCounter=$this->bindCounter;
+			$obj->whereRaw($obj->tableAlias.'.'.$foreign_key.'='.$this->tableAlias.'.'.$local_key);
+			return $obj;
+		}elseif ($this->isRowMode){
 			$obj->where($foreign_key,$this->$local_key);
 			return $to_one?$obj->first():$obj;
 		}else{
@@ -1061,7 +1094,18 @@ class model implements \Iterator{
 		return $this;
 	}
 
-	
+	function select($fields,$alias=null){
+		if (\is_array($fields)){
+			foreach ($fields as $alias => $field){
+				$this->selectFields[\is_numeric($alias)?$field:$alias]=$field;
+			}
+		}else{
+			$this->selectFields[$fields]=$alias===null?$fields:$alias;
+		}
+	}
+	function unselect($alias){
+		unset($this->selectFields[$alias]);
+	}
 	//function select
 	//function unselect
 	//function toTable
