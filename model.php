@@ -404,7 +404,8 @@ class model implements \Iterator{
 		if (\is_callable($where['field']) && !\is_string($where['field'])){
 			$model = new $this;
 			$model->isSubquery=true;
-			$model->queryBind=$this->queryBind;
+			//$model->tableAlias=$this->tableAlias;
+			//$model->queryBind=$this->queryBind;
 			$model->connection=$this->connection;
 			$where['field']($model);
 			$this->queryBind=$model->queryBind;
@@ -517,6 +518,8 @@ class model implements \Iterator{
 					$this->whereCondition($key, '=', $item);
 				}
 				return $this;
+			}elseif (\is_callable($field)){
+				
 			}elseif ($prop!=='is null' && $prop!=='is not null'){
 				$value=$prop;
 				$prop='=';
@@ -600,6 +603,7 @@ class model implements \Iterator{
 			$prop='=';
 			$value=\current($value);
 		}
+		if (!\is_callable($field)){
 		switch ($prop){
 			case 'filter_diap':
 			case 'filter-diap':
@@ -628,6 +632,7 @@ class model implements \Iterator{
 					$this->queryBind[$bindField]=$value;
 					$value=':'.$bindField;
 				}
+		}
 		}
 		$field_val=$field;
 		$result['prop']=$prop;
@@ -753,14 +758,13 @@ class model implements \Iterator{
 		// where exists
 		$this->whereHasMode=true;
 		$relation=$this->$relation();
-		//var_dump($relation);
 		if ($query){
 			$relation->where($query);
 		}
-		$this->queryBind=$relation->queryBind;
-		$this->bindCounter=$relation->bindCounter;
 		$this->whereHasMode=false;
 		$this->whereRaw('exists('.$relation->getSql().')');
+		$this->queryBind+=$relation->queryBind;
+		$this->bindCounter=$relation->bindCounter;
 		return $this;
 	}
 	private function getWhereSqlPart(){
