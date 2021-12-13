@@ -603,7 +603,7 @@ class model implements \Iterator{
 			$prop='=';
 			$value=\current($value);
 		}
-		if (!\is_callable($field)){
+		if (!\is_callable($field) || \is_string($field)){
 		switch ($prop){
 			case 'filter_diap':
 			case 'filter-diap':
