@@ -164,12 +164,12 @@ class db_mysql {
 			$this->affected_rows=\mysqli_affected_rows($this->connect);
 			$this->num_rows=@\mysqli_num_rows($_result);
 			$this->insert_id=\mysqli_insert_id($this->connect);
-			@\mysqli_free_result($_result);
+			if (!is_bool($_result))\mysqli_free_result($_result);
 			\c\debug::table($this->explain($sql));
 			\c\debug::groupEnd();
 			\c\debug::groupEnd();
-		}else{
-			@\mysqli_free_result($_result);
+		}elseif (!is_bool($_result)){
+			\mysqli_free_result($_result);
 		}
 		return $_data;
 	}
@@ -200,7 +200,7 @@ class db_mysql {
 		if (\function_exists('mysqli_fetch_all')){
 			$_data=\mysqli_fetch_all($_result,\MYSQLI_ASSOC);
 		}else{
-			$data=array();
+			$_data=array();
 			while ($_row = \mysqli_fetch_assoc ($_result))$_data[] = $_row;
 		}
 		\mysqli_free_result($_result);

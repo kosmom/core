@@ -110,11 +110,9 @@ class db_sqlsrv {
 		if (isset($this->result_array[$subsql])){
 			switch ($mode){
 				case 'ea':
-					$data=array();
 					while ($_row = \sqlsrv_fetch_array ($stmt,\SQLSRV_FETCH_ASSOC))$_data[] = $_row;
 					break;
 				case 'e':
-					$data=array();
 					while ($_row = \sqlsrv_fetch_array ($stmt))$_data[] = $_row;
 					break;
 				case 'ea1':
