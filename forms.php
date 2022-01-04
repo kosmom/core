@@ -9,6 +9,7 @@ class forms{
 	const FIELD_KEY='{FIELD_KEY}';
 	static $forms=array();
 	private static $activeForm='default';
+	static $defaultResolver='c\\factory\\form_bootstrap';
 
 	function __construct() {
 		if (core::$debug)debug::trace('Create form with static class forms',error::WARNING);
@@ -48,14 +49,17 @@ class forms{
 
 	static function renderField($name,$item=\null,$form=\null){
 		$form=self::createForm($form);
+		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderField($name,$item);
 	}
 	static function renderFieldsByName($prefix,$form=\null){
 		$form=self::createForm($form);
+		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderFieldsByName($prefix);
 	}
 	static function renderFieldsByPosition($min=0,$max=999,$form=\null){
 		$form=self::createForm($form);
+		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderFieldsByPosition($min,$max);
 	}
 
@@ -85,6 +89,7 @@ class forms{
 	}
 	static function renderFieldLabel($name,$item=\null,$form=\null){
 		$form=self::createForm($form);
+		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderFieldLabel($name,$item);
 	}
 
@@ -96,6 +101,7 @@ class forms{
 	}
 	static function renderFieldField($name,$item=\null,$form=\null){
 		$form=self::createForm($form);
+		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderFieldField($name,$item);
 	}
 
@@ -107,6 +113,7 @@ class forms{
 	}
 	static function renderFieldFormGroupBegin($name,$item=\null,$form=\null){
 		$form=self::createForm($form);
+		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderFieldFormGroupBegin($name,$item);
 	}
 	/**
@@ -117,6 +124,7 @@ class forms{
 	}
 	static function renderFieldFormGroupEnd($name,$item=\null,$form=\null){
 		$form=self::createForm($form);
+		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderFieldFormGroupEnd($name,$item);
 	}
 
@@ -128,6 +136,7 @@ class forms{
 	}
 	static function renderBeginTag($form=\null){
 		$form=self::createForm($form);
+		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderBeginTag();
 	}
 
@@ -344,10 +353,12 @@ class forms{
 	 */
 	static function render($form=\null){
 		$form=self::createForm($form);
+		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->render();
 	}
 	static function renderOtherFields($form=\null){
 		$form=self::createForm($form);
+		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderOtherFields();
 	}
 
