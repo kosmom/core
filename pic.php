@@ -171,17 +171,24 @@ class pic{
 							$this->y=$prop[0];
 					}
 				}
-				break;
+				return;
 			case \IMAGETYPE_GIF:
 				if (!$fromString)$this->image = \imagecreatefromgif($filename);
-				break;
+				return;
 			case \IMAGETYPE_PNG:
 				if (!$fromString)$this->image = \imagecreatefrompng($filename);
-				break;
-			case 18: //IMAGETYPE_WEBP
+				return;
+			case \IMAGETYPE_BMP:
+			    throw new \Exception('test');
+				if (\function_exists('imagecreatefrombmp'))throw new \Exception('BMP format dont supported');
+				if (!$fromString)$this->image = \imagecreatefrombmp($filename);
+				return;
+			case 18: // IMAGETYPE_WEBP
 				if (!$fromString)$this->image = \imagecreatefromwebp($filename);
-				break;
+				return;
+				
 		}
+		if (!$fromString)   throw new \Exception('image not regognized');
 	}
 
 	/**
