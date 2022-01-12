@@ -525,6 +525,6 @@ class pic{
 	}
 
 	function __destruct() {
-		if( $this->image !== \null && \get_resource_type($this->image) === 'gd' )\imagedestroy($this->image);
+		if(\PHP_VERSION_ID < 80000 && $this->image !== \null && \get_resource_type($this->image) === 'gd' )\imagedestroy($this->image);
 	}
 }
