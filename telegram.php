@@ -128,6 +128,9 @@ class telegram{
 	static function getChat($chat_id){
 	    return input::iconv(self::request('getChat',array('chat_id'=>$chat_id)));
 	}
+	static function getChatAdministrators($chat_id){
+	    return input::iconv(self::request('getChatAdministrators',array('chat_id'=>$chat_id)));
+	}
 	/**
 	 * get Webhook data
 	 * @return array
