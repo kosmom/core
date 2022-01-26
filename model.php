@@ -778,7 +778,7 @@ class model implements \Iterator{
 	
 	function count($distinctField=\null){
 		if (!isset($this))return self::toObject()->count($distinctField);
-		return $this->aggregate('count('.($distinctField===\null?'*':$distinctField).')');
+		return (int)$this->aggregate('count('.($distinctField===\null?'*':$distinctField).')');
 	}
 	function max($field){
 		if (!isset($this))return self::toObject()->max($field);
@@ -790,11 +790,11 @@ class model implements \Iterator{
 	}
 	function avg($field){
 		if (!isset($this))return self::toObject()->avg($field);
-		return $this->aggregate('avg('.$field.')');
+		return (float)$this->aggregate('avg('.$field.')');
 	}
 	function sum($field){
 		if (!isset($this))return self::toObject()->sum($field);
-		return $this->aggregate('sum('.$field.')');
+		return (float)$this->aggregate('sum('.$field.')');
 	}
 	function aggregate($aggregateSql){
 		$this->globalScope();
