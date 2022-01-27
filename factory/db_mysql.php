@@ -150,7 +150,7 @@ class db_mysql {
 					}else{
 						\c\debug::group('Query result. Count: '.\sizeof($_data),\c\error::INFO,\sizeof($_data)>10);
 						\c\debug::table(\array_slice($_data,0,30));
-						if (sizeof($_data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
+						if (\sizeof($_data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
 					}
 					\c\debug::groupEnd();
 				}else{
@@ -160,16 +160,18 @@ class db_mysql {
 				\c\debug::trace('Affected '.\mysqli_affected_rows($this->connect).' rows', \false);
 			}
 			// explain
-			\c\debug::group('Explain select');
-			$this->affected_rows=\mysqli_affected_rows($this->connect);
-			$this->num_rows=@\mysqli_num_rows($_result);
-			$this->insert_id=\mysqli_insert_id($this->connect);
-			if (!is_bool($_result))\mysqli_free_result($_result);
-			\c\debug::table($this->explain($sql));
-			\c\debug::groupEnd();
+			if (\substr($sql,0,5)!='show '){
+				\c\debug::group('Explain select');
+				$this->affected_rows=\mysqli_affected_rows($this->connect);
+				$this->num_rows=@\mysqli_num_rows($_result);
+				$this->insert_id=\mysqli_insert_id($this->connect);
+				if (!is_bool($_result))\mysqli_free_result($_result);
+				\c\debug::table($this->explain($sql));
+				\c\debug::groupEnd();
+			}
 			\c\debug::groupEnd();
 		}elseif (!is_bool($_result)){
-			\mysqli_free_result($_result);
+			@\mysqli_free_result($_result);
 		}
 		return $_data;
 	}
@@ -200,7 +202,7 @@ class db_mysql {
 		if (\function_exists('mysqli_fetch_all')){
 			$_data=\mysqli_fetch_all($_result,\MYSQLI_ASSOC);
 		}else{
-			$_data=array();
+			$data=array();
 			while ($_row = \mysqli_fetch_assoc ($_result))$_data[] = $_row;
 		}
 		\mysqli_free_result($_result);
