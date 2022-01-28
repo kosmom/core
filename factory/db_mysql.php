@@ -94,17 +94,17 @@ class db_mysql {
 		}
 		$sql=$this->bind($sql,$bind);
 		//echo $sql;
-		@$_result = \mysqli_query($this->connect,$sql,\MYSQLI_USE_RESULT);
-		if (!$_result && \mysqli_error($this->connect)=='MySQL server has gone away'){
+		@$result = \mysqli_query($this->connect,$sql);
+		if (!$result && \mysqli_error($this->connect)=='MySQL server has gone away'){
 			$this->disconnect();
 			$this->connect();
-			$_result = \mysqli_query($this->connect,$sql,\MYSQLI_USE_RESULT);
+			$result=\mysqli_query($this->connect,$sql);
 		}
 		if (\c\core::$debug){
 			\c\debug::consoleLog('Query execute for '.\round((\microtime(\true)-$start)*1000,2).' ms');
 			$start=\microtime(\true);
 		}
-		if(!$_result){
+		if(!$result){
 			if (\c\core::$debug){
 				\c\debug::trace('Query error: '.\mysqli_error($this->connect),\c\error::ERROR);
 				\c\debug::groupEnd();
@@ -113,28 +113,28 @@ class db_mysql {
 			if (empty(\c\core::$data['db_exception']))return \false;
 			throw new \Exception('SQL execute error: '.\mysqli_error($this->connect));
 		}
-		$subsql=strtolower(substr($sql,0,4));
-		$_data = array();
+		$subsql=\strtolower(substr($sql,0,4));
+		$data=array();
 		if (isset($this->result_array[$subsql])){
 			switch ($mode){
 				case 'ea':
 					if (\function_exists('mysqli_fetch_all')){
-						$_data=\mysqli_fetch_all($_result,\MYSQLI_ASSOC);
+						$data=\mysqli_fetch_all($result,\MYSQLI_ASSOC);
 					}else{
 						$data=array();
-						while ($_row = \mysqli_fetch_assoc($_result))$_data[] = $_row;
+						while ($_row=\mysqli_fetch_assoc($result))$data[]=$_row;
 					}
 					break;
 				case 'e':
 					if (\function_exists('mysqli_fetch_all')){
-						$_data=\mysqli_fetch_all($_result,\MYSQLI_BOTH);
+						$data=\mysqli_fetch_all($result,\MYSQLI_BOTH);
 					}else{
 						$data=array();
-						while ($_row = \mysqli_fetch_array ($_result))$_data[] = $_row;
+						while ($_row=\mysqli_fetch_array($result))$data[]=$_row;
 					}
 					break;
 				case 'ea1':
-					$_data=\mysqli_fetch_assoc($_result);
+					$data=\mysqli_fetch_assoc($result);
 					break;
 			}
 			if (\c\core::$debug)\c\debug::trace('Result fetch get '.\round((\microtime(\true)-$start)*1000,2).' ms');
@@ -143,14 +143,14 @@ class db_mysql {
 			if (!isset($this->result_array[$subsql]) && $mode!='e')\c\debug::trace('ea function used without result. Better use e function',\c\error::WARNING);
 			if (isset($this->result_array[$subsql]) && $mode=='e')\c\debug::trace('e function used with result. Better use ea function',\c\error::WARNING);
 			if (isset($this->result_array[$subsql])){
-				if ($_data){
+				if ($data){
 					if ($mode=='ea1'){
 						\c\debug::group('Query result');
-						\c\debug::dir($_data);
+						\c\debug::dir($data);
 					}else{
-						\c\debug::group('Query result. Count: '.\sizeof($_data),\c\error::INFO,\sizeof($_data)>10);
-						\c\debug::table(\array_slice($_data,0,30));
-						if (\sizeof($_data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
+						\c\debug::group('Query result. Count: '.\sizeof($data),\c\error::INFO,\sizeof($data)>10);
+						\c\debug::table(\array_slice($data,0,30));
+						if (\sizeof($data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
 					}
 					\c\debug::groupEnd();
 				}else{
@@ -163,17 +163,19 @@ class db_mysql {
 			if (\substr($sql,0,5)!='show '){
 				\c\debug::group('Explain select');
 				$this->affected_rows=\mysqli_affected_rows($this->connect);
-				$this->num_rows=@\mysqli_num_rows($_result);
 				$this->insert_id=\mysqli_insert_id($this->connect);
-				if (!is_bool($_result))\mysqli_free_result($_result);
+				if (!\is_bool($result)){
+					$this->num_rows=@\mysqli_num_rows($result);
+					\mysqli_free_result($result);
+				}
 				\c\debug::table($this->explain($sql));
 				\c\debug::groupEnd();
 			}
 			\c\debug::groupEnd();
-		}elseif (!is_bool($_result)){
-			@\mysqli_free_result($_result);
+		}elseif (!is_bool($result)){
+			@\mysqli_free_result($result);
 		}
-		return $_data;
+		return $data;
 	}
 	function ea1($sql,$bind=array()){
 		return $this->execute_assoc($sql,$bind,'ea1');

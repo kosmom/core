@@ -446,7 +446,7 @@ class dbwork{
 					elseif ($fieldVal['type'] == 'bigint') $max = 9223372036854775807;
 
 					if ($max) {
-						if ($fieldVal['unsigned']) {
+						if (@$fieldVal['unsigned']) {
 							$min = 0;
 							$max = $max * 2 + 1;
 						} else {
@@ -588,7 +588,7 @@ class dbwork{
 			}elseif ($opType == 2){ //update
 				$im=array();
 				foreach($strcolname as $key=> $values){
-					$im[]=$strcolname[$key].'='.$strvalues[$key];
+					$im[]=db::wrapper($strcolname[$key],$db).'='.$strvalues[$key];
 				}
 				$sql='UPDATE '.($schema?db::wrapper($schema,$db).'.':'').'`'.$tablename.'` SET '.\implode(',',$im).' WHERE '.\implode(' AND ',$sqlPkVals);
 			}
