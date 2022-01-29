@@ -486,7 +486,7 @@ class model implements \Iterator{
 	 * @return static
 	 */
 	function whereNotIn($field,$arrayIn){
-		if (!isset($this))return self::toObject()->whereIn($field,$arrayIn);
+		if (!isset($this))return self::toObject()->whereNotIn($field,$arrayIn);
 		$this->whereCondition($field,'not in',$arrayIn);
 		return $this;
 	}
@@ -498,7 +498,9 @@ class model implements \Iterator{
 	 * @return static
 	 */
 	static function whereStatic($field,$prop=\null,$value=\null){
-		return self::toObject()->where($field,$prop,$value);
+		if (!isset($this))return self::toObject()->where($field,$prop,$value);
+		$this->where($field,$prop,$value);
+		return $this;
 	}
 	/**
 	 * Set filter to query
