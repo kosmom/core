@@ -66,6 +66,7 @@ class core {
 	 * @param roles
 	 * @param db_autobind
 	 * @param db_exception
+	 * @param db_not_explain
 	 * @param controller_exception_page
 	 * @param table_header_render_callback
 	 * @param render

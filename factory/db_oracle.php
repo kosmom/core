@@ -89,7 +89,7 @@ class db_oracle {
 			}
 			$start=\microtime(\true);
 		}
-		$stmt = oci_parse($this -> connect, $sql);
+		$stmt = \oci_parse($this -> connect, $sql);
 		if(!$stmt){
 			$error=oci_error($this -> connect);
 			if (\c\core::$debug){
@@ -170,17 +170,18 @@ class db_oracle {
 				\c\debug::trace('Affected '.$this->rows().' rows',\false);
 			}
 			// explain
-			\c\debug::group('Explain select');
-			\c\debug::table($this->explain($sql));
-			\c\debug::groupEnd();
+			if (!\c\core::$data['db_not_explain'] && \substr($sql,0,5)!='show '){
+				\c\debug::group('Explain select');
+				\c\debug::table($this->explain($sql));
+				\c\debug::groupEnd();
+			}
 
 			\c\debug::groupEnd();
 		}
 		return $_data;
 	}
 	private function slashes($bind){
-		$bind= \str_replace("'", "''", $bind);
-		return $bind;
+		return \str_replace("'", "''", $bind);
 	}
 	function massExecute($sql,$begin_sql,$repeat_sql,$end_sql, $binds = array()){
 		if (\c\core::$debug){
@@ -197,7 +198,7 @@ class db_oracle {
 			}else{
 				\c\debug::trace('BIND: None',\false);
 			}
-			$start=microtime(\true);
+			$start=\microtime(\true);
 		}
 		$total_sql=array();
 		foreach ($binds as $bind){
@@ -220,7 +221,7 @@ class db_oracle {
 			if (empty(\c\core::$data['db_exception']))return \false;
 			throw new \Exception('SQL parsing error');
 		}
-		$result=oci_execute($stmt,$this->execute_mode);
+		$result=\oci_execute($stmt,$this->execute_mode);
 		if (\c\core::$debug){
 			\c\debug::consoleLog('Query get '.\round((\microtime(\true)-$start)*1000,2).' ms');
 			$start=\microtime(\true);
@@ -332,7 +333,7 @@ class db_oracle {
 	}
 
 	function rows(){
-		if ($this -> m_result) return oci_num_rows($this -> m_result);
+		if ($this -> m_result) return \oci_num_rows($this -> m_result);
 		return 0;
 	}
 
