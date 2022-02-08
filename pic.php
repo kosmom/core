@@ -138,6 +138,12 @@ class pic{
 			$fromString=\false;
 			$prop=\getimagesize($filename);
 		}else{
+			if (\substr($filename, 0,11)=='data:image/'){
+				$matches=array();
+				\preg_match('@data:image/\w+;base64,(.+)@', $filename, $matches);
+				if (empty($matches[1]))throw new \Exception('Image has wrong data', 3);
+				$filename= \base64_decode($matches[1]);
+			}
 			if (\function_exists('getimagesizefromstring')){
 				$prop=\getimagesizefromstring($filename);
 			}else{
@@ -157,18 +163,21 @@ class pic{
 		switch($prop[2]){
 			case \IMAGETYPE_JPEG:
 				if (!$fromString)$this->image=\imagecreatefromjpeg($filename);
-				$exif=\exif_read_data($filename);
-				if ($autorotate && isset($exif['Orientation'])){
-					switch($exif['Orientation']){
-						case 3: $this->image=\imagerotate($this->image,180,0);
-							break;
-						case 6: $this->image=\imagerotate($this->image,270,0);
-							$this->x=$prop[1];
-							$this->y=$prop[0];
-							break;
-						case 8:$this->image=\imagerotate($this->image,90,0);
-							$this->x=$prop[1];
-							$this->y=$prop[0];
+				if ($autorotate){
+					// todo: not work with file as string
+					$exif=\exif_read_data($filename);
+					if (isset($exif['Orientation'])){
+						switch($exif['Orientation']){
+							case 3: $this->image=\imagerotate($this->image,180,0);
+								break;
+							case 6: $this->image=\imagerotate($this->image,270,0);
+								$this->x=$prop[1];
+								$this->y=$prop[0];
+								break;
+							case 8:$this->image=\imagerotate($this->image,90,0);
+								$this->x=$prop[1];
+								$this->y=$prop[0];
+						}
 					}
 				}
 				return;
