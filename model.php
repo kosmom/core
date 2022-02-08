@@ -876,7 +876,7 @@ class model implements \Iterator{
 			\ksort($this->queryOrders);
 			foreach ($this->queryOrders as $prior){
 				foreach ($prior as $data){
-					$field=$data['expression']?$this->sqlExpression($data):$data['field'];
+					$field=$data['expression']?$this->sqlExpression($data):db::wrapper($data['field'],$this->getConnections());
 					$orders[]=($data['func']?$data['func'].'(':'').$field.($data['func']?')':'').$data['order'];
 				}
 			}
