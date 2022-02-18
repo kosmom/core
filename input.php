@@ -58,6 +58,18 @@ class input{
 		return $array;
 	}
 	/**
+	 * Find first index match array by callback or null on fault
+	 * @param array $array
+	 * @param callback $callback
+	 * @return any
+	 */
+	static function array_find_index($array, $callback){
+		foreach ($array as $key => $value){
+			$result=$callback($value, $key);
+			if ($result)return $key;
+		}
+	}
+	/**
 	 * Filter $var with $filters array
 	 * @param string|integer $var input variable
 	 * @param array|string $filters. Possible variants trim,lower,upper,int,float,bool,abs,ucfirst,ucwords,tag,iconv,phone
