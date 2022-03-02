@@ -98,7 +98,7 @@ class core {
 				return \true;
 			}
 		}else{
-			$f=$class.'.php';
+			$f= \str_replace('\\','/',$class).'.php';
 			if (\file_exists(__DIR__.'/models/'.$f)){
 				include __DIR__.'/models/'.$f;
 				return \true;
