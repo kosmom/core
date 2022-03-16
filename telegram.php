@@ -37,27 +37,27 @@ class telegram{
 	}
 	static function sendMessageWithInlineKey($chat_id,$text,$keyboardArray){
 		$resp = array("inline_keyboard" => $keyboardArray);
-		$reply = json_encode($resp);
+		$reply = \json_encode($resp);
 		return self::sendMessage($chat_id, $text, $reply);
 	}
 	static function editMessageWithInlineKey($chat_id,$message_id,$text,$keyboardArray){
 		$resp = array("inline_keyboard" => $keyboardArray);
-		$reply = json_encode($resp);
+		$reply = \json_encode($resp);
 		return self::editMessage($chat_id,$message_id, $text, $reply);
 	}
 	static function sendMessageWithKey($chat_id,$text,$keyboardArray,$resizable=\true,$one_time=\true){
 		$resp = array("keyboard" => $keyboardArray,"resize_keyboard" => $resizable,"one_time_keyboard" => $one_time);
-		$reply = json_encode($resp);
+		$reply = \json_encode($resp);
 		return self::sendMessage($chat_id, $text, $reply);
 	}
 	static function sendMessageWithRemoveKey($chat_id,$text){
 		$resp = array("remove_keyboard" => \true);
-		$reply = json_encode($resp);
+		$reply = \json_encode($resp);
 		return self::sendMessage($chat_id, $text, $reply);
 	}
 	static function sendMessageWithForceReply($chat_id,$text){
 		$resp = array("force_reply" => \true);
-		$reply = json_encode($resp);
+		$reply = \json_encode($resp);
 		return self::sendMessage($chat_id, $text, $reply);
 	}
 	static function sendMessage($chat_id,$text,$reply_markup=\null){
@@ -136,18 +136,18 @@ class telegram{
 	 * @return array
 	 */
 	function getData() {
-		return \json_decode(input::iconv(file_get_contents("php://input")),\true);
+		return \json_decode(input::iconv(\file_get_contents("php://input")),\true);
 	}
 	static function check(){
 		if (!isset(core::$data['telegram']))throw new \Exception('need set c\\core::$data[\'telegram key\'] from BotFather');
 	}
 	private static function request($api,$post=\null,$options=array()){
-		if (\is_callable(core::$data['telegram_request'])){
+		if (\is_callable(@core::$data['telegram_request'])){
 			$a=core::$data['telegram_request'];
 			return $a($api,$post);
 		}else{
 			$url='https://api.telegram.org/bot'.core::$data['telegram'].'/'.$api;
-			if (core::$data['telegram_proxy']){
+			if (@core::$data['telegram_proxy']){
 				$options[\CURLOPT_PROXY]=core::$data['telegram_proxy']['host'];
 				$options[\CURLOPT_PROXYUSERPWD]=core::$data['telegram_proxy']['auth'];
 				$options[\CURLOPT_PROXYTYPE]=core::$data['telegram_proxy']['type'];
