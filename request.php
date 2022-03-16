@@ -82,7 +82,7 @@ class request{
 		if (isset($_FILES[$parameter]))return $_FILES[$parameter];
 		return $default;
 	}
-	static function fileCopy($parameter='CoreEachFile',$destination){
+	static function fileCopy($parameter,$destination){
 		@\mkdir(\dirname($destination),0777,\true);
 		return \move_uploaded_file(self::fileTmpName($parameter),$destination);
 	}
