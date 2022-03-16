@@ -18,6 +18,7 @@ class pic{
 	 */
 	static function memoryTest($x,$y){
 		$val=\trim(\ini_get('memory_limit'));
+		if ($val==="-1")return true;
 		$last = $val[\strlen($val)-1];
 		switch($last){
 		case 'G':
@@ -50,13 +51,13 @@ class pic{
 	 */
 	static function isPic($filename){
 		if (!\file_exists($filename)){
-			$prop=getimagesizefromstring($filename);
+			$prop=\getimagesizefromstring($filename);
 			if (!$prop){
 				if (core::$debug)debug::consoleLog('Filename '.$filename.' not found',error::WARNING);
 				return \false;
 			}
 		}else{
-			$prop=getimagesize($filename);
+			$prop=\getimagesize($filename);
 		}
 		if (empty($prop[2]))return \false;
 		if (!\in_array($prop[2],array(18, \IMAGETYPE_JPEG,\IMAGETYPE_GIF,\IMAGETYPE_PNG,\IMAGETYPE_BMP)))return \false;
