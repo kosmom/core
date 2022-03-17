@@ -43,27 +43,26 @@ class mail_smtp{
 	}
 
 	function Send(){
-		try {
-			$smtp_conn = \fsockopen($this->Host,$this->port,$errno,$errstr,$this->timeout);
-			if (!$smtp_conn)throw new \Exception('Error connection to SMTP server: '.$errno.': '.$errstr);
-			$this->getData($smtp_conn);
-			\fputs($smtp_conn,"EHLO ".$this->UserName."\r\n");
+		$smtp_conn = \fsockopen($this->Host,$this->port,$errno,$errstr,$this->timeout);
+		if (!$smtp_conn)throw new \Exception('Error connection to SMTP server: '.$errno.': '.$errstr);
+		$this->getData($smtp_conn);
+		\fputs($smtp_conn,"EHLO ".$this->UserName."\r\n");
+		$code=\substr($this->getData($smtp_conn),0,3);
+		//if($code != 250)throw new \Exception('Error EHLO');
+		if ($this->auth && $this->Password){
+			\fputs($smtp_conn,"AUTH LOGIN\r\n");
 			$code=\substr($this->getData($smtp_conn),0,3);
-			//if($code != 250)throw new \Exception('Error EHLO');
-			if ($this->auth && $this->Password){
-				\fputs($smtp_conn,"AUTH LOGIN\r\n");
-				$code=\substr($this->getData($smtp_conn),0,3);
-				if($code != 334)throw new \Exception('Error Auth');
+			if($code != 334)throw new \Exception('Error Auth');
 
-				\fputs($smtp_conn,\base64_encode($this->UserName)."\r\n");
-				$code=\substr($this->getData($smtp_conn),0,3);
-				if($code != 334)throw new \Exception('Error Login');
+			\fputs($smtp_conn,\base64_encode($this->UserName)."\r\n");
+			$code=\substr($this->getData($smtp_conn),0,3);
+			if($code != 334)throw new \Exception('Error Login');
 
-				\fputs($smtp_conn,\base64_encode($this->Password)."\r\n");
-				$code=\substr($this->getData($smtp_conn),0,3);
-				if($code != 235)throw new \Exception('Error Password');
-			}
-			$header="Date: ".\date("D, j M Y G:i:s")." +0300\r\n";
+			\fputs($smtp_conn,\base64_encode($this->Password)."\r\n");
+			$code=\substr($this->getData($smtp_conn),0,3);
+			if($code != 235)throw new \Exception('Error Password');
+		}
+		$header="Date: ".\date("D, j M Y G:i:s")." +0300\r\n";
 $header.="From: =?UTF-8?B?".\base64_encode(\c\input::iconv($this->UserName,\true))."?= <".$this->From.">\r\n";
 $header.="X-Mailer: PHP Core mail\r\n";
 if ($this->replylist)$header.="Reply-To: ".\implode(',',$this->replylist)."\r\n";
@@ -123,15 +122,8 @@ if($code != 250)throw new \Exception('Error DATA2 '.$code);
 
 \fputs($smtp_conn,"QUIT\r\n");
 
-		$success=1;
-		} catch (\Exception $e) {
-			\fclose($smtp_conn);
-			\c\error::add('SMTP Error:'.$e->getMessage());
-			$success=0;
-		}
-
 		if (isset($smtp_conn))\fclose($smtp_conn);
-		return $success;
+		return true;
 	}
 
 	private function getData($smtp_conn){

@@ -129,7 +129,7 @@ class mail{
 		if (empty(self::$mails[$db]))self::connect($db);
 
 		if (self::$testAdress){
-			if (\is_array($adress))$adress=implode(';',$adress);
+			if (\is_array($adress))$adress=\implode(';',$adress);
 			$subject=$subject."(".$adress.")";
 			$adress=self::$testAdress;
 		}
@@ -149,14 +149,17 @@ class mail{
 		}
 		self::$mails[$db]->MsgHTML($text);
 		self::$mails[$db]->Subject=$subject;
-
-		if(!self::$mails[$db]->Send()){
-			error::add('Error with send message: ' . self::$mails[$db]->ErrorInfo,error::WARNING);
-		}elseif (core::$debug){
-			debug::trace('Message successfull send: '.$subject.' - '.\implode(';',$adress),error::SUCCESS);
+		try {
+			self::$mails[$db]->Send();
+			if (core::$debug){
+				debug::trace('Message successfull send: '.$subject.' - '.\implode(';',$adress),error::SUCCESS);
+			}
+		} catch (\Exception $exc) {
+			throw new \Exception($exc->getMessage());
+		} finally {
+			self::$mails[$db]->ClearAddresses();
+			self::$mails[$db]->ClearReplyTos();
 		}
-		self::$mails[$db]->ClearAddresses();
-		self::$mails[$db]->ClearReplyTos();
 	}
 	static function send($text,$adress=array(),$subject='System mail',$db=''){
 		try{
