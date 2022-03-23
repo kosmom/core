@@ -798,13 +798,18 @@ class model implements \Iterator{
 		if (!isset($this))return self::toObject()->sum($field);
 		return (float)$this->aggregate('sum('.$field.')');
 	}
-	function aggregate($aggregateSql){
+	function aggregate($aggregateSql,$groupFields=null){
 		$this->globalScope();
 		$hash=$this->calculateAggregateCache($aggregateSql);
 		if (isset(model::$cache[\get_called_class()][$hash]))return model::$cache[\get_called_class()][$hash];
 		if (\is_array($aggregateSql)){
 			foreach ($aggregateSql as $key => $val){
 				$sqlString[]=$val.' '.$key;
+			}
+			if ($groupFields){
+				if (\is_string($groupFields))$groupFields=array($groupFields);
+				$sql='SELECT '.\implode(',',$sqlString).' from '.$this->getScemeWithTable().' '.$this->tableAlias.$this->getWhereSqlPart().' group by '.\implode(',',$groupFields);
+				return db::ea($sql,$this->queryBind,$this->getConnections(), $this->cacheTimeout);
 			}
 			$sql='SELECT '.\implode(',',$sqlString).' from '.$this->getScemeWithTable().' '.$this->tableAlias.$this->getWhereSqlPart();
 			return model::$cache[\get_called_class()][$hash]=db::ea1($sql,$this->queryBind,$this->getConnections(), $this->cacheTimeout);
