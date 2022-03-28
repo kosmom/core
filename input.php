@@ -775,6 +775,14 @@ class input{
 	static function js_var_array($value){
 		return self::jsVarArray($value);
 	}
+	static function array_is_list($array){
+		if (\function_exists("array_is_list"))return \array_is_list($array);
+		$i=0;
+        foreach ($array as $k=>$v){
+            if ($k!==$i++)return \false;
+        }
+        return \true;
+	}
 	static function jsVarArray($value){
 		switch(\gettype($value)){
 			case 'string':return "'".self::jsPrepare($value)."'";
@@ -782,14 +790,7 @@ class input{
 			case 'array':
 			case 'object':
 				$out=array();
-				$is_array=\true;
-				$last_key=0;
-				foreach ($value as $key=>$item){
-					if ($is_array && $key!==$last_key++){
-						$is_array=\false;
-						break;
-					}
-				}
+				$is_array=self::array_is_list($value);
 				if ($is_array){
 					foreach ($value as $key=>$item){
 						$out[]=self::jsVarArray($item);

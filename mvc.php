@@ -643,7 +643,7 @@ class mvc{
 			if (isset(self::$js_dict[$js]['requires'])){
 				if (!\is_array(self::$js_dict[$js]['requires']))self::$js_dict[$js]['requires']=array(self::$js_dict[$js]['requires']);
 				foreach (self::$js_dict[$js]['requires'] as $item){
-					$isComponent?self::addComponent($item):self::addJs($item);;
+					$isComponent?self::addComponent($item):self::addJs($item);
 				}
 			}
 			self::$js[]=array($jslink.(isset(self::$js_dict[$js]['version'])?'?v='.self::$js_dict[$js]['version']:''),self::$jsHard,2,isset(self::$js_dict[$js]['if'])?self::$js_dict[$js]['if']:\false);
