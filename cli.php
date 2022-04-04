@@ -81,6 +81,6 @@ class cli{
 	}
 	static function argv() {
 		global $argv;
-		return \array_splice($argv, 2);
+		return \array_slice($argv, 2);
 	}
 }
