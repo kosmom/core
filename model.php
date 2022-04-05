@@ -808,7 +808,7 @@ class model implements \Iterator{
 			}
 			if ($groupFields){
 				if (\is_string($groupFields))$groupFields=array($groupFields);
-				$sql='SELECT '.\implode(',',$sqlString).' from '.$this->getScemeWithTable().' '.$this->tableAlias.$this->getWhereSqlPart().' group by '.\implode(',',$groupFields);
+				$sql='SELECT '.\implode(',',$sqlString).' from '.$this->getScemeWithTable().' '.$this->tableAlias.$this->getWhereSqlPart().' group by '.\implode(',',$groupFields).$this->getOrderSqlPart();
 				return db::ea($sql,$this->queryBind,$this->getConnections(), $this->cacheTimeout);
 			}
 			$sql='SELECT '.\implode(',',$sqlString).' from '.$this->getScemeWithTable().' '.$this->tableAlias.$this->getWhereSqlPart();
@@ -874,23 +874,24 @@ class model implements \Iterator{
 			}
 			if ($types)$selectSql.=','.\implode(',',$types);
 		}
-		$sql = (!$this->isSubquery?"SELECT ".$selectSql." from ".$this->getScemeWithTable().' '.$this->tableAlias:"").$this->getWhereSqlPart();
-
-		if ($this->queryOrders){
-			$orders=array();
-			\ksort($this->queryOrders);
-			foreach ($this->queryOrders as $prior){
-				foreach ($prior as $data){
-					$field=$data['expression']?$this->sqlExpression($data):db::wrapper($data['field'],$this->getConnections());
-					$orders[]=($data['func']?$data['func'].'(':'').$field.($data['func']?')':'').$data['order'];
-				}
-			}
-			$sql.=' ORDER BY '.\implode(',',$orders);
-		}
+		$sql = (!$this->isSubquery?"SELECT ".$selectSql." from ".$this->getScemeWithTable().' '.$this->tableAlias:"").$this->getWhereSqlPart().$this->getOrderSqlPart();
 		if ($this->limitCount || $this->limitStart)$sql=db::limit($sql,$this->limitStart,$this->limitCount,$this->getConnections());
 		return $sql;
 	}
 
+	private function getOrderSqlPart(){
+		if (!$this->queryOrders)return '';
+		$orders=array();
+		\ksort($this->queryOrders);
+		foreach ($this->queryOrders as $prior){
+			foreach ($prior as $data){
+				$field=$data['expression']?$this->sqlExpression($data):db::wrapper($data['field'],$this->getConnections());
+				$orders[]=($data['func']?$data['func'].'(':'').$field.($data['func']?')':'').$data['order'];
+			}
+		}
+		return ' ORDER BY '.\implode(',',$orders);
+	}
+	
 	function limit($start,$count=0){
 		if (!isset($this))return self::toObject()->limit($start,$count);
 		$this->limitStart=$start;
