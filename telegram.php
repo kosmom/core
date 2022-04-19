@@ -74,9 +74,9 @@ class telegram{
 		if ($reply_markup)$params['reply_markup']=$reply_markup;
 		return self::request('editMessageText',$params);
 	}
-	static function getUpdates(){
+	static function getUpdates($options=array()){
 		self::check();
-		return input::iconv(self::request('getUpdates'));
+		return input::iconv(self::request('getUpdates',$options));
 	}
 	static function sendChatAction($chat_id,$action){
 		self::check();
