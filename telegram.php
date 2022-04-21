@@ -74,6 +74,22 @@ class telegram{
 		if ($reply_markup)$params['reply_markup']=$reply_markup;
 		return self::request('editMessageText',$params);
 	}
+	static function editDocument($chat_id,$message_id,$link,$caption=\null,$reply_markup=\null){
+		self::check();
+		$params=array('chat_id'=>$chat_id,'message_id'=>$message_id);
+		if (\is_file($link)){
+			$media['media']=\curl_file_create(\realpath($link));
+			$options[\CURLOPT_HTTPHEADER]=array("Content-Type"=>"multipart/form-data");
+			$options[\CURLOPT_SAFE_UPLOAD]=true;
+		}else{
+			$media['media']=$link;
+		}
+		$media['type']='document';
+		if ($caption)$media['caption']=$caption;
+		if ($reply_markup)$params['reply_markup']=$reply_markup;
+		$params['media']= input::json_encode($media);
+		return self::request('editMessageMedia',$params);
+	}
 	static function getUpdates($options=array()){
 		self::check();
 		return input::iconv(self::request('getUpdates',$options));
@@ -110,11 +126,13 @@ class telegram{
 		}
 		return input::iconv(self::request('sendDocument',$data,$options));
 	}
-
-	static function sendMessageOrFault($chat_id,$text,$reply_markup=\null){
-		$rs=self::sendMessage($chat_id,$text,$reply_markup);
+	static function checkResponse($rs){
 		if (!$rs['ok'])throw new \Exception($rs['description'],$rs['error_code']);
 		return $rs;
+	}
+	static function sendMessageOrFault($chat_id,$text,$reply_markup=\null){
+		$rs=self::sendMessage($chat_id,$text,$reply_markup);
+		return self::checkResponse($rs);
 	}
 	static function setWebhook($url,$certificateKey=''){
 		self::check();
