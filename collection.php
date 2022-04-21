@@ -32,6 +32,12 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	function pluck($column){
 		return datawork::group($this->toArray(), '[]',$column);
 	}
+	function map($callback){
+		return \array_map($callback, $this->toArray());
+	}
+	function implode($callback, $glue=', '){
+		return \implode($glue, $this->map($callback));
+	}
 	
 	function offsetUnset($offset){
 		unset($this->_c[$offset]);
