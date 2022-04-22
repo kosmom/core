@@ -48,7 +48,7 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	}
 	
 	function exists(){
-		return $this->count()>0;
+		return $this->valid();
 	}
 
 	/**
