@@ -246,7 +246,7 @@ class model implements \Iterator{
 		}
 	}
 	
-	function clearCache(){
+	static function clearCache(){
 		unset(model::$cache[\get_called_class()]);
 	}
 	function save(){
@@ -938,10 +938,10 @@ class model implements \Iterator{
 	function relation($model,$foreign_key=\null,$local_key=\null,$is_inner=\false,$to_one=\false){
 		// уххх
 		if ($local_key===\null)$local_key=$this->getPrimaryField();
-
+		
+		$baseCollection=\null;
 		if (!$this->whereHasMode){
 			// get base collection from keys
-			$baseCollection=\null;
 			if ($this->collectionSource){
 				$generator=new $this->collectionSource->generator;
 				if ($generator->getPrimaryField()==$local_key){
