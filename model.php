@@ -410,7 +410,7 @@ class model implements \Iterator{
 			$where['field']($model);
 			$this->queryBind=$model->queryBind;
 			$sql=$model->getSql();
-			return $sql?'('.$sql.')':'';
+			return $sql?'('.$sql.')':'1';
 		}
 		if (@$where['expression'] && $where['expression']!==\true)return $where['expression'];
 		return db::wrapper($where['field'],$this->getConnections()).' '.$where['prop'].' '.$where['value'];
@@ -619,7 +619,7 @@ class model implements \Iterator{
 			break;
 			case 'not in':
 			if (!\is_array($value))$value=array($value);
-			if (empty($value))return $this->queryWhere[]=array('expression'=>'1=1','conjunction'=>$this->nextConjunction());
+			if (empty($value))return $this->queryWhere[]=array('expression'=>'1','conjunction'=>$this->nextConjunction());
 			$value='('.db::in($this->queryBind,$value,$field).')';
 			break;
 			case 'is null':
