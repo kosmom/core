@@ -338,7 +338,7 @@ class table{
 		return $attributes;
 	}
 	private function cellHtmlConvert($value,$key){
-		if (@$this->header[$key]['is_html'])return $value;
+		if (isset($this->header[$key]['is_html']) && $this->header[$key]['is_html'])return $value;
 		return input::htmlspecialchars($value);
 	}
 	private function drawCellValue($value,$key){
