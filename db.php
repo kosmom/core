@@ -195,7 +195,7 @@ class db{
 	 * @return array
 	 * @example $sql="update table set link=link where 1=1 returning link into :test";<br>$bind=array('test'=>'max column length');<br>c\db::e_ref($sql,$bind);
 	 */
-	static function eRef($sql=\null,&$bind,$db=\null){
+	static function eRef($sql,&$bind,$db=\null){
 		if ($sql==\null)global $sql;
 		$db=self::dbPrepare($db);
 		return self::dbOutput(self::$dbs[core::$env][$db]->execute_ref($sql,$bind));
