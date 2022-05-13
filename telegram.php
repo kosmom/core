@@ -76,9 +76,11 @@ class telegram{
 	}
 	static function editDocument($chat_id,$message_id,$link,$caption=\null,$reply_markup=\null){
 		self::check();
-		$params=array('chat_id'=>$chat_id,'message_id'=>$message_id);
+		$data=array('chat_id'=>$chat_id,'message_id'=>$message_id);
+		$options=array();
 		if (\is_file($link)){
-			$media['media']=\curl_file_create(\realpath($link));
+			$data['document']=\curl_file_create(\realpath($link));
+			$media['media']='attach://document';
 			$options[\CURLOPT_HTTPHEADER]=array("Content-Type"=>"multipart/form-data");
 			$options[\CURLOPT_SAFE_UPLOAD]=true;
 		}else{
@@ -86,9 +88,9 @@ class telegram{
 		}
 		$media['type']='document';
 		if ($caption)$media['caption']=$caption;
-		if ($reply_markup)$params['reply_markup']=$reply_markup;
-		$params['media']= input::json_encode($media);
-		return self::request('editMessageMedia',$params);
+		if ($reply_markup)$data['reply_markup']=$reply_markup;
+		$data['media']=input::json_encode($media);
+		return input::iconv(self::request('editMessageMedia',$data,$options));
 	}
 	static function getUpdates($options=array()){
 		self::check();
