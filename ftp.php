@@ -10,47 +10,57 @@ class ftp{
 	/**
 	* Recursive remove directory
 	* @param string $dir
-	* @return bool
+	* @param object $connId ftp connect handle
+	* @return int removed files count
 	*/
-	static function rmdir($dir,$conn_id){
-		$ar_files = \ftp_nlist($conn_id, $dir);
+	static function rmdir($dir,$connId){
+		$files=0;
+		$ar_files = \ftp_nlist($connId, $dir);
 		if (\is_array($ar_files)){
 			foreach ($ar_files as $file){
 				$st_file = \basename($file);
 				if($st_file == '.' || $st_file == '..') continue;
-				if (\ftp_size($conn_id, $dir.'/'.$st_file) == -1){
-					self::rmdir( $dir.'/'.$st_file,$conn_id);
+				if (\ftp_size($connId, $dir.'/'.$st_file) == -1){
+					$files+=self::rmdir( $dir.'/'.$st_file,$connId);
 				} else {
-					\ftp_delete($conn_id,  $dir.'/'.$st_file);
+					\ftp_delete($connId, $dir.'/'.$st_file);
+					$files++;
 				}
 			}
 		}
-		\ftp_rmdir($conn_id, $dir);
+		\ftp_rmdir($connId, $dir);
+		return $files;
 	}
 	/**
 	* Same as rmdir
 	* @param string $dir
-	* @return bool
+	* @param object $connId ftp connect handle
+	* @return int removed files count
 	*/
-	static function remove($dir,$conn_id){
-	  return self::rmdir($dir,$conn_id);
+	static function remove($dir,$connId){
+	  return self::rmdir($dir,$connId);
 	}
 	/**
 	* Empty directory
 	* @param string $dir
+	* @param object $connId ftp connect handle
+	* @return int removed files count
 	*/
-	static function empt($dir,$conn_id){
-	  $ar_files = \ftp_nlist($conn_id, $dir);
+	static function empt($dir,$connId){
+		$files=0;
+		$ar_files = \ftp_nlist($connId, $dir);
 		if (!\is_array($ar_files))return;
 		foreach ($ar_files as $file){
 			$st_file = \basename($file);
 			if($st_file == '.' || $st_file == '..') continue;
-			if (\ftp_size($conn_id, $dir.'/'.$st_file) == -1){
-				self::rmdir( $dir.'/'.$st_file,$conn_id);
+			if (\ftp_size($connId, $dir.'/'.$st_file) == -1){
+				$files+=self::rmdir( $dir.'/'.$st_file,$connId);
 			} else {
-				\ftp_delete($conn_id,  $dir.'/'.$st_file);
+				\ftp_delete($connId, $dir.'/'.$st_file);
+				$files++;
 			}
 		}
+		return $files;
 	}
 	/**
 	* @deprecated since version 3.4
