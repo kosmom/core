@@ -16,7 +16,11 @@ class telegram{
 	const SEND_CHAT_ACTION_FIND_LOCATION='find_location';
 
 	const EMOJI_THUMBS_UP="\xF0\x9F\x91\x8D";
-	const EMOJI_FIREWORKS="\xF0\x9F\x8E\x86"; 
+	const EMOJI_FIREWORKS="\xF0\x9F\x8E\x86";
+	const EMOJI_WARNING="\u{26a0}";
+	const EMOJI_BACK="\u{1f519}";
+	const EMOJI_NO_ENTRY_SIGN="\u{1f6ab}";
+	const EMOJI_WHITE_CHECK_MARK="\u{2705}";
 	
 	const PARSE_MODE_MARKDOWN='Markdown';
 	const PARSE_MODE_MARKDOWN2='MarkdownV2';
