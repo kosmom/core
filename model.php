@@ -277,7 +277,7 @@ class model implements \Iterator{
 		$errors=array();
 		if ($result)$this->pk_value=dbwork::setData($this->getTableName(),$result,$this->sequence,$this->getConnectionsAlter(),$errors,$this->getSchemeName());
 	    if (core::$data['db_exception'] && $errors)throw new \Exception($errors[0]);
-//model::setData($this,$this->pk_value,$result);
+		
 		$this->storage=\null;
 		if (!$this->isRowMode)$this->find($this->pk_value);
 		if ($isCreate){
@@ -286,6 +286,7 @@ class model implements \Iterator{
 			$this->on_after_update($base);
 		}
 		$this->on_after_save($base);
+		model::setData($this,$this->pk_value,$result+$base);
 		return $this;
 	}
 

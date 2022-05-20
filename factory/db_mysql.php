@@ -160,7 +160,7 @@ class db_mysql {
 				\c\debug::trace('Affected '.\mysqli_affected_rows($this->connect).' rows', \false);
 			}
 			// explain
-			if (!\c\core::$data['db_not_explain'] && \substr($sql,0,5)!='show '){
+			if (!@\c\core::$data['db_not_explain'] && \substr($sql,0,5)!='show '){
 				\c\debug::group('Explain select');
 				$this->affected_rows=\mysqli_affected_rows($this->connect);
 				$this->insert_id=\mysqli_insert_id($this->connect);
