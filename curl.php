@@ -127,10 +127,28 @@ class curl{
 		\fclose($fp);
 		return $out;
 	}
+	static function pingCmd($host, $timeout = 1){
+		if (env::isWindowsOS()){
+			$out=\iconv('CP866','utf-8',\exec('ping '.$host.' -n 1 -w '.$timeout));
+			$p=\explode('=',$out);
+			if (\count($p)==1)return false;
+			return \trim(\array_pop($p));
+		}else{
+			// "rtt min/avg/max/mdev = 19.300/19.300/19.300/0.000 ms"
+			$out=\exec('ping '.$host.' -c 1 -w '.$timeout);
+			if ($out=='')return false;
+			$p=\explode('/',$out);
+			\array_pop($p);
+			return \array_pop($p);
+		}
+	}
 	static function pingICMP($host, $timeout = 1) {
 		/* ICMP ping packet with a pre-calculated checksum */
 		$package = "\x08\x00\x7d\x4b\x00\x00\x00\x00PingHost";
 		$socket  = \socket_create(\AF_INET, \SOCK_RAW, 1);
+		if (!$socket){
+			throw new \Exception(\socket_strerror(\socket_last_error()));
+		}
 		\socket_set_option($socket, \SOL_SOCKET, \SO_RCVTIMEO, array('sec' => $timeout, 'usec' => 0));
 		\socket_connect($socket, $host, \null);
 
