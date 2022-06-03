@@ -147,7 +147,7 @@ class xlsx{
 
 	static function generateXlsxByTemplate($source,$data,$filename='',$out=\true){
 		$tempresult=\ini_get('upload_tmp_dir').(\ini_get('upload_tmp_dir')==''?'':'/').'temp.xlsx';
-		if (\file_exists($tempresult))unlink($tempresult);
+		if (\file_exists($tempresult))\unlink($tempresult);
 		if (!\file_exists($source)) throw new \Exception('Source sample file not found');
 		\copy($source,$tempresult);
 		$zip=self::checkFile($tempresult);
@@ -175,9 +175,15 @@ class xlsx{
 		if (!isset($input['header'])){
 			$input['header']=$tableElement->header;
 			foreach ($input['header'] as $key=>$val){
-				if (is_array($val)){
+				if (\is_array($val)){
 					$input['header'][$key]=$val['name'];
-					if (isset($val['fill']))$input['fill'][$key]=$val['fill'];
+					if (isset($val['fill'])){
+						$input['fill'][$key]=$val['fill'];
+					}elseif (isset($val['values'])){
+						$input['fill'][$key]=function($row,$column) use ($val){
+							return isset($val['values'][$row[$column]]) ? $val['values'][$row[$column]] : $row[$column];
+						};
+					}
 				}
 			}
 		}
@@ -286,7 +292,7 @@ class xlsx{
 		//print_r(self::$formats);
 		//print_r($styles);
 		$data=array();
-		if (is_null($sheet)){
+		if (\is_null($sheet)){
 			$sheets = self::getPages($source);
 			foreach ($sheets as $key=>$i){
 				$data[$key]=self::readSheet($key,$zip,$styles);
@@ -351,7 +357,7 @@ class xlsx{
 	private static function getCSV($source){
 		//$file=iconv('windows-1251','utf-8',file_get_contents($source));
 		$file=\file_get_contents($source);
-		if (core::$charset!=core::UTF8)$file=iconv(core::$charset,'utf-8',$file);
+		if (core::$charset!=core::UTF8)$file=\iconv(core::$charset,'utf-8',$file);
 		$delimeter=',';
 		if (\substr_count($file,';')>\substr_count($file,','))$delimeter=';'; // auto detect delimeter
 		$strings=\explode("\r",$file);
