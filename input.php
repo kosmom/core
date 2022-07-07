@@ -695,9 +695,12 @@ class input{
 
 	static function jsonDecode($var,$charset=\null){
 		if ($charset==\null)$charset=core::$charset;
-		$var=\json_decode($var,1);
-		if ($charset==core::UTF8)return $var;
-		return self::jsonFixCharset($var,$charset,\false);
+		$rs=\json_decode($var,1);
+		if ($rs===null && \substr($var,0,1)!=='['){
+			throw new \Exception('json decode error: '.\json_last_error_msg());
+		}
+		if ($charset==core::UTF8)return $rs;
+		return self::jsonFixCharset($rs,$charset,\false);
 	}
 
 	/**
