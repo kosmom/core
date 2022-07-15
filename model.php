@@ -409,7 +409,7 @@ class model implements \Iterator{
 			//$model->queryBind=$this->queryBind;
 			$model->connection=$this->connection;
 			$where['field']($model);
-			$this->queryBind=$model->queryBind;
+			$this->queryBind+=$model->queryBind;
 			$sql=$model->getSql();
 			return $sql?'('.$sql.')':'1';
 		}

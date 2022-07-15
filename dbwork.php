@@ -407,7 +407,7 @@ class dbwork{
 						$outErrors[]=translate::t('Not set required field {field}',array('field'=>$fieldName));
 						break;
 					}
-					if (!$fieldVal['typerange']){
+					if (!@$fieldVal['typerange']){
 						if ($fieldVal['type']=='tinytext')$fieldVal['typerange']=256;
 						elseif ($fieldVal['type']=='text')$fieldVal['typerange']=65535;
 						elseif ($fieldVal['type']=='mediumtext')$fieldVal['typerange']=16777215;

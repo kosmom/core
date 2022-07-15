@@ -113,7 +113,7 @@ class db_mysql {
 			if (empty(\c\core::$data['db_exception']))return \false;
 			throw new \Exception('SQL execute error: '.\mysqli_error($this->connect));
 		}
-		$subsql=\strtolower(substr($sql,0,4));
+		$subsql=\strtolower(\substr($sql,0,4));
 		$data=array();
 		if (isset($this->result_array[$subsql])){
 			switch ($mode){
@@ -172,7 +172,7 @@ class db_mysql {
 				\c\debug::groupEnd();
 			}
 			\c\debug::groupEnd();
-		}elseif (!is_bool($result)){
+		}elseif (!\is_bool($result)){
 			@\mysqli_free_result($result);
 		}
 		return $data;
