@@ -64,12 +64,13 @@ class telegram{
 		$reply = \json_encode($resp);
 		return self::sendMessage($chat_id, $text, $reply);
 	}
-	static function sendMessage($chat_id,$text,$reply_markup=\null,$protect_content=\false){
+	static function sendMessage($chat_id,$text,$reply_markup=\null,$protect_content=\false,$reply_to_message_id=\null){
 		self::check();
 		$data=array('chat_id'=>$chat_id,'text'=>input::iconv($text,\true));
 		if (self::$parse_mode)$data['parse_mode']=self::$parse_mode;
 		if ($reply_markup)$data['reply_markup']=$reply_markup;
 		if ($protect_content)$data['protect_content']=\true;
+		if ($reply_to_message_id)$data['reply_to_message_id']=$reply_to_message_id;
 		return self::request('sendMessage',$data);
 	}
 	static function editMessage($chat_id,$message_id,$text,$reply_markup=\null){
@@ -78,6 +79,11 @@ class telegram{
 		if (self::$parse_mode)$data['parse_mode']=self::$parse_mode;
 		if ($reply_markup)$data['reply_markup']=$reply_markup;
 		return self::request('editMessageText',$data);
+	}
+	static function deleteMessage($chat_id,$message_id){
+		self::check();
+		$data=array('chat_id'=>$chat_id,'message_id'=>$message_id);
+		return self::request('deleteMessage',$data);
 	}
 	static function editDocument($chat_id,$message_id,$link,$caption=\null,$reply_markup=\null){
 		self::check();
