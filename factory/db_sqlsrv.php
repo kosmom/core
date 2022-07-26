@@ -35,7 +35,7 @@ class db_sqlsrv {
 	}
 
 	function connect(){
-		$options=array('ReturnDatesAsStrings' => true, 'Database'=>$this->data['name'],"UID"=>$this->data['login'],"PWD"=>$this->data['password']);
+		$options=array('ReturnDatesAsStrings'=>true,'TrustServerCertificate'=>true,'Database'=>$this->data['name'],"UID"=>$this->data['login'],"PWD"=>$this->data['password']);
 		if ($this->data['charset'])$options['CharacterSet']=$this->charset_mastmach();
 		@$this->connect = \sqlsrv_connect($this->data['host'],$options);
 		if (!$this->connect)throw new \Exception('Sqlsrv connection error '.\print_r(\sqlsrv_errors(),true));
