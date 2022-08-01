@@ -403,28 +403,28 @@ class dbwork{
 					case 'mediumtext':
 					case 'tinytext':
 					case 'longtext':
-					if (!empty($fieldVal['notnull']) && $opType==1 &&!isset($fieldVal['default']) && $value===''){
-						$outErrors[]=translate::t('Not set required field {field}',array('field'=>$fieldName));
-						break;
-					}
-					if (!@$fieldVal['typerange']){
-						if ($fieldVal['type']=='tinytext')$fieldVal['typerange']=256;
-						elseif ($fieldVal['type']=='text')$fieldVal['typerange']=65535;
-						elseif ($fieldVal['type']=='mediumtext')$fieldVal['typerange']=16777215;
-						elseif ($fieldVal['type']=='longtext')$fieldVal['typerange']=4294967295;
-					}
-					if ((int)$fieldVal['typerange'] < mb_strlen($value,core::$charset) && $fieldVal['type'] != 'CLOB' && $fieldVal['type'] != 'LONG'){
-						$outErrors[]=translate::t('Field {field} have max length <b>{max_length}</b> charecters. You length is <b>{my_length}</b> charecters',array('field'=>$fieldName,'max_length'=>$fieldVal['typerange'],'my_length'=>\mb_strlen($value)));
-						break;
-					}
-					$strcolname[]=$field;
-					if (\strlen($value) > 3 && \substr($value,0,3) == '{+}'){
-						$strvalues[]='concat('.$field.',:'.$upperField.')';
-						$bind[$upperField]=\substr($value,3);
-					}else{
-						$strvalues[]=':'.$upperField;
-						$bind[$upperField]=$value;
-					}
+						if (!empty($fieldVal['notnull']) && $opType==1 &&!isset($fieldVal['default']) && $value===''){
+							$outErrors[]=translate::t('Not set required field {field}',array('field'=>$fieldName));
+							break;
+						}
+						if (!@$fieldVal['typerange']){
+							if ($fieldVal['type']=='tinytext')$fieldVal['typerange']=256;
+							elseif ($fieldVal['type']=='text')$fieldVal['typerange']=65535;
+							elseif ($fieldVal['type']=='mediumtext')$fieldVal['typerange']=16777215;
+							elseif ($fieldVal['type']=='longtext')$fieldVal['typerange']=4294967295;
+						}
+						if ((int)$fieldVal['typerange'] < mb_strlen($value,core::$charset) && $fieldVal['type'] != 'CLOB' && $fieldVal['type'] != 'LONG'){
+							$outErrors[]=translate::t('Field {field} have max length <b>{max_length}</b> charecters. You length is <b>{my_length}</b> charecters',array('field'=>$fieldName,'max_length'=>$fieldVal['typerange'],'my_length'=>\mb_strlen($value)));
+							break;
+						}
+						$strcolname[]=$field;
+						if (\strlen($value) > 3 && \substr($value,0,3) == '{+}'){
+							$strvalues[]='concat('.$field.',:'.$upperField.')';
+							$bind[$upperField]=\substr($value,3);
+						}else{
+							$strvalues[]=':'.$upperField;
+							$bind[$upperField]=$value;
+						}
 
 					break;
 					case 'INTEGER':
@@ -433,44 +433,46 @@ class dbwork{
 					case 'tinyint':
 					case 'bigint':
 					case 'mediumint':
-						if(!\preg_match('#^-?\d+$#',$value) && $value!==''){
-						$outErrors[]=translate::t('Field {field} have number format. You try set <b>{value}</b> value',array('field'=>$fieldName,'value'=>input::htmlspecialchars($value)));
-						break;
-					}
-					
-					$max = null;
-					if ($fieldVal['type'] == 'tinyint') $max = 127;
-					elseif ($fieldVal['type'] == 'smallint') $max = 32767;
-					elseif ($fieldVal['type'] == 'mediumint') $max = 8388607;
-					elseif ($fieldVal['type'] == 'int') $max = 2147483647;
-					elseif ($fieldVal['type'] == 'bigint') $max = 9223372036854775807;
+						if($value!==''){
+							if(!\preg_match('#^-?\d+$#',$value)){
+								$outErrors[]=translate::t('Field {field} have number format. You try set <b>{value}</b> value',array('field'=>$fieldName,'value'=>input::htmlspecialchars($value)));
+								break;
+							}
 
-					if ($max) {
-						if (@$fieldVal['unsigned']) {
-							$min = 0;
-							$max = $max * 2 + 1;
-						} else {
-							$min = -$max - 1;
-							$min *= 2;
+							$max = null;
+							if ($fieldVal['type'] == 'tinyint') $max = 127;
+							elseif ($fieldVal['type'] == 'smallint') $max = 32767;
+							elseif ($fieldVal['type'] == 'mediumint') $max = 8388607;
+							elseif ($fieldVal['type'] == 'int') $max = 2147483647;
+							elseif ($fieldVal['type'] == 'bigint') $max = 9223372036854775807;
+
+							if ($max) {
+								if (@$fieldVal['unsigned']) {
+									$min = 0;
+									$max = $max * 2 + 1;
+								} else {
+									$min = -$max - 1;
+									$min *= 2;
+								}
+								if ($value < $min) {
+									$outErrors[] = translate::t('Field {field} must be greather {min}. You try set <b>{value}</b> value', array('min' => $min, 'field' => $fieldName, 'value' => input::htmlspecialchars($value)));
+									break;
+								}
+								if ($value > $max) {
+									$outErrors[] = translate::t('Field {field} must be less {max}. You try set <b>{value}</b> value', array('max' => $max, 'field' => $fieldName, 'value' => input::htmlspecialchars($value)));
+									break;
+								}
+							}
+
+							$strcolname[]=$field;
 						}
-						if ($value < $min) {
-							$outErrors[] = translate::t('Field {field} must be greather {min}. You try set <b>{value}</b> value', array('min' => $min, 'field' => $fieldName, 'value' => input::htmlspecialchars($value)));
-							break;
+						if (\strlen($value) > 3 && \substr($value,0,3) == '{+}'){
+							$strvalues[]=$field.'+:'.$upperField;
+							$bind[$upperField]=\substr($value,3);
+						}else{
+							$strvalues[]=':'.$upperField;
+							$bind[$upperField]=$value;
 						}
-						if ($value > $max) {
-							$outErrors[] = translate::t('Field {field} must be less {max}. You try set <b>{value}</b> value', array('max' => $max, 'field' => $fieldName, 'value' => input::htmlspecialchars($value)));
-							break;
-						}
-					}
-					
-					$strcolname[]=$field;
-					if (\strlen($value) > 3 && \substr($value,0,3) == '{+}'){
-						$strvalues[]=$field.'+:'.$upperField;
-						$bind[$upperField]=\substr($value,3);
-					}else{
-						$strvalues[]=':'.$upperField;
-						$bind[$upperField]=$value;
-					}
 					break;
 					case 'NUMBER':
 					case 'FLOAT':
@@ -479,8 +481,8 @@ class dbwork{
 					case 'float':
 					case 'double':
 					if ($dbType=='mysql'){
-						$value = \str_replace(',', '.', $value);
-						if ($fieldVal['unsigned'] && $value<0) {
+						$value = \str_replace(',','.',$value);
+						if ($fieldVal['unsigned'] && $value<0){
 							$outErrors[] = translate::t('Field {field} must be greather {min}. You try set <b>{value}</b> value', array('min' => 0, 'field' => $fieldName, 'value' => input::htmlspecialchars($value)));
 							break;
 						}
@@ -664,7 +666,7 @@ class dbwork{
 	static function setDataOrFail($tablename,$arrayIn='',$sequence='',$db='',$schema=''){
 		$errors=array();
 		$rs=self::setData($tablename,$arrayIn,$sequence,$db,$errors,$schema);
-		if ($errors)  throw new \Exception(translate::t('Errors during record').': '.\implode(',',$errors));
+		if ($errors)throw new \Exception(translate::t('Errors during record').': '.\implode(',',$errors));
 		return $rs;
 	}
 	/**
@@ -748,7 +750,7 @@ class dbwork{
 			self::$storyData=$rs;
 			if (!$listfields) return 'created'; // record was created
 			$textdif=array();
-			foreach($rs as $key=> $value){
+			foreach($rs as $key=>$value){
 				if (isset($listfields[$key])){
 					if (\is_array($listfields[$key])){
 						$textdif[]=$listfields[$key][$value['new']];
