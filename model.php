@@ -757,6 +757,23 @@ class model implements \Iterator{
 		}
 		return new collection_object(model::$cache[\get_called_class()][$hash],\get_called_class(),$pk,$is_full);
 	}
+	
+	/**
+	 * Filter by relation and $query subfilter
+	 * @param string|integer|array $relation link ty relation
+	 * @param callback|null $query subquery conditions
+	 * @return model
+	 */
+	static function whereHasStatic($relation,$query=null){
+		return self::toObject()->whereHas($relation,$query);
+	}
+	
+	/**
+	 * Filter by relation and $query subfilter
+	 * @param string|integer|array $relation link ty relation
+	 * @param callback|null $query subquery conditions
+	 * @return model
+	 */
 	function whereHas($relation,$query=null){
 		// where exists
 		$this->whereHasMode=true;
