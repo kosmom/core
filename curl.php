@@ -127,9 +127,10 @@ class curl{
 		\fclose($fp);
 		return $out;
 	}
-	static function pingCmd($host, $timeout = 1){
+	static function pingCmd($host,$timeout=1){
 		if (env::isWindowsOS()){
 			$out=\iconv('CP866','utf-8',\exec('ping '.$host.' -n 1 -w '.$timeout));
+			if (\strpos($out,'('))return false;
 			$p=\explode('=',$out);
 			if (\count($p)==1)return false;
 			return \trim(\array_pop($p));
@@ -142,22 +143,21 @@ class curl{
 			return \array_pop($p);
 		}
 	}
-	static function pingICMP($host, $timeout = 1) {
-		/* ICMP ping packet with a pre-calculated checksum */
-		$package = "\x08\x00\x7d\x4b\x00\x00\x00\x00PingHost";
-		$socket  = \socket_create(\AF_INET, \SOCK_RAW, 1);
-		if (!$socket){
+	/**
+	 * ICMP ping packet with a pre-calculated checksum
+	 */
+	static function pingICMP($host,$timeout=1){
+		$sock = \socket_create(\AF_INET, \SOCK_RAW, 1);
+		if (!$sock){
 			throw new \Exception(\socket_strerror(\socket_last_error()));
 		}
-		\socket_set_option($socket, \SOL_SOCKET, \SO_RCVTIMEO, array('sec' => $timeout, 'usec' => 0));
-		\socket_connect($socket, $host, \null);
+		\socket_set_option($sock, \SOL_SOCKET, \SO_RCVTIMEO, array('sec' => $timeout, 'usec' => 0));
+		\socket_connect($sock, $host, \null);
 
 		$ts = \microtime(\true);
-		\socket_send($socket, $package, \strlen($package), 0);
-		if (\socket_read($socket, 255))
-		$result = \microtime(\true) - $ts;
-		else $result = \false;
-		\socket_close($socket);
-		return $result;
+		\socket_send($sock, "\x08\x00\x7d\x4b\x00\x00\x00\x00PingHost", 16, 0);
+		$rs = \socket_read($sock, 255)?\microtime(\true) - $ts:false;
+		\socket_close($sock);
+		return $rs;
 	}
 }
