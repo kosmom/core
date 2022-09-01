@@ -33,6 +33,15 @@ class telegram{
 		self::check();
 		return self::request('getMe');
 	}
+	static function getFile($fileId){
+		self::check();
+		return self::request('getFile',array('file_id'=>$fileId));
+	}
+	static function getFileContent($fileId){
+		$rs=self::getFile($fileId);
+		if ($rs['ok']!=true)throw new Exception('file get error');
+		return curl::getContent('https://api.telegram.org/file/bot'.core::$data['telegram'].'/'.$rs['result']['file_path']);
+	}
 	static function sendLocation($chat_id,$latitude,$longitude,$reply_markup=\null){
 		self::check();
 		$data=array('chat_id'=>$chat_id,'latitude'=>$latitude,'longitude'=>$longitude);
