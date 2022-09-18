@@ -117,8 +117,9 @@ class filedata{
 	 * @param string $dir
 	 */
 	static function empt($dir){
+		if (!\is_dir($dir))return true;
 		foreach (\array_diff(\scandir($dir), array('.','..')) as $file) {
-			\is_dir($dir.'/'.$file) ? self::rmdir($dir.'/'.$file) : \unlink($dir.'/'.$file);
+			\is_dir($dir.'/'.$file)?self::rmdir($dir.'/'.$file):\unlink($dir.'/'.$file);
 		}
 	}
 	static function clean($pattern,$mTimeAgo=2592000){
