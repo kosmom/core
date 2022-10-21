@@ -81,7 +81,7 @@ class model implements \Iterator{
 	}
 	function on_after_create(){
 	}
-	function on_before_update(){
+	function on_before_update($base=\null){
 	}
 	function on_after_update($base=\null){
 	}
