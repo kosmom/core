@@ -179,7 +179,7 @@ class telegram{
 	 * get Webhook data
 	 * @return array
 	 */
-	function getData() {
+	static function getData() {
 		return \json_decode(input::iconv(\file_get_contents("php://input")),\true);
 	}
 	static function check(){
