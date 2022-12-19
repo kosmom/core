@@ -220,4 +220,27 @@ class filedata{
 		if ($offset)\fseek(self::$dataPartHandlers[$handlerOrPath], $offset);
 		return self::$dataPartHandlers[$handlerOrPath];
 	}
+	
+	static function lockCheckFirstLoop($filelist){
+		while (!$file=self::lockCheckFirst($filelist)){
+			\usleep(500000);
+		}
+		return $file;
+	}
+	
+	static function lockCheckFirst($filelist){
+		foreach ($filelist as $file){
+			\touch($file);
+			\chmod($file,0777);
+			$handler=self::getHandler($file);
+			if (\flock($handler, \LOCK_EX | \LOCK_NB)){
+				return $file;
+			}
+		}
+		return false;
+	}
+	static function unlock($file){
+		\fclose(self::getHandler($file));
+		unset(self::$dataPartHandlers[$file]);
+	}
 }
