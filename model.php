@@ -767,6 +767,9 @@ class model implements \Iterator{
 	static function whereHasStatic($relation,$query=null){
 		return self::toObject()->whereHas($relation,$query);
 	}
+	static function whereNotHasStatic($relation,$query=null){
+		return self::toObject()->whereNotHas($relation,$query);
+	}
 	
 	/**
 	 * Filter by relation and $query subfilter
@@ -775,7 +778,6 @@ class model implements \Iterator{
 	 * @return model
 	 */
 	function whereHas($relation,$query=null){
-		// where exists
 		$this->whereHasMode=true;
 		$relation=$this->$relation();
 		if ($query){
@@ -783,6 +785,18 @@ class model implements \Iterator{
 		}
 		$this->whereHasMode=false;
 		$this->whereRaw('exists('.$relation->getSql().')');
+		$this->queryBind+=$relation->queryBind;
+		$this->bindCounter=$relation->bindCounter;
+		return $this;
+	}
+	function whereNotHas($relation,$query=null){
+		$this->whereHasMode=true;
+		$relation=$this->$relation();
+		if ($query){
+			$relation->where($query);
+		}
+		$this->whereHasMode=false;
+		$this->whereRaw('not exists('.$relation->getSql().')');
 		$this->queryBind+=$relation->queryBind;
 		$this->bindCounter=$relation->bindCounter;
 		return $this;
