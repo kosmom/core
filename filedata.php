@@ -222,6 +222,7 @@ class filedata{
 	}
 	
 	static function lockCheckFirstLoop($filelist){
+		if (\is_string($filelist))$filelist=[$filelist];
 		while (!$file=self::lockCheckFirst($filelist)){
 			\usleep(500000);
 		}
