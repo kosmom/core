@@ -21,6 +21,8 @@ class telegram{
 	const EMOJI_BACK="\u{1f519}";
 	const EMOJI_NO_ENTRY_SIGN="\u{1f6ab}";
 	const EMOJI_WHITE_CHECK_MARK="\u{2705}";
+	const EMOJI_COP="\u{1F46E}";
+	const EMOJI_MEN_DETECTIVE="\u{1F575}";
 	
 	const PARSE_MODE_MARKDOWN='Markdown';
 	const PARSE_MODE_MARKDOWN2='MarkdownV2';

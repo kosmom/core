@@ -835,7 +835,7 @@ echo '>';
 		return self::getParamAsString();
 	}
 	/**
-	 * Get addition route strinng from current directory
+	 * Get addition route string from current directory
 	 * @deprecated Use getParamsAsString method
 	 * @return string
 	 */
