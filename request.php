@@ -156,6 +156,23 @@ class request{
 		if (!isset(self::$counter[$file]))self::$counter[$file]=0;
 		return self::$files[$file][self::$counter[$file]];
 	}
+	static function basicAuth($validateLoginPadd, $realm='Need auth'){
+		if ($_SERVER['PHP_AUTH_USER']){
+			$user=$_SERVER['PHP_AUTH_USER'];
+			$pass=$_SERVER['PHP_AUTH_PW'];
+			if (\is_array($validateLoginPadd)){
+				if (isset($validateLoginPadd[$user]) && $validateLoginPadd[$user]==$pass)return $user;
+			}elseif (\is_callable($validateLoginPadd)){
+				if ($validateLoginPadd($user,$pass))return $user;
+			}else{
+				throw new \Exception('basicAuth parameter error');
+			}
+		}
+		if (self::isCmd())return true;
+		\header('WWW-Authenticate: Basic realm="'.$realm.'"');
+		\header('HTTP/1.0 401 Unauthorized');
+		die ("Not authorized");
+	}
 
 	/**
 	 * Detect browser names and versions of Chrome, Firefox, Internet Explorer, Opera & Safari.
