@@ -712,10 +712,11 @@ class model implements \Iterator{
 		if (!isset($this))return self::toObject()->get();
 		// if has cache - return cache
 		$hash=$this->calculateCache();
+		$cc=\get_called_class();
 		$pk=$this->getPrimaryField();
 		$is_full=empty($this->queryWhere);
-		if (isset(model::$cache[\get_called_class()][$hash])){
-			return new collection_object(model::$cache[\get_called_class()][$hash],\get_called_class(),$pk,$is_full);
+		if (isset(model::$cache[$cc][$hash])){
+			return new collection_object(model::$cache[$cc][$hash],$cc,$pk,$is_full);
 		}
 		// if get from collection - mass request with "in" and group
 		if ($this->collectionSource){
@@ -743,7 +744,7 @@ class model implements \Iterator{
 			$elements= datawork::group($rs, array($field,'[]'),$pk);
 			foreach ($collectionElements as $element){
 				$this->queryBind[$field]=$element;
-				model::$cache[\get_called_class()][$this->calculateCache()]=isset($elements[$element])?$elements[$element]:array();
+				model::$cache[$cc][$this->calculateCache()]=isset($elements[$element])?$elements[$element]:array();
 			}
 
 		}else{
@@ -753,9 +754,9 @@ class model implements \Iterator{
 				model::setData($this,$row[$pk],$row);
 			}
 			// set cache
-			model::$cache[\get_called_class()][$hash]=datawork::group($rs,'[]',$pk);
+			model::$cache[$cc][$hash]=datawork::group($rs,'[]',$pk);
 		}
-		return new collection_object(model::$cache[\get_called_class()][$hash],\get_called_class(),$pk,$is_full);
+		return new collection_object(model::$cache[$cc][$hash],$cc,$pk,$is_full);
 	}
 	
 	/**

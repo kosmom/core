@@ -34,7 +34,6 @@ class db{
 
 		foreach (core::$data['db_autobind'] as $key=>$item){
 			if (isset($bind[$key]))  continue;
-			// todo: :% probably not working
 			if (\preg_match('/:'.$key.'\b/i',$sql))$bind[$key]=$item;
 		}
 		return $bind;
