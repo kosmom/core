@@ -464,8 +464,8 @@ class dbwork{
 								}
 							}
 
-							$strcolname[]=$field;
 						}
+						$strcolname[]=$field;
 						if (\strlen($value) > 3 && \substr($value,0,3) == '{+}'){
 							$strvalues[]=$field.'+:'.$upperField;
 							$bind[$upperField]=\substr($value,3);
