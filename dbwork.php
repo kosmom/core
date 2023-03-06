@@ -480,18 +480,21 @@ class dbwork{
 					case 'real':
 					case 'float':
 					case 'double':
-					if ($dbType=='mysql'){
-						$value = \str_replace(',','.',$value);
-						if ($fieldVal['unsigned'] && $value<0){
-							$outErrors[] = translate::t('Field {field} must be greather {min}. You try set <b>{value}</b> value', array('min' => 0, 'field' => $fieldName, 'value' => input::htmlspecialchars($value)));
-							break;
+					    if ($value!==''){
+						if ($dbType=='mysql'){
+							$value = \str_replace(',','.',$value);
+							if ($value=='')$value=null;
+							if ($fieldVal['unsigned'] && $value<0){
+								$outErrors[] = translate::t('Field {field} must be greather {min}. You try set <b>{value}</b> value', array('min' => 0, 'field' => $fieldName, 'value' => input::htmlspecialchars($value)));
+								break;
+							}
+							$arrays[$upperField]=$value;
+							$is_float=\preg_match('/^-?\d*[\.]?\d+$/',$value);
+						}else{ //oracle
+							$arrays[$upperField]=$value=\str_replace('.',',',$value);
+							$is_float=\preg_match('/^-?\d*[\,]?\d+$/',$value);
 						}
-						$arrays[$upperField]=$value;
-						$is_float=\preg_match('/^-?\d*[\.]?\d+$/',$value);
-					}else{ //oracle
-						$arrays[$upperField]=$value=\str_replace('.',',',$value);
-						$is_float=\preg_match('/^-?\d*[\,]?\d+$/',$value);
-					}
+					    }
 					if ($is_float or $value == ''){
 						$strcolname[]=$field;
 						$strvalues[]=':'.$upperField;

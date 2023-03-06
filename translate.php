@@ -531,6 +531,7 @@ class translate{
 	 * @return string
 	 */
 	static function plural($number, $ending1,$ending4,$ending5=\null){
+		if (\is_null($number))$number=0;
 		if (!\is_numeric($number))$number=\str_replace(',','.',$number);
 		if (\intval($number)!=\floatval($number))return $ending4;
 		if ($ending5===\null)$ending5=$ending4;

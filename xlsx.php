@@ -335,8 +335,13 @@ class xlsx{
 				}else{
 					$par=\explode('E',$value); if (isset($par[1]))$value=\floatval($par[0])*\pow(10,\intval($par[1]));
 					switch (@self::$formats[$styles[(int)$attrs['s']]]){
-						case 'date': $d = \floor($value); $t = $value - $d; $currow[$pos]=$value==''?'': \date('d.m.Y H:i:s', ($d>0?($d-25569)*86400:0)+\round($t*86400)-10800); break;
-						case 'percent': $currow[$pos]=\floatval($value)*100;break;
+						case 'date': 
+						    if ($value==''){
+							$currow[$pos]=null;
+						    }else{
+							$d = \floor($value); $t = $value - $d; $currow[$pos]=$value==''?'': \date('d.m.Y H:i:s', ($d>0?($d-25569)*86400:0)+\round($t*86400)-10800); break;
+						    }
+						case 'percent': if ($value=='')$currow[$pos]=null; else $currow[$pos]=\floatval($value)*100;break;
 						default: $currow[$pos]=$value;
 					}
 				}
