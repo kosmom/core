@@ -779,11 +779,10 @@ class model implements \Iterator{
 	 * @return model
 	 */
 	function whereHas($relation,$query=null){
+		// where exists
 		$this->whereHasMode=true;
 		$relation=$this->$relation();
-		if ($query){
-			$relation->where($query);
-		}
+		if ($query)$query($relation);
 		$this->whereHasMode=false;
 		$this->whereRaw('exists('.$relation->getSql().')');
 		$this->queryBind+=$relation->queryBind;
@@ -791,11 +790,10 @@ class model implements \Iterator{
 		return $this;
 	}
 	function whereNotHas($relation,$query=null){
+		// where not exists
 		$this->whereHasMode=true;
 		$relation=$this->$relation();
-		if ($query){
-			$relation->where($query);
-		}
+		if ($query)$query($relation);
 		$this->whereHasMode=false;
 		$this->whereRaw('not exists('.$relation->getSql().')');
 		$this->queryBind+=$relation->queryBind;
@@ -973,24 +971,21 @@ class model implements \Iterator{
 		if ($local_key===\null)$local_key=$this->getPrimaryField();
 		
 		$baseCollection=\null;
-		if (!$this->whereHasMode){
-			// get base collection from keys
-			if ($this->collectionSource){
-				$generator=new $this->collectionSource->generator;
-				if ($generator->getPrimaryField()==$local_key){
-					$baseCollection=$this->collectionSource;
-				}else{
-					$baseCollection=new collection_object(\array_unique($this->collectionSource->pluck($local_key)),$this->collectionSource->generator,$local_key);
-				}
+		if (!$this->whereHasMode && $this->collectionSource){
+			$generator=new $this->collectionSource->generator;
+			if ($generator->getPrimaryField()==$local_key){
+				$baseCollection=$this->collectionSource;
+			}else{
+				$baseCollection=new collection_object(\array_unique($this->collectionSource->pluck($local_key)),$this->collectionSource->generator,$local_key);
 			}
 		}
 		$obj=new $model(\null, $baseCollection);
 		if ($foreign_key===\null)$foreign_key=$obj->getPrimaryField();
 		if ($this->whereHasMode){
 			$obj->select('1');
-			$obj->tableAlias='t'.$this->bindCounter++;
-//			$obj->queryBind=$this->queryBind;
-//			$obj->bindCounter=$this->bindCounter;
+			$obj->bindCounter=$this->bindCounter;
+			$obj->tableAlias='t'.$obj->bindCounter++;
+			$obj->queryBind=$this->queryBind;
 			$obj->whereRaw($obj->tableAlias.'.'.$foreign_key.'='.$this->tableAlias.'.'.$local_key);
 			return $obj;
 		}elseif ($this->isRowMode){
