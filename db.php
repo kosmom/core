@@ -288,9 +288,13 @@ class db{
 	static function in(&$bind,$value=array(),$variable=\null,$wrapper=\null){
 		if ($variable===\null)$variable='core_t_'.(self::$counter++).'_';
 		$out=array();
+		$diff=0;
 		foreach ($value as $key=>$item){
-			$out[]=is_callable($wrapper)?\call_user_func($wrapper,':'.$variable.'_'.$key):':'.$variable.'_'.$key;
-			$bind[$variable.'_'.$key]=$item;
+			while (isset($bind[$variable.'_'.($key+$diff)]) && $bind[$variable.'_'.($key+$diff)]!=$item){
+				$diff++;
+			}
+			$out[]=\is_callable($wrapper)?\call_user_func($wrapper,':'.$variable.'_'.($key+$diff)):':'.$variable.'_'.($key+$diff);
+			$bind[$variable.'_'.($key+$diff)]=$item;
 		}
 		return \implode(',',$out);
 	}
