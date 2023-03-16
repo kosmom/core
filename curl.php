@@ -147,16 +147,14 @@ class curl{
 	 * ICMP ping packet with a pre-calculated checksum
 	 */
 	static function pingICMP($host,$timeout=1){
-		$sock = \socket_create(\AF_INET, \SOCK_RAW, 1);
-		if (!$sock){
-			throw new \Exception(\socket_strerror(\socket_last_error()));
-		}
-		\socket_set_option($sock, \SOL_SOCKET, \SO_RCVTIMEO, array('sec' => $timeout, 'usec' => 0));
-		\socket_connect($sock, $host, \null);
+		$sock=\socket_create(\AF_INET,\SOCK_RAW,1);
+		if (!$sock)throw new \Exception(\socket_strerror(\socket_last_error()));
+		\socket_set_option($sock,\SOL_SOCKET,\SO_RCVTIMEO,array('sec'=>$timeout,'usec'=>0));
+		\socket_connect($sock,$host,0);
 
-		$ts = \microtime(\true);
-		\socket_send($sock, "\x08\x00\x7d\x4b\x00\x00\x00\x00PingHost", 16, 0);
-		$rs = \socket_read($sock, 255)?\microtime(\true) - $ts:false;
+		$t=\microtime(\true);
+		\socket_send($sock, "\x08\x00\x7d\x4b\x00\x00\x00\x00PingHost",16,0);
+		$rs=\socket_read($sock,255)?\microtime(\true)-$t:false;
 		\socket_close($sock);
 		return $rs;
 	}
