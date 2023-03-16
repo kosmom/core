@@ -124,7 +124,7 @@ class curl{
 	static function ping($host,$port=-1,$protocol='tcp',$timeout=1){
 		$fp = \fsockopen(($protocol!='tcp'?$protocol.'://':'').$host,$port,$errCode,$errStr,$timeout);
 		$out=(bool)$fp;
-		\fclose($fp);
+		if ($fp)\fclose($fp);
 		return $out;
 	}
 	static function pingCmd($host,$timeout=1){
