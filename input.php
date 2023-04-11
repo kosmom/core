@@ -822,6 +822,7 @@ class input{
 	 * @return string
 	 */
 	static function htmlspecialchars($html,$charset=\null){
+		if (!$html)return $html;
 		if ($charset==\null)$charset=core::$charset;
 		return \htmlspecialchars($html,2,$charset);
 	}
