@@ -415,7 +415,7 @@ class mvc{
 			self::$links_string=\substr(\ltrim(@$_SERVER['REDIRECT_URL'],'\\/'), \strlen(self::$basefolder));
 		}
 		self::$realHost=isset($_SERVER['HTTP_X_FORWARDED_HOST'])?$_SERVER['HTTP_X_FORWARDED_HOST']:@$_SERVER['HTTP_HOST'];
-		if (core::$charset!=core::UTF8)self::$links_string=iconv('utf-8',core::$charset,self::$links_string);
+		if (core::$charset!=core::UTF8)self::$links_string=\iconv('utf-8',core::$charset,self::$links_string);
 		self::$links=\explode('/',self::$links_string);
 		self::getConfig();
 		self::$nextFolder=$__DIR__.\DIRECTORY_SEPARATOR.self::$appFolder.\DIRECTORY_SEPARATOR;
@@ -439,8 +439,7 @@ class mvc{
 	 * @return super
 	 */
 	static function addTitle($title){
-		self::$title[]=$title;
-		self::$story[self::$page_counter]['title']=$title;
+		self::$story[self::$page_counter]['title']=self::$title[]=$title;
 		return new super();
 	}
 	/**
@@ -547,11 +546,8 @@ class mvc{
 		$order=0;
 		$route['url']=\preg_replace_callback('/\{(.*)\}/sU',function($matches) use(&$route,&$order){
 			$params=\explode('|',$matches[1]);
-			if (isset($params[1])){
-				$route['vars'][$params[0]]=array('position'=>$order++,'default'=>$params[1]);
-			}else{
-				$route['vars'][$params[0]]=array('position'=>$order++);
-			}
+			$route['vars'][$params[0]]=array('position'=>$order++);
+			if (isset($params[1]))$route['vars'][$params[0]]['default']=$params[1];
 			return '{'.$params[0].'}';
 		},$route['url']);
 			$route['prepared']=\true;
@@ -559,7 +555,7 @@ class mvc{
 			// preparing row for fast cache
 			$out=$route['url'];
 			foreach ($route['vars'] as $param=>$item){
-				if (!isset($params[$param]) && !isset($item['default']))  throw new \Exception('Required params '.$param.' mistmach');
+				if (!isset($params[$param]) && !isset($item['default'])) throw new \Exception('Required params '.$param.' mistmach');
 				$out=str_replace('{'.$param.'}',isset($params[$param])?$params[$param]:$item['default'],$out);
 			}
 			return $out;
@@ -749,15 +745,15 @@ class mvc{
 	}
 
 	static function drawTitle(){
-		return input::htmlspecialchars(is_string(self::$title)?self::$title:(\implode(' '.self::$titleSeparator.' ',self::$title_inverse?\array_reverse(self::$title):self::$title)));
+		return input::htmlspecialchars(\is_string(self::$title)?self::$title:(\implode(' '.self::$titleSeparator.' ',self::$title_inverse?\array_reverse(self::$title):self::$title)));
 	}
 	static function header(){
-		if (headers_sent()){
+		if (\headers_sent()){
 			if (core::$debug){
 				$file='';
 				$line='';
 				\headers_sent($file,$line);
-				debug::consoleLog ('header was sended, in '.$file.':'.$line.' templates are ignored',error::ERROR);
+				debug::consoleLog('header was sended, in '.$file.':'.$line.' templates are ignored',error::ERROR);
 			}
 			//echo self::drawJs();
 			self::$next_dir=array();
@@ -843,7 +839,7 @@ echo '>';
 		return self::getParamAsString();
 	}
 	static function getParamAsString(){
-		return implode('/', self::getVars());
+		return \implode('/', self::getVars());
 	}
 
 	/**
@@ -858,7 +854,7 @@ echo '>';
 	 * @return fileprop
 	 */
 	static function getFileProp($__FILE__){
-		$data = \file($__FILE__); // may be long in largest files?
+		$data=\file($__FILE__); // may be long in largest files?
 		$module=array();
 		foreach ($data as $key=>$item) {
 			$item=\trim($item);
@@ -921,7 +917,7 @@ echo '>';
 				foreach ($additionMenu as $key=>$item){
 					if (\is_string($item)){
 						$modules[$key]=new fileprop(array('name'=>$item));
-					}elseif (is_array($item)){
+					}elseif (\is_array($item)){
 						$modules[$key]=new fileprop($item);
 					}elseif ($item instanceof arrayaccess){
 						$modules[$key]=clone($item);
@@ -1142,21 +1138,13 @@ echo '>';
 		self::$next_dir=array(self::$next_dir[0]);
 		self::$links_string=$routePath;
 		self::$links=\explode('/',self::$links_string);
-		self::$url=array();
-		self::$indexfile=array();
-		self::$url_links=\null;
-		self::$file_links=array();
+		self::$url=self::$indexfile=self::$file_links=self::$title=array();
+		self::$url_links=self::$folder=self::$routeAs=self::$routeLazyCallback=\null;
 		self::$page_counter=1;
-		self::$title=array();
-		self::$folder=\null;
-		self::$content=\true;
+		self::$content=self::$isRoute=\true;
 		self::$story=array(array('link'=>''));
-		self::$routeMatch=\false;
-		self::$routeAs=\null;
-		self::$routeLazyCallback=\null;
+		self::$routeMatch=self::$lastDir=\false;
 		self::$nextFolder=self::$base__DIR__.\DIRECTORY_SEPARATOR.self::$appFolder.\DIRECTORY_SEPARATOR;//.($startDir?$startDir.'/':'');
-		self::$isRoute=\true;
-		self::$lastDir=\false;
 		self::clearScripts();
 	}
 
