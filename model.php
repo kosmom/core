@@ -286,7 +286,7 @@ class model implements \Iterator{
 			$this->on_after_update($base);
 		}
 		$this->on_after_save($base);
-		model::setData($this,$this->pk_value,$result+$base);
+		if (!$isCreate)model::setData($this,$this->pk_value,$result+$base);
 		return $this;
 	}
 
