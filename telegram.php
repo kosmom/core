@@ -75,6 +75,10 @@ class telegram{
 		$reply = \json_encode($resp);
 		return self::sendMessage($chat_id, $text, $reply);
 	}
+	static function leaveChat($chat_id){
+		self::check();
+		return self::request('leaveChat',array('chat_id'=>$chat_id));
+	}
 	static function sendMessage($chat_id,$text,$reply_markup=\null,$protect_content=\false,$reply_to_message_id=\null){
 		self::check();
 		$data=array('chat_id'=>$chat_id,'text'=>input::iconv($text,\true));
