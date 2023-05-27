@@ -127,6 +127,13 @@ class telegram{
 		self::check();
 		return input::iconv(self::request('sendChatAction',array('chat_id'=>$chat_id,'action'=>$action)));
 	}
+	static function banChatMember($chat_id,$user_id,$until_date=\null,$revoke_messages=\null){
+		self::check();
+		$data=array('chat_id'=>$chat_id,'user_id'=>$user_id);
+		if ($until_date)$data['until_date']= input::strtotime($until_date);
+		if ($revoke_messages!==null)$data['revoke_messages']=$revoke_messages;
+		return input::iconv(self::request('banChatMember',$data));
+	}
 	static function sendPhoto($chat_id,$photoLink,$caption=\null,$reply_markup=\null,$protect_content=\false){
 		self::check();
 		$data=array('chat_id'=>$chat_id);
