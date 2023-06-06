@@ -9,7 +9,7 @@ namespace c;
 class core {
 	const WINDOWS1251='WINDOWS-1251';
 	const UTF8='UTF-8';
-	const VERSION='3.5';
+	const VERSION='3.6';
 	const DATA_DB_ARRAY=0;
 	const DATA_DB_COLLECTON=1;
 	const DATA_DB_COLLECTON_OBJECT=2;
@@ -72,7 +72,7 @@ class core {
 	 * @param render
 	 */
 	static $data=array('db_autobind'=>array(),'render'=>'bootstrap3','db_describe_cache'=>array());
-	static $watch = array();
+	static $watch=array();
 
 	static function watch($key,&$var){
 		self::$watch[$key]=&$var;
@@ -104,8 +104,8 @@ class core {
 				return \true;
 			}
 			if (isset(self::$data['include_dir']) && \file_exists(self::$data['include_dir'].'/'.$f)){
-			include self::$data['include_dir'].'/'.$f;
-			return \true;
+				include self::$data['include_dir'].'/'.$f;
+				return \true;
 			}
 		}
 		return \false;
@@ -135,11 +135,7 @@ class super{
 		return error::header($code);
 	}
 	function redirect($url=\null,$__DIR__=\null){
-		if ($__DIR__===\null){
-			error::redirect($url);
-		}else{
-			mvc::redirect($url,$__DIR__);
-		}
+		$__DIR__===\null?error::redirect($url):mvc::redirect($url,$__DIR__);
 	}
 	function redirectToRoute($route_name,$params=array()){
 		mvc::redirectToRoute($route_name,$params);
@@ -174,7 +170,7 @@ function t($text,$vars=array()){
 	return translate::t($text,$vars);
 }
 function curl($URL,$post=\null,$cookieFile=\null,$options=array()){
-	return curl::getContent($URL, $post, $cookieFile, $options);
+	return curl::getContent($URL,$post,$cookieFile,$options);
 }
 function config(){
 	return new config('app');
