@@ -189,8 +189,7 @@ class pic{
 				if (!$fromString)$this->image = \imagecreatefrompng($filename);
 				return;
 			case \IMAGETYPE_BMP:
-			    throw new \Exception('test');
-				if (\function_exists('imagecreatefrombmp'))throw new \Exception('BMP format dont supported');
+			    if (\function_exists('imagecreatefrombmp'))throw new \Exception('BMP format dont supported');
 				if (!$fromString)$this->image = \imagecreatefrombmp($filename);
 				return;
 			case 18: // IMAGETYPE_WEBP
