@@ -378,6 +378,14 @@ class model implements \Iterator{
 		return $rs;
 	}
 
+	/**
+	 * delete rows
+	 * @return int rows deleted
+	 */
+	static function deleteStatic(){
+		return self::toObject()->delete();
+	}
+	
 	function updateOrCreate($paramsUpdate=array(),$paramsCreate=array()){
 		if (!isset($this))return self::toObject()->updateOrCreate($paramsUpdate,$paramsCreate);
 		$this->update($paramsUpdate);
