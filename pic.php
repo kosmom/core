@@ -189,7 +189,7 @@ class pic{
 				if (!$fromString)$this->image = \imagecreatefrompng($filename);
 				return;
 			case \IMAGETYPE_BMP:
-			    if (\function_exists('imagecreatefrombmp'))throw new \Exception('BMP format dont supported');
+				if (\function_exists('imagecreatefrombmp'))throw new \Exception('BMP format dont supported');
 				if (!$fromString)$this->image = \imagecreatefrombmp($filename);
 				return;
 			case 18: // IMAGETYPE_WEBP
@@ -246,17 +246,15 @@ class pic{
 		if ($y===\null)$y=$x;
 		if ($x<1 or $y<1)  throw new \Exception('wrong x or y values on resize');
 		if (($x>$this->x) && ($y>$this->y))return $this;
-		if (($this->x/$x)<($this->y/$y)){
-			$reduce=$this->y/$y;
-		}else{
-			$reduce=$this->x/$x;
-		}
+		$reduce=max($this->y/$y,$this->x/$x);
 		if ($reduce==0)return $this;
-		if (!$this->memoryTest($this->x/$reduce,$this->y/$reduce))throw new \Exception('Need more memory');
-		$copy = \imagecreatetruecolor($this->x/$reduce, $this->y/$reduce);
-		\imagecopyresampled($copy,$this->image,0,0,0,0,$this->x/$reduce,$this->y/$reduce,$this->x,$this->y);
-		$this->x=$this->x/$reduce;
-		$this->y=$this->y/$reduce;
+		$newX=intval($this->x/$reduce);
+		$newY=intval($this->y/$reduce);
+		if (!$this->memoryTest($newX,$newY))throw new \Exception('Need more memory');
+		$copy=\imagecreatetruecolor($newX,$newY);
+		\imagecopyresampled($copy,$this->image,0,0,0,0,$newX,$newY,$this->x,$this->y);
+		$this->x=$newX;
+		$this->y=$newY;
 		\imagedestroy($this->image);
 		$this->image=$copy;
 		return $this;
@@ -354,7 +352,7 @@ class pic{
 		if ($x<1 or $y<1)  throw new \Exception('wrong x or y values on resize');
 		$copy = \imagecreatetruecolor($x, $y);
 		\imagesavealpha($copy,\true);
-		$transparent = \imagecolorallocatealpha($copy,0,0,0,127);
+		$transparent=\imagecolorallocatealpha($copy,0,0,0,127);
 		\imagefill($copy, 0, 0, $transparent);
 		$width=($x-$this->x)/2;
 		$height=($y-$this->y)/2;
