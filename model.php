@@ -448,13 +448,19 @@ class model implements \Iterator{
 	}
 	
 	/**
-	 * Set filter in raw text and In expression
+	 * Set filter in raw text in "(:in)" expression
 	 * @param string $sqlPart
 	 * @param array $arrayIn
 	 * @return $this
 	 */
 	function whereInRaw($sqlPart,$arrayIn){
 		if (!isset($this))return self::toObject()->whereInRaw($sqlPart,$arrayIn);
+		if (!\is_array($arrayIn))$arrayIn=array($arrayIn);
+		if (empty($arrayIn)){
+			$this->queryWhere[]=array('expression'=>'1=0','conjunction'=>$this->nextConjunction());
+			return $this;
+		}
+		if (!\strpos($sqlPart,'(:in)'))$sqlPart.=' in (:in)';
 		$sqlInPart=db::in($this->queryBind,$arrayIn);
 		$this->queryWhere[]=array('expression'=>\str_replace('(:in)','('.$sqlInPart.')',$sqlPart),'conjunction'=>$this->nextConjunction());
 		return $this;
