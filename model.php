@@ -48,35 +48,37 @@ class model implements \Iterator{
 		$this->cacheTimeout=$seconds;
 		return $this;
 	}
+	#[\ReturnTypeWillChange]
 	function next(){
 		$this->getAutoGet();
 		return $this->collectionAutoGet->next();
 	}
+	#[\ReturnTypeWillChange]
 	function rewind(){
 		$this->getAutoGet();
 		return $this->collectionAutoGet->rewind();
 	}
+	#[\ReturnTypeWillChange]
 	function current(){
 		$this->getAutoGet();
 		return $this->collectionAutoGet->current();
 	}
+	#[\ReturnTypeWillChange]
 	function valid(){
 		$this->getAutoGet();
 		return $this->collectionAutoGet->valid();
 	}
+	#[\ReturnTypeWillChange]
 	function key(){
 		$this->getAutoGet();
 		return $this->collectionAutoGet->key();
 	}
-	
 	function __toString() {
 		if ($this->pk_value)return (string)$this->pk_value;
 	}
-
 	function isRowMode(){
 		return $this->isRowMode;
 	}
-	
 	function on_before_create(){
 	}
 	function on_after_create(){
@@ -410,7 +412,7 @@ class model implements \Iterator{
 		return db::e($sql,$this->queryBind,$this->getConnections());
 	}
 	private function sqlExpression($where){
-		if (\is_callable($where['field']) && !\is_string($where['field'])){
+		if (isset($where['field']) && \is_callable($where['field']) && !\is_string($where['field'])){
 			$model = new $this;
 			$model->isSubquery=true;
 			//$model->tableAlias=$this->tableAlias;
