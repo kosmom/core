@@ -446,7 +446,7 @@ class model implements \Iterator{
 	 * @return static
 	 */
 	static function whereRawStatic($sqlPart,$bind=array()){
-		return self::toObject()->whereRaw($sqlPart, $bind);
+		return self::toObject()->whereRaw($sqlPart,$bind);
 	}
 	
 	/**
@@ -466,6 +466,9 @@ class model implements \Iterator{
 		$sqlInPart=db::in($this->queryBind,$arrayIn);
 		$this->queryWhere[]=array('expression'=>\str_replace('(:in)','('.$sqlInPart.')',$sqlPart),'conjunction'=>$this->nextConjunction());
 		return $this;
+	}
+	static function whereInRawStatic($sqlPart,$arrayIn){
+		return self::toObject()->whereInRaw($sqlPart,$arrayIn);
 	}
 	/**
 	 * Set filter as In to query
@@ -534,7 +537,7 @@ class model implements \Iterator{
 				$prop='in';
 			}elseif ($prop===\null && \is_array($field)){
 				foreach ($field as $key=>$item){
-					$this->whereCondition($key, '=', $item);
+					$this->whereCondition($key,'=',$item);
 				}
 				return $this;
 			}elseif (\is_callable($field)){
@@ -578,7 +581,7 @@ class model implements \Iterator{
 		if ($value===\null){
 			if ($prop===\null && \is_array($field)){
 				foreach ($field as $key=>$item){
-					$this->whereCondition($key, '=', $item,\true);
+					$this->whereCondition($key,'=',$item,\true);
 				}
 				return $this;
 			}else{
@@ -658,11 +661,11 @@ class model implements \Iterator{
 		$result['field']=$field_val;
 		$result['value']=$value;
 		if ($field_val!=$field)$result['expression']=\true;
-		$result['conjunction'] = $this->nextConjunction();
+		$result['conjunction']=$this->nextConjunction();
 		$this->queryWhere[]=$result;
 	}
 	private function bindFind($field,$value){
-		$field=\ltrim($field, '_');
+		$field=\ltrim($field,'_');
 		if (!isset($this->queryBind[$field]))return $field;
 		if ($this->queryBind[$field]==$value)return $field;
 		return $field.$this->bindCounter++;
