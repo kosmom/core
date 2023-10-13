@@ -13,14 +13,17 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 		if (\is_array($array))$this->_c= \SplFixedArray::fromArray($array);
 	}
 
+	#[\ReturnTypeWillChange]
 	function offsetExists($offset){
 		return isset($this->_c[$offset]);
 	}
 
+	#[\ReturnTypeWillChange]
 	function offsetGet($offset){
 		return $this->offsetExists($offset)?$this->_c[$offset]:\null;
 	}
 
+	#[\ReturnTypeWillChange]
 	function offsetSet($offset, $value){
 		if (\is_null($offset)){
 			$this->_c[]=$value;
@@ -39,10 +42,11 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 		return \implode($glue, $this->map($callback));
 	}
 	
+	#[\ReturnTypeWillChange]
 	function offsetUnset($offset){
 		unset($this->_c[$offset]);
 	}
-
+	#[\ReturnTypeWillChange]
 	function rewind(){
 		$this->_p=0;
 	}
@@ -54,14 +58,15 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	/**
 	 * @return array
 	 */
+	#[\ReturnTypeWillChange]
 	function current(){
 		return $this->_c[$this->_p];
 	}
-
+	#[\ReturnTypeWillChange]
 	function key(){
 		return $this->_p;
 	}
-
+	#[\ReturnTypeWillChange]
 	function next(){
 		++$this->_p;
 	}
@@ -69,7 +74,7 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	function valid(){
 		return isset($this->_c[$this->_p]);
 	}
-
+	#[\ReturnTypeWillChange]
 	function count(){
 		return \count($this->_c);
 	}
