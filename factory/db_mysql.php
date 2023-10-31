@@ -68,7 +68,7 @@ class db_mysql {
 		if (\sizeof($bind)==0 || !\is_array($bind))return $sql;
 		$bind2=array();
 		foreach ($bind as $key=>$value){
-			$bind2[':'.$key]=($value===\c\db::NULL || $value===\null?'NULL':"'".\mysqli_real_escape_string($this->connect,$value)."'");
+			$bind2[':'.$key]=($value===\c\db::NULL || $value===\null?'NULL': ($value instanceof \c\db?$value:"'".\mysqli_real_escape_string($this->connect,$value)."'"));
 		}
 		return \strtr($sql,$bind2);
 	}

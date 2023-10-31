@@ -60,7 +60,7 @@ class db_sqlsrv {
 		if (\sizeof($bind)==0 || !\is_array($bind))return $sql;
 		$bind2=array();
 		foreach ($bind as $key=>$value){
-			$bind2[':'.$key]=($value===\c\db::NULL || $value===\null?'NULL':"'".\strtr($value,["'"=>"''","\\"=>"\\\\"])."'");
+			$bind2[':'.$key]=($value===\c\db::NULL || $value===\null?'NULL': ($value instanceof \c\db?$value:"'".\strtr($value,["'"=>"''","\\"=>"\\\\"])."'"));
 		}
 		return \strtr($sql,$bind2);
 	}

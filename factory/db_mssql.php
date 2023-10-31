@@ -44,7 +44,7 @@ class db_mssql{
 		if (\sizeof($bind)==0 || !\is_array($bind))return $sql;
 		$bind2=array();
 		foreach ($bind as $key=>$value){
-			$bind2[':'.$key]=($value===\null?'NULL':($value===''?"''":"'".\strtr($value,["'"=>"''","\\"=>"\\\\"])."'"));
+			$bind2[':'.$key]=($value===\null?'NULL':($value===''?"''": ($value instanceof \c\db?$value:"'".\strtr($value,["'"=>"''","\\"=>"\\\\"])."'")));
 		}
 		return \strtr($sql,$bind2);
 	}

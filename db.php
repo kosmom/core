@@ -17,6 +17,18 @@ class db{
 	private static $hydrators=array();
 	private static $lastHydrator=0;
 
+	var $sqlPart=null;
+	
+	static function raw($sqlPart){
+		$a=new self();
+		$a->sqlPart=$sqlPart;
+		return $a;
+	}
+	
+	function __toString(){
+		return (string)$this->sqlPart;
+	}
+	
 	/**
 	* Return full bind array for sql query with autobinds
 	* @param string $sql query

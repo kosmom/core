@@ -283,7 +283,7 @@ class dbwork{
 	/**
 	 * Insert or update $array_in data into $tablename with use sequence $sequence
 	 * @param string $tablename
-	 * @param array $arrayIn input array. Keys - fields name. Vals - values. Magic values is {SYSDATE} - current timestamp and {+} - add or concat value with current. For example '{+}100'
+	 * @param array $arrayIn input array. Keys - fields name. Vals - values. Magic values is {SYSDATE} - current timestamp
 	 * @param string|boolean $sequence
 	 * @param string $db
 	 * @param array|boolean $errors array of errors returned into var
@@ -418,13 +418,8 @@ class dbwork{
 							break;
 						}
 						$strcolname[]=$field;
-						if (\strlen($value) > 3 && \substr($value,0,3) == '{+}'){
-							$strvalues[]='concat('.$field.',:'.$upperField.')';
-							$bind[$upperField]=\substr($value,3);
-						}else{
-							$strvalues[]=':'.$upperField;
-							$bind[$upperField]=$value;
-						}
+						$strvalues[]=':'.$upperField;
+						$bind[$upperField]=$value;
 
 					break;
 					case 'INTEGER':
@@ -466,13 +461,8 @@ class dbwork{
 
 						}
 						$strcolname[]=$field;
-						if (\strlen($value) > 3 && \substr($value,0,3) == '{+}'){
-							$strvalues[]=$field.'+:'.$upperField;
-							$bind[$upperField]=\substr($value,3);
-						}else{
-							$strvalues[]=':'.$upperField;
-							$bind[$upperField]=$value;
-						}
+						$strvalues[]=':'.$upperField;
+						$bind[$upperField]=$value;
 					break;
 					case 'NUMBER':
 					case 'FLOAT':
@@ -661,7 +651,7 @@ class dbwork{
 	/**
 	 * Insert or update $array_in data into $tablename with use sequence $sequence
 	 * @param string $tablename
-	 * @param array $arrayIn input array. Keys - fields name. Vals - values. Magic values is {NOW} - current timestamp and {+} - add or concat value with current. For example '{+}100'
+	 * @param array $arrayIn input array. Keys - fields name. Vals - values.
 	 * @param string $sequence
 	 * @param string $db
 	 * @return boolean or inserted ID
