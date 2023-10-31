@@ -129,38 +129,38 @@ class db_oracle {
 		$subsql=\strtolower(\substr($sql,0,5));
 		$isResult=$subsql == 'selec' || $subsql=='with ';
 		if($isResult){
-			$_data = array();
+			$data = array();
 			switch ($mode){
 				case 'ea':
-						\oci_fetch_all($stmt,$_data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_ASSOC+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
-	//while ($_row = oci_fetch_array($stmt,OCI_ASSOC+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$_data[] = $_row;
+						\oci_fetch_all($stmt,$data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_ASSOC+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
+	//while ($row = oci_fetch_array($stmt,OCI_ASSOC+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$data[] = $row;
 						break;
 				case 'e':
-						\oci_fetch_all($stmt,$_data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_BOTH+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
-						//while ($_row = oci_fetch_array($stmt,OCI_BOTH+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$_data[] = $_row;
+						\oci_fetch_all($stmt,$data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_BOTH+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
+						//while ($row = oci_fetch_array($stmt,OCI_BOTH+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$data[] = $row;
 						break;
 				case 'ea1':
-						$_data=\oci_fetch_array($stmt,\OCI_ASSOC+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
+						$data=\oci_fetch_array($stmt,\OCI_ASSOC+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
 						break;
 			}
 			\oci_free_statement($stmt);
 			if (\c\core::$debug)\c\debug::trace('Result fetch get '.\round((\microtime(\true)-$start)*1000,2).' ms');
 		}else {
-			$_data=\true;
+			$data=\true;
 			if (\c\core::$debug)\c\debug::trace('Affected '.$this->rows().' rows',\false);
 		}
 		if (\c\core::$debug){
 		if (!$isResult && $mode!='e')\c\debug::trace('ea function used without result. Better use e function',\c\error::WARNING);
 			if ($isResult && $mode=='e')\c\debug::trace('e function used with result. Better use ea function',\c\error::WARNING);
 			if ($isResult){
-				if ($_data){
+				if ($data){
 					if ($mode=='ea1'){
 						\c\debug::group('Query result');
-						\c\debug::dir($_data);
+						\c\debug::dir($data);
 					}else{
-						\c\debug::group('Query result. Count: '.\sizeof($_data),\c\error::INFO,\sizeof($_data)>10);
-						\c\debug::table(\array_slice($_data,0,30));
-						if (sizeof($_data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
+						\c\debug::group('Query result. Count: '.\sizeof($data),\c\error::INFO,\sizeof($data)>10);
+						\c\debug::table(\array_slice($data,0,30));
+						if (sizeof($data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
 					}
 					\c\debug::groupEnd();
 				}else{
@@ -178,7 +178,7 @@ class db_oracle {
 
 			\c\debug::groupEnd();
 		}
-		return $_data;
+		return $data;
 	}
 	private function slashes($bind){
 		return \str_replace("'", "''", $bind);
@@ -289,23 +289,23 @@ class db_oracle {
 		$subsql=\strtolower(\substr($sql,0,5));
 		$isResult=$subsql == 'selec' || $subsql=='with ';
 		if($isResult){
-			$_data = array();
+			$data = array();
 			if ($assoc){
-				\oci_fetch_all($stmt,$_data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_ASSOC+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
-				//while ($_row = oci_fetch_array($stmt,OCI_ASSOC+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$_data[] = $_row;
+				\oci_fetch_all($stmt,$data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_ASSOC+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
+				//while ($row = oci_fetch_array($stmt,OCI_ASSOC+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$data[] = $row;
 			}else{
-				\oci_fetch_all($stmt,$_data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_BOTH+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
-				//while ($_row = oci_fetch_array($stmt,OCI_BOTH+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$_data[] = $_row;
+				\oci_fetch_all($stmt,$data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_BOTH+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
+				//while ($row = oci_fetch_array($stmt,OCI_BOTH+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$data[] = $row;
 			}
 		}else{
-			$_data = \true;
+			$data = \true;
 		}
 		if (\c\core::$debug){
 			if ($isResult){
-				if ($_data){
-					\c\debug::group('Query result. Count: '.\sizeof($_data),\c\error::INFO,\sizeof($_data)>10);
-					\c\debug::table(\array_slice($_data,0,30));
-					if (sizeof($_data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
+				if ($data){
+					\c\debug::group('Query result. Count: '.\sizeof($data),\c\error::INFO,\sizeof($data)>10);
+					\c\debug::table(\array_slice($data,0,30));
+					if (sizeof($data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
 					\c\debug::groupEnd();
 				}else{
 					\c\debug::trace('No results found',\c\error::WARNING);
@@ -316,7 +316,7 @@ class db_oracle {
 			\c\debug::groupEnd();
 		}
 //		oci_free_statement($stmt);
-		return $_data;
+		return $data;
 	}
 
 	function execute_assoc($sql, $bind = array()){
@@ -355,9 +355,9 @@ class db_oracle {
 		$stmt = \oci_parse($this -> connect, "select lpad(' ',depth)||operation operation,options,case when object_owner is null then '' else object_owner||'.' end||object_name object,filter_predicates||access_predicates predicates,cost from PLAN_TABLE where statement_id='core_sql' order by plan_id desc,ID");
 		$result=\oci_execute($stmt,$this->execute_mode);
 		$data=array();
-		\oci_fetch_all($stmt,$_data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_ASSOC+\OCI_RETURN_NULLS);
+		\oci_fetch_all($stmt,$data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_ASSOC+\OCI_RETURN_NULLS);
 		\oci_free_statement($stmt);
-		return $_data;
+		return $data;
 	}
 function execute_assoc_1($sql, $bind = array()){
 		return $this->execute($sql, $bind,'ea1');
@@ -378,7 +378,7 @@ function execute_assoc_1($sql, $bind = array()){
 			}
 			$start=\microtime(\true);
 		}
-		$stmt = \oci_parse($this -> connect, $sql);
+		$stmt=\oci_parse($this -> connect, $sql);
 		if(!$stmt){
 			$error=\oci_error($this -> connect);
 			if (\c\core::$debug){

@@ -37,7 +37,7 @@ class db_mysql {
 	}
 
 	function connect(){
-		@$this->connect = \mysqli_connect(($this->data['persistent']?'p:':'').$this->data['host'], $this->data['login'], $this->data['password'],$this->data['name'],isset($this->data['port'])?$this->data['port']:3306);
+		@$this->connect = \mysqli_connect(($this->data['persistent']?'p:':'').$this->data['host'],$this->data['login'], $this->data['password'],$this->data['name'],isset($this->data['port'])?$this->data['port']:3306);
 		if (!$this->connect)throw new \Exception('MySQL connection error '.\mysqli_connect_errno());
 		if (\c\core::$debug){
 			\c\debug::group('Connection to '.($this->cn?$this->cn:'MySQL'),\c\error::SUCCESS);
@@ -65,10 +65,10 @@ class db_mysql {
 		\mysqli_rollback($this->connect);
 	}
 	function bind($sql,$bind=array()){
-		if (\sizeof($bind)==0 or !\is_array($bind))return $sql;
+		if (\sizeof($bind)==0 || !\is_array($bind))return $sql;
 		$bind2=array();
 		foreach ($bind as $key=>$value){
-			$bind2[':'.$key]=($value==='' || $value===\c\db::NULL || $value===\null?'NULL':"'".\mysqli_real_escape_string($this->connect,$value)."'");
+			$bind2[':'.$key]=($value===\c\db::NULL || $value===\null?'NULL':"'".\mysqli_real_escape_string($this->connect,$value)."'");
 		}
 		return \strtr($sql,$bind2);
 	}
@@ -122,7 +122,7 @@ class db_mysql {
 						$data=\mysqli_fetch_all($result,\MYSQLI_ASSOC);
 					}else{
 						$data=array();
-						while ($_row=\mysqli_fetch_assoc($result))$data[]=$_row;
+						while ($row=\mysqli_fetch_assoc($result))$data[]=$row;
 					}
 					break;
 				case 'e':
@@ -130,7 +130,7 @@ class db_mysql {
 						$data=\mysqli_fetch_all($result,\MYSQLI_BOTH);
 					}else{
 						$data=array();
-						while ($_row=\mysqli_fetch_array($result))$data[]=$_row;
+						while ($row=\mysqli_fetch_array($result))$data[]=$row;
 					}
 					break;
 				case 'ea1':
@@ -199,24 +199,24 @@ class db_mysql {
 	}
 	function explain($sql,$bind=array()){
 		$sql='explain '.$this->bind($sql,$bind);
-		$_result = \mysqli_query($this->connect,$sql,\MYSQLI_USE_RESULT);
-		if(!$_result)return \false;
+		$result = \mysqli_query($this->connect,$sql,\MYSQLI_USE_RESULT);
+		if(!$result)return \false;
 		if (\function_exists('mysqli_fetch_all')){
-			$_data=\mysqli_fetch_all($_result,\MYSQLI_ASSOC);
+			$data=\mysqli_fetch_all($result,\MYSQLI_ASSOC);
 		}else{
 			$data=array();
-			while ($_row = \mysqli_fetch_assoc ($_result))$_data[] = $_row;
+			while ($row=\mysqli_fetch_assoc($result))$data[]=$row;
 		}
-		\mysqli_free_result($_result);
-		return $_data;
+		\mysqli_free_result($result);
+		return $data;
 	}
 	function query($sql,$bind){
 		$sql=$this->bind($sql,$bind);
 		return \mysqli_query($this->connect,$sql,\MYSQLI_USE_RESULT);
 	}
-	function fa($_result){
-		$row=\mysqli_fetch_assoc($_result);
-		if (empty($row))\mysqli_free_result($_result);
+	function fa($result){
+		$row=\mysqli_fetch_assoc($result);
+		if (empty($row))\mysqli_free_result($result);
 		return $row;
 	}
 	function date_from_db($value,$format){

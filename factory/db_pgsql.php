@@ -64,10 +64,10 @@ class db_pgsql {
 		$this->execute('rollback');
 	}
 	function bind($sql,$bind=array()){
-		if (\sizeof($bind)==0 or !\is_array($bind))return $sql;
+		if (\sizeof($bind)==0 || !\is_array($bind))return $sql;
 		$bind2=array();
 		foreach ($bind as $key=>$value){
-			$bind2[':'.$key]=($value==='' || $value===\c\db::NULL || $value===\null?'NULL':"'".\pg_escape_string($this->connect,$value)."'");
+			$bind2[':'.$key]=($value===\c\db::NULL || $value===\null?'NULL':"'".\pg_escape_string($this->connect,$value)."'");
 		}
 		return \strtr($sql,$bind2);
 	}
@@ -93,29 +93,29 @@ class db_pgsql {
 		}
 		$sql=$this->bind($sql,$bind);
 		//echo $sql;
-		@$_result = pg_query($this->connect,$sql);
+		@$result = pg_query($this->connect,$sql);
 		if (\c\core::$debug){
 			\c\debug::consoleLog('Query execute for '.\round((\microtime(\true)-$start)*1000,2).' ms');
 			$start=\microtime(\true);
 		}
-		if(!$_result){
+		if(!$result){
 			if (\c\core::$debug){
-				\c\debug::trace('Query error: '. \pg_errormessage($this->connect),\c\error::ERROR);
+				\c\debug::trace('Query error: '.\pg_errormessage($this->connect),\c\error::ERROR);
 				\c\debug::groupEnd();
-				\c\debug::trace('PgSQL error: '. \pg_errormessage($this->connect),\c\error::ERROR);
+				\c\debug::trace('PgSQL error: '.\pg_errormessage($this->connect),\c\error::ERROR);
 			}
 			if (empty(\c\core::$data['db_exception']))return \false;
 			throw new \Exception('SQL execute error');
 		}
 		$subsql=\strtolower(\substr($sql,0,4));
-		$_data = array();
+		$data = array();
 		if (isset($this->result_array[$subsql])){
 			switch ($mode){
 				case 'ea':
-					$_data=\pg_fetch_all($_result);
+					$data=\pg_fetch_all($result);
 					break;
 				case 'ea1':
-					$_data=\pg_fetch_assoc($_result, 0);
+					$data=\pg_fetch_assoc($result,0);
 					break;
 			}
 			if (\c\core::$debug)\c\debug::trace('Result fetch get '.\round((\microtime(\true)-$start)*1000,2).' ms');
@@ -124,14 +124,14 @@ class db_pgsql {
 			if (!isset($this->result_array[$subsql]) && $mode!='e')\c\debug::trace('ea function used without result. Better use e function',\c\error::WARNING);
 			if (isset($this->result_array[$subsql]) && $mode=='e')\c\debug::trace('e function used with result. Better use ea function',\c\error::WARNING);
 			if (isset($this->result_array[$subsql])){
-				if ($_data){
+				if ($data){
 					if ($mode=='ea1'){
 						\c\debug::group('Query result');
-						\c\debug::dir($_data);
+						\c\debug::dir($data);
 					}else{
-						\c\debug::group('Query result. Count: '.\sizeof($_data),\c\error::INFO,\sizeof($_data)>10);
-						\c\debug::table(\array_slice($_data,0,30));
-						if (\sizeof($_data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
+						\c\debug::group('Query result. Count: '.\sizeof($data),\c\error::INFO,\sizeof($data)>10);
+						\c\debug::table(\array_slice($data,0,30));
+						if (\sizeof($data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
 					}
 					\c\debug::groupEnd();
 				}else{
@@ -142,17 +142,17 @@ class db_pgsql {
 			}
 			// explain
 			\c\debug::group('Explain select');
-			$this->affected_rows=\pg_affected_rows($_result);
-			$this->num_rows= \pg_num_rows($_result);
-			$this->insert_id= \pg_last_oid($_result);
-			\pg_free_result($_result);
+			$this->affected_rows=\pg_affected_rows($result);
+			$this->num_rows= \pg_num_rows($result);
+			$this->insert_id= \pg_last_oid($result);
+			\pg_free_result($result);
 			\c\debug::table($this->explain($sql));
 			\c\debug::groupEnd();
 			\c\debug::groupEnd();
 		}else{
-			\pg_free_result($_result);
+			\pg_free_result($result);
 		}
-		return $_data;
+		return $data;
 	}
 	function ea1($sql,$bind=array()){
 		return $this->execute_assoc($sql,$bind,'ea1');
@@ -175,19 +175,19 @@ class db_pgsql {
 	}
 	function explain($sql,$bind=array()){
 		$sql='explain '.$this->bind($sql,$bind);
-		$_result = \pg_query($this->connect,$sql);
-		if(!$_result)return \false;
-		$_data=\pg_fetch_all($_result);
-		\pg_free_result($_result);
-		return $_data;
+		$result = \pg_query($this->connect,$sql);
+		if(!$result)return \false;
+		$data=\pg_fetch_all($result);
+		\pg_free_result($result);
+		return $data;
 	}
 	function query($sql,$bind){
 		$sql=$this->bind($sql,$bind);
 		return \pg_query($this->connect,$sql);
 	}
-	function fa($_result){
-		$row=\pg_fetch_assoc($_result);
-		if (empty($row))\pg_free_result($_result);
+	function fa($result){
+		$row=\pg_fetch_assoc($result);
+		if (empty($row))\pg_free_result($result);
 		return $row;
 	}
 	function date_from_db($value,$format){

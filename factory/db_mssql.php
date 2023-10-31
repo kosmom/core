@@ -41,10 +41,10 @@ class db_mssql{
 		\mssql_close($this->connect);
 	}
 	function bind($sql,$bind=array()){
-		if (\sizeof($bind)==0 or !\is_array($bind))return $sql;
+		if (\sizeof($bind)==0 || !\is_array($bind))return $sql;
 		$bind2=array();
 		foreach ($bind as $key=>$value){
-			$bind2[':'.$key]=($value===\null?'NULL':($value===''?"''":"'".$this->prepare($value)."'"));
+			$bind2[':'.$key]=($value===\null?'NULL':($value===''?"''":"'".\strtr($value,["'"=>"''","\\"=>"\\\\"])."'"));
 		}
 		return \strtr($sql,$bind2);
 	}
@@ -54,7 +54,7 @@ class db_mssql{
 			\c\debug::group('MsSQL query');
 			if (\ltrim($sql)!=$sql){
 				\c\debug::trace('clear whitespaces at begin of query for correct work. Autocorrect in debug mode',\c\error::ERROR);
-				$sql=ltrim($sql);
+				$sql=\ltrim($sql);
 			}
 			\c\debug::trace('SQL:'.$sql,\false);
 			if ($bind){
@@ -67,12 +67,12 @@ class db_mssql{
 		}
 		$sql=$this->bind($sql,$bind);
 		if (\c\core::$debug)\c\debug::consoleLog('Full query: '.$sql);
-		$_result=\mssql_query($sql,$this->connect);
+		$result=\mssql_query($sql,$this->connect);
 		if (\c\core::$debug){
 			\c\debug::consoleLog('Query get '.\round((\microtime(\true)-$start)*1000,2).' ms');
 			$start=\microtime(\true);
 		}
-		if(!$_result){
+		if(!$result){
 			if (\c\core::$debug){
 				\c\debug::trace('Mssql Query error: '.\mssql_get_last_message(),\c\error::ERROR);
 				\c\debug::groupEnd();
@@ -84,35 +84,35 @@ class db_mssql{
 				throw new \Exception("MsSql execute error: ".\mssql_get_last_message(),\E_USER_ERROR);
 			}
 		}
-		$_data = array();
+		$data = array();
 		$subsql=\strtolower(\substr($sql,0,4));
 		if (isset($this->result_array[$subsql])){
 			switch ($mode){
 				case 'ea':
-					while ($_row=\mssql_fetch_assoc($_result))$_data[]=$_row;
+					while ($row=\mssql_fetch_assoc($result))$data[]=$row;
 					break;
 				case 'e':
-					while ($_row=\mssql_fetch_array($_result))$_data[]=$_row;
+					while ($row=\mssql_fetch_array($result))$data[]=$row;
 					break;
 				case 'ea1':
-					$_data=\mssql_fetch_assoc($_result);
+					$data=\mssql_fetch_assoc($result);
 					break;
 			}
-			\mssql_free_result($_result);
+			\mssql_free_result($result);
 			if (\c\core::$debug)\c\debug::trace('Result fetch get '.\round((\microtime(\true)-$start)*1000,2).' ms');
 		}
 		if (\c\core::$debug){
 			if (!isset($this->result_array[$subsql]) && $mode!='e')\c\debug::trace('ea function used without result. Better use e function',\c\error::WARNING);
 			if (isset($this->result_array[$subsql]) && $mode=='e')\c\debug::trace('e function used with result. Better use ea function',\c\error::WARNING);
 			if (isset($this->result_array[$subsql])){
-				if ($_data){
+				if ($data){
 					if ($mode=='ea1'){
 						\c\debug::group('Query result');
-						\c\debug::dir($_data);
+						\c\debug::dir($data);
 					}else{
-						\c\debug::group('Query result. Count: '.\sizeof($_data),\c\error::INFO,\sizeof($_data)>10);
-						\c\debug::table(\array_slice($_data,0,30));
-						if (sizeof($_data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
+						\c\debug::group('Query result. Count: '.\sizeof($data),\c\error::INFO,\sizeof($data)>10);
+						\c\debug::table(\array_slice($data,0,30));
+						if (sizeof($data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
 					}
 					\c\debug::groupEnd();
 				}else{
@@ -128,12 +128,7 @@ class db_mssql{
 
 			\c\debug::groupEnd();
 		}
-		return $_data;
-	}
-	function prepare($str){
-		$str = \str_replace("'", "''", $str);
-		$str = \str_replace("\\", "\\\\", $str);
-		return $str;
+		return $data;
 	}
 	function execute_assoc($sql,$bind){
 		return $this->execute($sql,$bind,'ea');
@@ -155,15 +150,15 @@ class db_mssql{
 		return \mssql_rows_affected( $this -> connect);
 	}
 
-	function db_limit($sql,$from=0,$count=0,$_order_fild='1',$_order_dir='DESC'){
-		if ($_order_dir == "DESC"){
+	function db_limit($sql,$from=0,$count=0,$order_fild='1',$order_dir='DESC'){
+		if ($order_dir == "DESC"){
 			$o1="ASC";
 			$o2="DESC";
 		}else{
 			$o1="DESC";
 			$o2="ASC";
 		}
-		if ($from != 0) return "SELECT * FROM (SELECT TOP ".$count." * FROM (SELECT TOP ".($from + $count)." * FROM (".$sql.") DBLIMIT1 ORDER BY ".$_order_fild." ".$o2.") DBLIMIT2 ORDER BY ".$_order_fild." ".$o1.") DBLIM";
+		if ($from != 0) return "SELECT * FROM (SELECT TOP ".$count." * FROM (SELECT TOP ".($from + $count)." * FROM (".$sql.") DBLIMIT1 ORDER BY ".$order_fild." ".$o2.") DBLIMIT2 ORDER BY ".$order_fild." ".$o1.") DBLIM";
 		else return "SELECT TOP ".($from + $count)." * FROM (".$sql.") DBLIMIT2 ";
 	}
 	function explain(){

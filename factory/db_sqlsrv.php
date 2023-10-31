@@ -57,20 +57,15 @@ class db_sqlsrv {
 		\sqlsrv_rollback($this->connect);
 	}
 	function bind($sql,$bind=array()){
-		if (\sizeof($bind)==0 or !\is_array($bind))return $sql;
+		if (\sizeof($bind)==0 || !\is_array($bind))return $sql;
 		$bind2=array();
 		foreach ($bind as $key=>$value){
-			$bind2[':'.$key]=($value==='' || $value===\c\db::NULL || $value===\null?'NULL':"'".$this->prepare($value)."'");
+			$bind2[':'.$key]=($value===\c\db::NULL || $value===\null?'NULL':"'".\strtr($value,["'"=>"''","\\"=>"\\\\"])."'");
 		}
 		return \strtr($sql,$bind2);
 	}
 	function execute($sql, $bind=array()){
 		return $this->execute_assoc($sql,$bind,'e');
-	}
-	function prepare($str){
-		$str = \str_replace("'", "''", $str);
-		$str = \str_replace("\\", "\\\\", $str);
-		return $str;
 	}
 	function execute_assoc($sql,$bind=array(),$mode='ea'){
 		if (\c\core::$debug){
@@ -106,17 +101,17 @@ class db_sqlsrv {
 			throw new \Exception('SQL execute error: '.\sqlsrv_errors());
 		}
 		$subsql=strtolower(substr($sql,0,4));
-		$_data = array();
+		$data=array();
 		if (isset($this->result_array[$subsql])){
 			switch ($mode){
 				case 'ea':
-					while ($_row = \sqlsrv_fetch_array ($stmt,\SQLSRV_FETCH_ASSOC))$_data[] = $_row;
+					while ($row=\sqlsrv_fetch_array($stmt,\SQLSRV_FETCH_ASSOC))$data[] = $row;
 					break;
 				case 'e':
-					while ($_row = \sqlsrv_fetch_array ($stmt))$_data[] = $_row;
+					while ($row=\sqlsrv_fetch_array($stmt))$data[] = $row;
 					break;
 				case 'ea1':
-					$_data=\sqlsrv_fetch_array($stmt,\SQLSRV_FETCH_ASSOC);
+					$data=\sqlsrv_fetch_array($stmt,\SQLSRV_FETCH_ASSOC);
 					break;
 			}
 			if (\c\core::$debug)\c\debug::trace('Result fetch get '.\round((\microtime(\true)-$start)*1000,2).' ms');
@@ -125,14 +120,14 @@ class db_sqlsrv {
 			if (!isset($this->result_array[$subsql]) && $mode!='e')\c\debug::trace('ea function used without result. Better use e function',\c\error::WARNING);
 			if (isset($this->result_array[$subsql]) && $mode=='e')\c\debug::trace('e function used with result. Better use ea function',\c\error::WARNING);
 			if (isset($this->result_array[$subsql])){
-				if ($_data){
+				if ($data){
 					if ($mode=='ea1'){
 						\c\debug::group('Query result');
-						\c\debug::dir($_data);
+						\c\debug::dir($data);
 					}else{
-						\c\debug::group('Query result. Count: '.\sizeof($_data),\c\error::INFO,\sizeof($_data)>10);
-						\c\debug::table(\array_slice($_data,0,30));
-						if (sizeof($_data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
+						\c\debug::group('Query result. Count: '.\sizeof($data),\c\error::INFO,\sizeof($data)>10);
+						\c\debug::table(\array_slice($data,0,30));
+						if (\sizeof($data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
 					}
 					\c\debug::groupEnd();
 				}else{
@@ -144,20 +139,20 @@ class db_sqlsrv {
 		}else{
 			\sqlsrv_free_stmt($stmt);
 		}
-		return $_data;
+		return $data;
 	}
 	function ea1($sql,$bind=array()){
 		return $this->execute_assoc($sql,$bind,'ea1');
 	}
-	function db_limit($sql,$from=0,$count=0,$_order_fild='1',$_order_dir='DESC'){
-		if ($_order_dir == "DESC"){
+	function db_limit($sql,$from=0,$count=0,$order_fild='1',$order_dir='DESC'){
+		if ($order_dir == "DESC"){
 			$o1="ASC";
 			$o2="DESC";
 		}else{
 			$o1="DESC";
 			$o2="ASC";
 		}
-		if ($from != 0) return "SELECT * FROM (SELECT TOP ".$count." * FROM (SELECT TOP ".($from + $count)." * FROM (".$sql.") DBLIMIT1 ORDER BY ".$_order_fild." ".$o2.") DBLIMIT2 ORDER BY ".$_order_fild." ".$o1.") DBLIM";
+		if ($from != 0) return "SELECT * FROM (SELECT TOP ".$count." * FROM (SELECT TOP ".($from + $count)." * FROM (".$sql.") DBLIMIT1 ORDER BY ".$order_fild." ".$o2.") DBLIMIT2 ORDER BY ".$order_fild." ".$o1.") DBLIM";
 		else return "SELECT TOP ".($from + $count)." * FROM (".$sql.") DBLIMIT2 ";
 	}
 	function getLenResult(){
