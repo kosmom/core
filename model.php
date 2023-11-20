@@ -172,7 +172,7 @@ class model implements \Iterator{
 	}
 	function calculateValue($field,$value, $values=array()){
 	//if (is_null($value))throw new \Exception('no data in '.$field);
-		if (is_null($value))return \null;
+		if (\is_null($value))return \null;
 		if (@!$this->fields[$field]['get'])return $value;
 		if (@$this->fields[$field]['getThis'])return \call_user_func($this->fields[$field]['get'],$value,$values);
 		return \call_user_func($this->fields[$field]['get'],$value);
@@ -986,7 +986,7 @@ class model implements \Iterator{
 		return $this->relation($model,$foreign_key,$local_key,\true);
 	}
 	function relation($model,$foreign_key=\null,$local_key=\null,$is_inner=\false,$to_one=\false){
-		// уххх
+// уххх
 		if ($local_key===\null)$local_key=$this->getPrimaryField();
 		
 		$baseCollection=\null;
@@ -995,7 +995,12 @@ class model implements \Iterator{
 			if ($generator->getPrimaryField()==$local_key){
 				$baseCollection=$this->collectionSource;
 			}else{
-				$baseCollection=new collection_object(\array_unique($this->collectionSource->pluck($local_key)),$this->collectionSource->generator,$local_key);
+				if (isset($this->collectionSource->collectionSourceCache[$local_key])){
+					$baseCollection=$this->collectionSource->collectionSourceCache[$local_key];
+				}else{
+					$a=$this->collectionSource->pluck($local_key);
+					$baseCollection=$this->collectionSource->collectionSourceCache[$local_key]=new collection_object(\array_unique($a),$this->collectionSource->generator,$local_key);
+				}
 			}
 		}
 		$obj=new $model(\null, $baseCollection);
@@ -1209,22 +1214,16 @@ class model implements \Iterator{
 		if ($field===\null){
 			// fast way
 			if (empty($model->fields)) {
-				if (!isset(self::$durty[$modelName][$pk])){
-					return self::$durty[$modelName][$pk]=self::$base[$modelName][$pk];
-		        }
+				if (!isset(self::$durty[$modelName][$pk]))return self::$durty[$modelName][$pk]=self::$base[$modelName][$pk];
 		        return \array_merge(self::$base[$modelName][$pk],self::$durty[$modelName][$pk]);
 			}
 			$out=array();
-			foreach (self::$base[$modelName][$pk] as $field=>$value){
-				$out[$field]=self::getData($modelName,$pk,$field);
-			}
+			foreach (self::$base[$modelName][$pk] as $field=>$value)$out[$field]=self::getData($modelName,$pk,$field);
 			return $out;
 		}
 		if (isset(self::$durty[$modelName][$pk][$field])) return self::$durty[$modelName][$pk][$field];
 		if (isset(self::$durty[$modelName][$pk]) && \array_key_exists($field, self::$durty[$modelName][$pk])) return self::$durty[$modelName][$pk][$field];
-		if (@$model->fields[$field]['get']){
-			return self::$durty[$modelName][$pk][$field]=$model->calculateValue($field,self::$base[$modelName][$pk][$field],self::$base[$modelName][$pk]);
-		}
+		if (@$model->fields[$field]['get']) return self::$durty[$modelName][$pk][$field]=$model->calculateValue($field,self::$base[$modelName][$pk][$field],self::$base[$modelName][$pk]);
 		return @self::$durty[$modelName][$pk][$field]=self::$base[$modelName][$pk][$field];
 	}
 	static function getDataOrFail($model,$pk,$field){

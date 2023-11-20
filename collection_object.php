@@ -10,6 +10,8 @@ class collection_object extends collection{
 	var $pk_field;
 	var $connection;
 	var $is_full;
+	var $collectionSourceCache=array();
+	
 	function __construct($array,$generator=\null,$pk_field=\null,$is_full=\false){
 		parent::__construct($array);
 		$this->generator=$generator;
