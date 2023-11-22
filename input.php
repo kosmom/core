@@ -658,26 +658,11 @@ class input{
 		}
 	}
 
-	static function iconvBack($var){
+	static function iconvFromUtf($var){
 		return self::iconv($var,\true);
 	}
-	static function iconv($var,$backDirection=\false){
-		if (core::$charset==core::UTF8)return $var;
-		if (\is_array($var)){
-			$new = array();
-			foreach ($var as $k => $v) {
-				$new[self::iconv($k,$backDirection)] = self::iconv($v,$backDirection);
-			}
-			$var = $new;
-		}elseif (\is_string($var)){
-			$var = ($backDirection?\iconv(core::$charset,'utf-8', $var):\iconv('utf-8',core::$charset, $var));
-		}elseif (\is_object($var)){
-			$vars = \get_object_vars($var);
-			foreach ($vars as $m => $v) {
-				$var->$m = self::iconv($v,$backDirection);
-			}
-		}
-		return $var;
+	static function iconv($var,$fromUtf=\false){
+		return self::jsonFixCharset($var,core::$charset,$fromUtf);
 	}
 
 	/**
@@ -696,9 +681,7 @@ class input{
 	static function jsonDecode($var,$charset=\null){
 		if ($charset==\null)$charset=core::$charset;
 		$rs=\json_decode($var,1);
-		if ($rs===null && \substr($var,0,1)!=='['){
-			throw new \Exception('json decode error: '.\json_last_error_msg());
-		}
+		if ($rs===null && \substr($var,0,1)!=='[')throw new \Exception('json decode error: '.\json_last_error_msg());
 		if ($charset==core::UTF8)return $rs;
 		return self::jsonFixCharset($rs,$charset,\false);
 	}
@@ -710,24 +693,20 @@ class input{
 	 */
 	static function jsonEncode($var,$charset=\null){
 		if ($charset==\null)$charset=core::$charset;
-		if ($charset==core::UTF8)return @json_encode($var,\JSON_UNESCAPED_UNICODE | \JSON_PARTIAL_OUTPUT_ON_ERROR | (\PHP_VERSION_ID > 70200 ? \JSON_INVALID_UTF8_IGNORE : 0) );
-		return \json_encode(self::jsonFixCharset($var,$charset),\JSON_UNESCAPED_UNICODE);
+		return @\json_encode(self::jsonFixCharset($var,$charset),\JSON_UNESCAPED_UNICODE|\JSON_PARTIAL_OUTPUT_ON_ERROR|(\PHP_VERSION_ID>70200?\JSON_INVALID_UTF8_IGNORE:0) );
 	}
 	private static function jsonFixCharset($var,$charset,$fromUtf=\true){
+		if ($charset==core::UTF8)return $var;
 		if (\is_array($var)){
 			$new = array();
 			foreach ($var as $k => $v) {
-				$new[self::jsonFixCharset($k,$charset,$fromUtf)] = self::jsonFixCharset($v,$charset,$fromUtf);
+				$new[self::jsonFixCharset($k,$charset,$fromUtf)]=self::jsonFixCharset($v,$charset,$fromUtf);
 			}
-			$var = $new;
+			$var=$new;
 		}elseif (\is_string($var)){
-			if ($fromUtf){
-				$var = \iconv($charset, 'utf-8', $var);
-			}else{
-				$var = \iconv('utf-8',$charset, $var);
-			}
+			$var=$fromUtf?\iconv($charset,core::UTF8,$var):\iconv(core::UTF8,$charset,$var);
 		}elseif (\is_object($var)){
-			$vars = \get_object_vars($var);
+			$vars=\get_object_vars($var);
 			foreach ($vars as $m => $v) {
 				$var->$m = self::jsonFixCharset($v,$charset,$fromUtf);
 			}
@@ -827,19 +806,6 @@ class input{
 		return \htmlspecialchars($html,2,$charset);
 	}
 
-	/**
-	 * @deprecated since version 3.4
-	 */
-	static function curl_get_content($URL,$post=\null,$cookieFile=''){
-		return curl::getContent($URL,$post,$cookieFile);
-	}
-	/**
-	 * @deprecated since version 3.5
-	 */
-	static function curlGetContent($URL,$post=\null,$cookieFile=''){
-		return curl::getContent($URL,$post,$cookieFile);
-	}
-	
 	static function strtotime($time){
 		$matches=array();
 		if (\preg_match('/([12]\d\d\d)[\.\-]([0-2]\d)/', $time,$matches)){
@@ -853,10 +819,15 @@ class input{
 	static function number_format($number,$decimals=0,$dec_point='.',$thousands_sep=','){
 		return \strtr(\number_format($number,$decimals,'d','t'),array('d'=>$dec_point,'t'=>$thousands_sep));
 	}
+	/**
+	 * deprecated use math::roundFirstNumber
+	 */
 	static function roundFirstNumber($number,$precision=0){
-		if ($number>1)return \round($number,$precision);
-		return \round($number,-\floor(\log10($number)));
+		return marth::roundFirstNumber($number,$precision);
 	}
+	/**
+	 * deprecated since 3.6
+	 */
 	static function file_get_content($filename){
 		if (\substr($filename,0,7)=='http://' or \substr($filename,0,8)=='https://')return curl::getContent($filename);
 		return \file_get_contents($filename);

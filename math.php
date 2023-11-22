@@ -38,4 +38,14 @@ class math{
 		if ($n <= 1)return 1;
 		return $n * self::factorial($n - 1);
 	}
+	static function roundFirstNumber($number,$precision=0){
+		$sign=1;
+		if ($number<0){
+			$sign=-1;
+			$number=\abs($number);
+		}
+		if ($number>1)return $sign*\round($number,$precision);
+		if ($number==0)return 0;
+		return $sign*\round($number,-\floor(\log10($number)));
+	}
 }
