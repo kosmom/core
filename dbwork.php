@@ -343,7 +343,7 @@ class dbwork{
 			$strcolname[]=$notIsset;
 			if ($sequence === \true or $sequence ===''){
 				if (!empty($desc['data'][$notIsset]['autoincrement'])){
-					$bind[$notIsset]='';
+					$bind[$notIsset]=null;
 					$strvalues[]=':'.$notIsset;
 				}else{
 					// try find next val of numberic vals
