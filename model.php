@@ -424,7 +424,7 @@ class model implements \Iterator{
 			return $sql?'('.$sql.')':'1';
 		}
 		if (@$where['expression'] && $where['expression']!==\true)return $where['expression'];
-		return db::wrapper($where['field'],$this->getConnections()).' '.$where['prop'].' '.$where['value'];
+		return ($where['field'] instanceof db?$where['field']:db::wrapper($where['field'],$this->getConnections())).' '.$where['prop'].' '.$where['value'];
 	}
 	/**
 	 * Set filter in raw format
@@ -463,6 +463,24 @@ class model implements \Iterator{
 			return $this;
 		}
 		if (!\strpos($sqlPart,'(:in)'))$sqlPart.=' in (:in)';
+		$sqlInPart=db::in($this->queryBind,$arrayIn);
+		$this->queryWhere[]=array('expression'=>\str_replace('(:in)','('.$sqlInPart.')',$sqlPart),'conjunction'=>$this->nextConjunction());
+		return $this;
+	}
+	/**
+	 * Set filter in raw text not in "(:in)" expression
+	 * @param string $sqlPart
+	 * @param array $arrayIn
+	 * @return $this
+	 */
+	function whereNotInRaw($sqlPart,$arrayIn){
+		if (!isset($this))return self::toObject()->whereInRaw($sqlPart,$arrayIn);
+		if (!\is_array($arrayIn))$arrayIn=array($arrayIn);
+		if (empty($arrayIn)){
+			$this->queryWhere[]=array('expression'=>'1','conjunction'=>$this->nextConjunction());
+			return $this;
+		}
+		if (!\strpos($sqlPart,'(:in)'))$sqlPart.=' not in (:in)';
 		$sqlInPart=db::in($this->queryBind,$arrayIn);
 		$this->queryWhere[]=array('expression'=>\str_replace('(:in)','('.$sqlInPart.')',$sqlPart),'conjunction'=>$this->nextConjunction());
 		return $this;
@@ -633,11 +651,13 @@ class model implements \Iterator{
 			return $this->whereRaw('('.db::filterDiap($value,$field,$this->queryBind,$field).')');
 
 			case 'in':
+				if ($field instanceof db)return $this->whereInRaw($field,$value);
 			if (!\is_array($value))$value=array($value);
 			if (empty($value))return $this->queryWhere[]=array('expression'=>'1=0','conjunction'=>$this->nextConjunction());
 			$value='('.db::in($this->queryBind,$value,$field).')';
 			break;
 			case 'not in':
+				if ($field instanceof db)return $this->whereNotInRaw($field,$value);
 			if (!\is_array($value))$value=array($value);
 			if (empty($value))return $this->queryWhere[]=array('expression'=>'1','conjunction'=>$this->nextConjunction());
 			$value='('.db::in($this->queryBind,$value,$field).')';
@@ -665,6 +685,7 @@ class model implements \Iterator{
 		$this->queryWhere[]=$result;
 	}
 	private function bindFind($field,$value){
+		if ($field instanceof db)return 'core_exp_'.$this->bindCounter++;
 		$field=\ltrim($field,'_');
 		if (!isset($this->queryBind[$field]))return $field;
 		if ($this->queryBind[$field]==$value)return $field;
