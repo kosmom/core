@@ -71,6 +71,7 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 		++$this->_p;
 	}
 
+	#[\ReturnTypeWillChange]
 	function valid(){
 		return isset($this->_c[$this->_p]);
 	}

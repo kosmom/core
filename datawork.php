@@ -670,7 +670,7 @@ class datawork{
 	 * @param boolean $includeMainBranch include main branch
 	 * @return array
 	 */
-	static function tree($array=array(),$keyField,$parentField,$childrenName='children',$mainbranch=\null,$includeMainBranch=\false){
+	static function tree($array,$keyField,$parentField,$childrenName='children',$mainbranch=\null,$includeMainBranch=\false){
 		foreach ($array as $item){
 			self::$branch[$item[$parentField]][]=$item;
 			if ($includeMainBranch && $item[$keyField]==$mainbranch)$start=$item;
