@@ -36,7 +36,7 @@ $filedata=c\xlsx::get($_FILES['upload']['tmp_name']);
 class xlsx{
 	const DEFAULT_FORMATS=array(0=>'text',9=>'percent',10=>'percent', 14=>'date',15=>'date',16=>'date',17=>'date',18=>'date',19=>'date',20=>'date',21=>'date',22=>'date');
 	private static $unic=array();
-	private static $colnumber=array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ','BA','BB','BC','BD','BE','BF','BG','BH','BI','BJ');
+	private static $colnumber=array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ','BA','BB','BC','BD','BE','BF','BG','BH','BI','BJ','BK','BL','BM','BN','BO','BP','BQ','BR','BS','BT','BU');
 	static $outbuffer='';
 	private static $unicCount=-1;
 	private static $count=-1;
