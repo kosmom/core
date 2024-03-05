@@ -851,23 +851,23 @@ class model implements \Iterator{
 	
 	function count($distinctField=\null){
 		if (!isset($this))return self::toObject()->count($distinctField);
-		return (int)$this->aggregate('count('.($distinctField===\null?'*':$distinctField).')');
+		return (int)$this->aggregate('count('.($distinctField===\null?'*':db::wrapper($distinctField,$this->getConnections())).')');
 	}
 	function max($field){
 		if (!isset($this))return self::toObject()->max($field);
-		return $this->aggregate('max('.$field.')');
+		return $this->aggregate('max('.db::wrapper($field,$this->getConnections()).')');
 	}
 	function min($field){
 		if (!isset($this))return self::toObject()->min($field);
-		return $this->aggregate('min('.$field.')');
+		return $this->aggregate('min('.db::wrapper($field,$this->getConnections()).')');
 	}
 	function avg($field){
 		if (!isset($this))return self::toObject()->avg($field);
-		return (float)$this->aggregate('avg('.$field.')');
+		return (float)$this->aggregate('avg('.db::wrapper($field,$this->getConnections()).')');
 	}
 	function sum($field){
 		if (!isset($this))return self::toObject()->sum($field);
-		return (float)$this->aggregate('sum('.$field.')');
+		return (float)$this->aggregate('sum('.db::wrapper($field,$this->getConnections()).')');
 	}
 	function aggregate($aggregateSql,$groupFields=null){
 		$this->globalScope();
