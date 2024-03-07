@@ -135,7 +135,13 @@ class pic{
 	* @param string $filename or $imageAsString
 	*/
 	function __construct($filename,$autorotate=\true){
-		if (\file_exists($filename)){
+		if ($this->image)\imagedestroy($this->image);
+		if (\gettype($filename)=='object' && \get_class($filename)=='GdImage'){
+		    $this->image=$filename;
+		    $this->x=\imagesx($filename);
+		    $this->y=\imagesy($filename);
+		    return;
+		}elseif (\file_exists($filename)){
 			$fromString=\false;
 			$prop=\getimagesize($filename);
 		}else{
@@ -159,7 +165,6 @@ class pic{
 		if (!$this->memoryTest($prop[0],$prop[1]))throw new \Exception('Need more memory',4);
 		$this->x=$prop[0];
 		$this->y=$prop[1];
-		if ($this->image)\imagedestroy($this->image);
 		if ($fromString)$this->image=\imagecreatefromstring($filename);
 		switch($prop[2]){
 			case \IMAGETYPE_JPEG:
