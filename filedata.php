@@ -81,7 +81,7 @@ class filedata{
 	 * @param array $data
 	 */
 	static function savedata($filename,$data){
-		\file_put_contents($filename,'<?php return '.self::varExportMin($data).';');
+		return \file_put_contents($filename,'<?php return '.self::varExportMin($data).';');
 	}
 
 	private static function varExportMin($var) {
