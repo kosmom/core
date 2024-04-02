@@ -15,14 +15,14 @@ class telegram{
 	const SEND_CHAT_ACTION_UPLOAD_DOCUMENT='upload_document';
 	const SEND_CHAT_ACTION_FIND_LOCATION='find_location';
 
-	const EMOJI_THUMBS_UP="\xF0\x9F\x91\x8D";
-	const EMOJI_FIREWORKS="\xF0\x9F\x8E\x86";
-	const EMOJI_WARNING="\u{26a0}";
-	const EMOJI_BACK="\u{1f519}";
-	const EMOJI_NO_ENTRY_SIGN="\u{1f6ab}";
-	const EMOJI_WHITE_CHECK_MARK="\u{2705}";
-	const EMOJI_COP="\u{1F46E}";
-	const EMOJI_MEN_DETECTIVE="\u{1F575}";
+	const EMOJI_THUMBS_UP=emoji::THUMBS_UP;
+	const EMOJI_FIREWORKS=emoji::FIREWORKS;
+	const EMOJI_WARNING=emoji::WARNING;
+	const EMOJI_BACK=emoji::BACK;
+	const EMOJI_NO_ENTRY_SIGN=emoji::NO_ENTRY_SIGN;
+	const EMOJI_WHITE_CHECK_MARK=emoji::WHITE_CHECK_MARK;
+	const EMOJI_COP=emoji::COP;
+	const EMOJI_MEN_DETECTIVE=emoji::MEN_DETECTIVE;
 	
 	const PARSE_MODE_MARKDOWN='Markdown';
 	const PARSE_MODE_MARKDOWN2='MarkdownV2';
