@@ -72,6 +72,7 @@ class mvc{
 	static $title_inverse=\true;
 	static $description;
 	static $keywords;
+	static $themeColor;
 	static $noindex=\false;
 	static $meta=array('viewport'=>'width=device-width, initial-scale=1.0');
 
@@ -772,6 +773,7 @@ class mvc{
 			if (self::$description)self::$meta['description']=self::$description;
 			if (self::$keywords)self::$meta['keywords']=self::$keywords;
 			if (self::$noindex)self::$meta['noindex']=self::$noindex===\true?'noindex,follow':self::$noindex;
+			if (self::$themeColor)self::$meta['theme-color']=self::$themeColor;
 	?><!DOCTYPE html>
 <html>
 <head>
