@@ -141,13 +141,15 @@ class db_pgsql {
 				\c\debug::trace('Affected '.$this->rows().' rows',\false);
 			}
 			// explain
-			\c\debug::group('Explain select');
-			$this->affected_rows=\pg_affected_rows($result);
-			$this->num_rows= \pg_num_rows($result);
-			$this->insert_id= \pg_last_oid($result);
-			\pg_free_result($result);
-			\c\debug::table($this->explain($sql));
-			\c\debug::groupEnd();
+			if (!@\c\core::$data['db_not_explain']){
+				\c\debug::group('Explain select');
+				$this->affected_rows=\pg_affected_rows($result);
+				$this->num_rows=\pg_num_rows($result);
+				$this->insert_id=\pg_last_oid($result);
+				\pg_free_result($result);
+				\c\debug::table($this->explain($sql));
+				\c\debug::groupEnd();
+			}
 			\c\debug::groupEnd();
 		}else{
 			\pg_free_result($result);
@@ -161,16 +163,16 @@ class db_pgsql {
 		return $sql.' LIMIT '.\intval($count).' OFFSET '.\intval($from);
 	}
 	function getLenResult(){
-		if (\c\core::$debug)return $this->num_rows;
+		if (\c\core::$debug && !@\c\core::$data['db_not_explain'])return $this->num_rows;
 		if ($this->m_result)return \pg_num_rows($this -> m_result);
 		return 0;
 	}
 	function insertId(){
-		if (\c\core::$debug)return $this->insert_id;
+		if (\c\core::$debug && !@\c\core::$data['db_not_explain'])return $this->insert_id;
 		return \pg_last_oid($this->m_result);
 	}
 	function rows(){
-		if (\c\core::$debug)return $this->affected_rows;
+		if (\c\core::$debug && !@\c\core::$data['db_not_explain'])return $this->affected_rows;
 		return \pg_affected_rows($this->result);
 	}
 	function explain($sql,$bind=array()){

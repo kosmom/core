@@ -185,16 +185,16 @@ class db_mysql {
 		return $sql.' LIMIT '.\intval($from).($count?', '.$count:'');
 	}
 	function getLenResult(){
-		if (\c\core::$debug)return $this->num_rows;
+		if (\c\core::$debug && !@\c\core::$data['db_not_explain'])return $this->num_rows;
 		if ($this->m_result)return \mysqli_num_rows($this->m_result);
 		return 0;
 	}
 	function insertId(){
-		if (\c\core::$debug)return $this->insert_id;
+		if (\c\core::$debug && !@\c\core::$data['db_not_explain'])return $this->insert_id;
 		return \mysqli_insert_id($this->connect);
 	}
 	function rows(){
-		if (\c\core::$debug)return $this->affected_rows;
+		if (\c\core::$debug && !@\c\core::$data['db_not_explain'])return $this->affected_rows;
 		return \mysqli_affected_rows($this->connect);
 	}
 	function explain($sql,$bind=array()){
