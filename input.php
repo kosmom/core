@@ -721,7 +721,7 @@ class input{
 		return self::jsVar($value);
 	}
 	static private function jsReplace($value){
-		return str_replace(array("\r", "\n", "'","</script>"),array('', "\\n", "\'","<\/script>"),$value);
+		return \str_replace(array("\r", "\n", "'","</script>"),array('', "\\n", "\'","<\/script>"),$value);
 	}
 	static function jsVar($value){
 		switch(\gettype($value)){
@@ -823,7 +823,7 @@ class input{
 	 * deprecated use math::roundFirstNumber
 	 */
 	static function roundFirstNumber($number,$precision=0){
-		return marth::roundFirstNumber($number,$precision);
+		return math::roundFirstNumber($number,$precision);
 	}
 	/**
 	 * deprecated since 3.6
