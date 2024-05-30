@@ -771,6 +771,7 @@ class input{
 			case 'boolean':return $value?'true':'false';
 			case 'array':
 			case 'object':
+				if (\is_callable($value))return "'{Closure}'";
 				$out=array();
 				$is_array=self::array_is_list($value);
 				if ($is_array){
