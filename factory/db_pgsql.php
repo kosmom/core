@@ -37,18 +37,12 @@ class db_pgsql {
 	}
 
 	function connect(){
-		if ($this->data['persistent']){
-			$this->connect = \pg_pconnect('host='.$this->data['host'].(isset($this->data['port'])?' port='.$this->data['port']:'').' dbname='.$this->data['name'].' user='. $this->data['login'].' password='. $this->data['password']." options='--client_encoding='".$this->charset_mach()."'");
-		}else{
-			$this->connect = \pg_connect('host='.$this->data['host'].(isset($this->data['port'])?' port='.$this->data['port']:'').' dbname='.$this->data['name'].' user='. $this->data['login'].' password='. $this->data['password']." options='--client_encoding='".$this->charset_mach()."'");
-		}
+		$con='host='.$this->data['host'].(isset($this->data['port'])?' port='.$this->data['port']:'').' dbname='.$this->data['name'].' user='. $this->data['login'].' password='. $this->data['password']." options='--client_encoding=".$this->charset_mach()."'";
+		$this->connect=$this->data['persistent']?\pg_pconnect($con):\pg_connect($con);
 		if (!$this->connect)throw new \Exception('PgSQL connection error '.\pg_last_error());
 		if (\c\core::$debug){
-			\c\debug::group('Connection to '.($this->cn?$this->cn:'PgSQL'),\c\error::SUCCESS);
+			\c\debug::trace('Connection to '.($this->cn?$this->cn:'PgSQL'),\c\error::SUCCESS);
 			@\c\core::$data['stat']['db_connections']++;
-			$out=array();
-			\c\debug::dir($out);
-			\c\debug::groupEnd();
 		}
 	}
 	function disconnect(){
@@ -93,7 +87,7 @@ class db_pgsql {
 		}
 		$sql=$this->bind($sql,$bind);
 		//echo $sql;
-		@$result = pg_query($this->connect,$sql);
+		@$result=pg_query($this->connect,$sql);
 		if (\c\core::$debug){
 			\c\debug::consoleLog('Query execute for '.\round((\microtime(\true)-$start)*1000,2).' ms');
 			$start=\microtime(\true);
@@ -164,7 +158,7 @@ class db_pgsql {
 	}
 	function getLenResult(){
 		if (\c\core::$debug && !@\c\core::$data['db_not_explain'])return $this->num_rows;
-		if ($this->m_result)return \pg_num_rows($this -> m_result);
+		if ($this->m_result)return \pg_num_rows($this->m_result);
 		return 0;
 	}
 	function insertId(){
@@ -177,7 +171,7 @@ class db_pgsql {
 	}
 	function explain($sql,$bind=array()){
 		$sql='explain '.$this->bind($sql,$bind);
-		$result = \pg_query($this->connect,$sql);
+		$result=\pg_query($this->connect,$sql);
 		if(!$result)return \false;
 		$data=\pg_fetch_all($result);
 		\pg_free_result($result);

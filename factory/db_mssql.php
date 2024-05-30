@@ -16,12 +16,8 @@ class db_mssql{
 		return $object;
 	}
 	function connect(){
-		if ($this->data['persistent']){
-			$this->connect=\mssql_pconnect($this->data['host'],$this->data['login'],$this->data['password']);
-		}else{
-			$this->connect=\mssql_connect($this->data['host'],$this->data['login'],$this->data['password']);
-		}
-		if (!$this -> connect){
+		$this->connect=$this->data['persistent']?\mssql_pconnect($this->data['host'],$this->data['login'],$this->data['password']):\mssql_connect($this->data['host'],$this->data['login'],$this->data['password']);
+		if (!$this->connect){
 			if (\c\core::$debug){
 				\c\debug::trace('Mssql connection error',\c\error::ERROR);
 				return \false;
@@ -147,7 +143,7 @@ class db_mssql{
 	}
 
 	function rows(){
-		return \mssql_rows_affected( $this -> connect);
+		return \mssql_rows_affected($this->connect);
 	}
 
 	function db_limit($sql,$from=0,$count=0,$order_fild='1',$order_dir='DESC'){

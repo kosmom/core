@@ -37,7 +37,7 @@ class db_sqlsrv {
 	function connect(){
 		$options=array('ReturnDatesAsStrings'=>true,'TrustServerCertificate'=>true,'Database'=>$this->data['name'],"UID"=>$this->data['login'],"PWD"=>$this->data['password']);
 		if ($this->data['charset'])$options['CharacterSet']=$this->charset_mastmach();
-		@$this->connect = \sqlsrv_connect($this->data['host'],$options);
+		@$this->connect=\sqlsrv_connect($this->data['host'],$options);
 		if (!$this->connect)throw new \Exception('Sqlsrv connection error '.\print_r(\sqlsrv_errors(),true));
 		if (\c\core::$debug){
 			\c\debug::trace('Connection to '.($this->cn?$this->cn:'SQLSrv'),\c\error::SUCCESS);
@@ -85,7 +85,7 @@ class db_sqlsrv {
 			$start=\microtime(\true);
 		}
 		$sql=$this->bind($sql,$bind);
-		$this->stmt=@$stmt = \sqlsrv_query($this->connect,$sql);
+		$this->stmt=@$stmt=\sqlsrv_query($this->connect,$sql);
 		
 		if (\c\core::$debug){
 			\c\debug::consoleLog('Query execute for '.\round((\microtime(\true)-$start)*1000,2).' ms');
@@ -100,15 +100,15 @@ class db_sqlsrv {
 			if (empty(\c\core::$data['db_exception']))return \false;
 			throw new \Exception('SQL execute error: '.\sqlsrv_errors());
 		}
-		$subsql=strtolower(substr($sql,0,4));
+		$subsql=\strtolower(\substr($sql,0,4));
 		$data=array();
 		if (isset($this->result_array[$subsql])){
 			switch ($mode){
 				case 'ea':
-					while ($row=\sqlsrv_fetch_array($stmt,\SQLSRV_FETCH_ASSOC))$data[] = $row;
+					while ($row=\sqlsrv_fetch_array($stmt,\SQLSRV_FETCH_ASSOC))$data[]=$row;
 					break;
 				case 'e':
-					while ($row=\sqlsrv_fetch_array($stmt))$data[] = $row;
+					while ($row=\sqlsrv_fetch_array($stmt))$data[]=$row;
 					break;
 				case 'ea1':
 					$data=\sqlsrv_fetch_array($stmt,\SQLSRV_FETCH_ASSOC);
@@ -145,7 +145,7 @@ class db_sqlsrv {
 		return $this->execute_assoc($sql,$bind,'ea1');
 	}
 	function db_limit($sql,$from=0,$count=0,$order_fild='1',$order_dir='DESC'){
-		if ($order_dir == "DESC"){
+		if ($order_dir=="DESC"){
 			$o1="ASC";
 			$o2="DESC";
 		}else{
@@ -169,10 +169,10 @@ class db_sqlsrv {
 	}
 	function query($sql,$bind){
 		$sql=$this->bind($sql,$bind);
-		return $this->stmt= \sqlsrv_query($this->connect,$sql);
+		return $this->stmt=\sqlsrv_query($this->connect,$sql);
 	}
 	function fa($stmt){
-		$row=\sqlsrv_fetch_array ($stmt,\SQLSRV_FETCH_ASSOC);
+		$row=\sqlsrv_fetch_array($stmt,\SQLSRV_FETCH_ASSOC);
 		if (empty($row))\sqlsrv_free_stmt($stmt);
 		return $row;
 	}

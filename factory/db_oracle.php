@@ -50,11 +50,7 @@ class db_oracle {
 	}
 
 	function connect(){
-		if ($this->data['persistent']){
-			$this->connect = \oci_pconnect($this->data['login'], $this->data['password'], $this->data['host'],$this->charset_mastmach());
-		}else{
-			$this->connect = \oci_connect($this->data['login'], $this->data['password'], $this->data['host'],$this->charset_mastmach());
-		}
+		$this->connect=$this->data['persistent']?\oci_pconnect($this->data['login'],$this->data['password'],$this->data['host'],$this->charset_mastmach()):\oci_connect($this->data['login'],$this->data['password'],$this->data['host'],$this->charset_mastmach());
 		if (!$this->connect){
 			$error=\oci_error();
 			if (\c\core::$debug)\c\debug::trace('Oracle connection error: '.$error['message'],\c\error::ERROR);
@@ -66,7 +62,7 @@ class db_oracle {
 			@\c\core::$data['stat']['db_connections']++;
 		}
 		$sql="ALTER SESSION SET NLS_TERRITORY='CIS' nls_date_format='yyyy-mm-dd hh24:mi:ss'";
-		$stmt = \oci_parse($this->connect, $sql);
+		$stmt=\oci_parse($this->connect,$sql);
 		\oci_execute($stmt,$this->execute_mode);
 		\oci_free_statement($stmt);
 		return \true;
@@ -99,7 +95,7 @@ class db_oracle {
 				$sql=\strtr($sql,$bind2);
 			}
 		}
-		$stmt = \oci_parse($this->connect, $sql);
+		$stmt=\oci_parse($this->connect,$sql);
 		if(!$stmt){
 			$error=oci_error($this->connect);
 			if (\c\core::$debug){
@@ -137,7 +133,7 @@ class db_oracle {
 		}
 
 		$subsql=\strtolower(\substr($sql,0,5));
-		$isResult=$subsql == 'selec' || $subsql=='with ';
+		$isResult=$subsql=='selec' || $subsql=='with ';
 		if($isResult){
 			$data = array();
 			switch ($mode){
@@ -267,7 +263,7 @@ class db_oracle {
 			}
 			$start=\microtime(\true);
 		}
-		if(\is_array($bind)) {
+		if(\is_array($bind)){
 			$bind2=array();
 			foreach($bind as $key => $value){
 				if ($value instanceof \c\db){
@@ -277,7 +273,7 @@ class db_oracle {
 				$sql=\strtr($sql,$bind2);
 			}
 		}
-		$stmt = \oci_parse($this->connect, $sql);
+		$stmt=\oci_parse($this->connect,$sql);
 		if(!$stmt){
 			$error=\oci_error($this->connect);
 			if (\c\core::$debug){
@@ -290,7 +286,7 @@ class db_oracle {
 		}
 		if(\is_array($bind) && \count($bind)) {
 			foreach($bind as $key => &$value) {
-				\oci_bind_by_name($stmt,  ":".$key, $value, -1);
+				\oci_bind_by_name($stmt,":".$key, $value,-1);
 			}
 		}
 		$result=\oci_execute($stmt);
@@ -358,27 +354,27 @@ class db_oracle {
 
 	function insertId($seq=\false){
 		if(!$seq) return 0;
-		$sql = 'SELECT '.$seq.'.currval last FROM dual';
-		$rs = $this->execute($sql,$this->execute_mode);
-		return (isset($rs[0]['LAST'])?$rs[0]['LAST']:0);
+		$sql='SELECT '.$seq.'.currval last FROM dual';
+		$rs=$this->execute($sql,$this->execute_mode);
+		return isset($rs[0]['LAST'])?$rs[0]['LAST']:0;
 	}
 	function explain($sql){
-		$stmt = \oci_parse($this->connect,"delete from plan_table where statement_id='core_sql'");
+		$stmt=\oci_parse($this->connect,"delete from plan_table where statement_id='core_sql'");
 		if(!$stmt)return \false;
 		\oci_execute($stmt,$this->execute_mode);
 
-		$stmt = \oci_parse($this->connect,"explain plan set statement_id='core_sql' for ".$sql);
+		$stmt=\oci_parse($this->connect,"explain plan set statement_id='core_sql' for ".$sql);
 		if(!$stmt)return \false;
 		@\oci_execute($stmt,$this->execute_mode);
 
-		$stmt = \oci_parse($this->connect, "select lpad(' ',depth)||operation operation,options,case when object_owner is null then '' else object_owner||'.' end||object_name object,filter_predicates||access_predicates predicates,cost from PLAN_TABLE where statement_id='core_sql' order by plan_id desc,ID");
+		$stmt=\oci_parse($this->connect, "select lpad(' ',depth)||operation operation,options,case when object_owner is null then '' else object_owner||'.' end||object_name object,filter_predicates||access_predicates predicates,cost from PLAN_TABLE where statement_id='core_sql' order by plan_id desc,ID");
 		$result=\oci_execute($stmt,$this->execute_mode);
 		$data=array();
 		\oci_fetch_all($stmt,$data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_ASSOC+\OCI_RETURN_NULLS);
 		\oci_free_statement($stmt);
 		return $data;
 	}
-function execute_assoc_1($sql, $bind = array()){
+	function execute_assoc_1($sql, $bind = array()){
 		return $this->execute($sql, $bind,'ea1');
 	}
 	function query($sql,$bind){
@@ -399,7 +395,7 @@ function execute_assoc_1($sql, $bind = array()){
 		}
 		if(\is_array($bind)) {
 			$bind2=array();
-			foreach($bind as $key => $value){
+			foreach($bind as $key=>$value){
 				if ($value instanceof \c\db){
 					$bind2[':'.$key]=$value;
 					unset($bind[$key]);
@@ -407,7 +403,7 @@ function execute_assoc_1($sql, $bind = array()){
 				$sql=\strtr($sql,$bind2);
 			}
 		}
-		$stmt=\oci_parse($this->connect, $sql);
+		$stmt=\oci_parse($this->connect,$sql);
 		if(!$stmt){
 			$error=\oci_error($this->connect);
 			if (\c\core::$debug){
