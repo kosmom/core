@@ -161,7 +161,12 @@ class db_pgsql {
 		if ($this->m_result)return \pg_num_rows($this->m_result);
 		return 0;
 	}
-	function insertId(){
+	function insertId($seq=\null){
+		if ($seq){
+			$sql='SELECT last_value FROM "'.$seq.'"';
+			$rs = $this->ea1($sql);
+			return (isset($rs['last_value'])?$rs['last_value']:0);
+		}
 		if (\c\core::$debug && !@\c\core::$data['db_not_explain'])return $this->insert_id;
 		return \pg_last_oid($this->m_result);
 	}
