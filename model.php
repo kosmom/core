@@ -22,7 +22,7 @@ class model implements \Iterator{
 	var $pk_value;
 	private $collectionAutoGet;
 	private $cacheTimeout;
-	var $nextConjunction = 'AND';
+	var $nextConjunction='AND';
 	var $isSubquery=false;
 	var $whereHasMode=false;
 
@@ -73,7 +73,7 @@ class model implements \Iterator{
 		$this->getAutoGet();
 		return $this->collectionAutoGet->key();
 	}
-	function __toString() {
+	function __toString(){
 		if ($this->pk_value)return (string)$this->pk_value;
 	}
 	function isRowMode(){
@@ -609,6 +609,22 @@ class model implements \Iterator{
 		}
 		$this->whereCondition($field,$prop,$value,\true);
 		return $this;
+	}
+	function whereAll($fields,$prop=\null,$value=\null){
+		return $this->where(function($query) use ($fields,$prop,$value){
+			foreach ($fields as $field){
+				$query->where($field,$prop,$value);
+			}
+			return $query;
+		});
+	}
+	function whereAny($fields,$prop=\null,$value=\null){
+		return $this->where(function($query) use ($fields,$prop,$value){
+			foreach ($fields as $field){
+				$query->where($field,$prop,$value)->or();
+			}
+			return $query;
+		});
 	}
 	function firstOrCreate($param = array()){
 		if (!isset($this))return self::toObject()->firstOrCreate($param);
@@ -1168,7 +1184,7 @@ class model implements \Iterator{
 	function when($condition, $ifCallback, $elseCallback=\null){
 		if ($condition){
 			$ifCallback($this);
-		} elseif (is_callable($elseCallback)){
+		} elseif (\is_callable($elseCallback)){
 			$elseCallback($this);
 		}
 		return $this;
