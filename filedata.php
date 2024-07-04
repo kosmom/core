@@ -170,6 +170,19 @@ class filedata{
 		\closedir($dir);
 	}
 
+	static function is_empty_dir($dir){
+		$h=\opendir($dir);
+		if (!$h)return false;
+		while (false !== ($e=\readdir($h))){
+			if ($e!="." && $e!=".."){
+				\closedir($h);
+				return false;
+			}
+		}
+		\closedir($h);
+		return true;
+	      }
+	
 	/**
 	 * Get extension of filename
 	 * @param string $filename
