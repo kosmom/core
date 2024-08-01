@@ -14,4 +14,5 @@ class emoji{
 	const WHITE_CHECK_MARK="\u{2705}";
 	const COP="\u{1F46E}";
 	const MEN_DETECTIVE="\u{1F575}";
+	const PICTURE="\u{1F5BC}";
 }

@@ -148,12 +148,13 @@ class telegram{
 			$data['photo']=$photoLink;
 		}
 		return input::iconv(self::request('sendPhoto',$data,$options));
-	}
+	}	
 	static function sendDocument($chat_id,$link,$caption=\null,$reply_markup=\null,$protect_content=\false){
 		self::check();
 		$data=array('chat_id'=>$chat_id);
 		if ($reply_markup)$data['reply_markup']=$reply_markup;
 		if ($protect_content)$data['protect_content']=\true;
+		if (self::$parse_mode)$data['parse_mode']=self::$parse_mode;
 		$options=array();
 		if ($caption)$data['caption']=input::iconv($caption,\true);
 		if (\is_file($link)){
