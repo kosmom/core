@@ -93,12 +93,12 @@ class db_sqlsrv {
 		}
 		if(!$stmt){
 			if (\c\core::$debug){
-				\c\debug::trace('Query error: '.\sqlsrv_errors(),\c\error::ERROR);
+				\c\debug::trace('Query error: '.\c\input::jsonEncode(\sqlsrv_errors()),\c\error::ERROR);
 				\c\debug::groupEnd();
-				\c\debug::trace('SqlSrv error: '.\sqlsrv_errors(),\c\error::ERROR);
+				\c\debug::trace('SqlSrv error: '.\c\input::jsonEncode(\sqlsrv_errors()),\c\error::ERROR);
 			}
 			if (empty(\c\core::$data['db_exception']))return \false;
-			throw new \Exception('SQL execute error: '.\sqlsrv_errors());
+			throw new \Exception('SQL execute error: '.\c\input::jsonEncode(\sqlsrv_errors()));
 		}
 		$subsql=\strtolower(\substr($sql,0,4));
 		$data=array();
@@ -153,7 +153,7 @@ class db_sqlsrv {
 			$o2="ASC";
 		}
 		if ($from != 0) return "SELECT * FROM (SELECT TOP ".$count." * FROM (SELECT TOP ".($from + $count)." * FROM (".$sql.") DBLIMIT1 ORDER BY ".$order_fild." ".$o2.") DBLIMIT2 ORDER BY ".$order_fild." ".$o1.") DBLIM";
-		else return "SELECT TOP ".($from + $count)." * FROM (".$sql.") DBLIMIT2 ";
+		else return "SELECT TOP ".($from + $count)." * FROM (".$sql.") DBLIMIT2";
 	}
 	function getLenResult(){
 		return \sqlsrv_num_rows($this->stmt);
