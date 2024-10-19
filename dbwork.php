@@ -419,7 +419,11 @@ class dbwork{
 						}
 						$strcolname[]=$field;
 						$strvalues[]=':'.$upperField;
-						$bind[$upperField]=$value;
+						if (\is_numeric($value) && \is_float($value)){
+						    $bind[$upperField]= \number_format($value,0,".","");
+						}else{
+						    $bind[$upperField]=$value;
+						}
 
 					break;
 					case 'INTEGER':
