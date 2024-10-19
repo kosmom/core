@@ -9,10 +9,9 @@ class cache{
 	private static $cacheTimeout=0;
 	private static $cachePath='cache';
 	private static $replaces=array();
-	static $cachefolder='cache';
 	
 	static function refresh_page($link){
-		$cachefile=self::$cachefolder.'/'.\md5($link).'.gz';
+		$cachefile=self::getPath().'/'.\md5($link).'.gz';
 		if (\file_exists($cachefile)) \unlink($cachefile);
 		if (isset($_SESSION)){
 			$temp=$_SESSION;
@@ -70,25 +69,26 @@ class cache{
 		return self::clearPage($link);
 	}
 	static function clearPage($link){
-		$cachefile=self::$cachefolder.'/'.\md5($link).'.gz';
-		if (\file_exists($cachefile)) \unlink($cachefile);
+		$cachefile=self::getPath().'/'.\md5($link).'.gz';
+		if (\file_exists($cachefile))\unlink($cachefile);
 		return \true;
 	}
 	static function delete($key){
 		return self::clear($key);
 	}
 	static function clear($key=\null){
+		$path=self::getPath();
 		if ($key===\null){
-			if (!$handle=\opendir(self::$cachefolder))return \false;
+			if (!$handle=\opendir($path))return \false;
 			while(\false !== ($file=\readdir($handle))){
 				if ($file == '.' or $file == '..' or (\substr($file,-6) != '.cache' && \substr($file,-3) != '.gz') or \is_dir($file)) continue;
-				\unlink(self::$cachefolder.'/'.$file);
+				\unlink($path.'/'.$file);
 			}
 			\closedir($handle);
 			return \true;
 		}
-		if (\strpos($key,'*')===\false)return \unlink(self::$cachefolder.'/'.$key.'.cache');
-		foreach (\glob(self::$cachefolder.'/'.$key.'.cache') as $file)\unlink($file);
+		if (\strpos($key,'*')===\false)return \unlink($path.'/'.$key.'.cache');
+		foreach (\glob($path.'/'.$key.'.cache') as $file)\unlink($file);
 	}
 	static function check($files){
 		$compare=array();
@@ -97,7 +97,7 @@ class cache{
 			$compare[\md5($key).'.gz']=1;
 		}
 		$files=0;
-		if (!$handle=\opendir(self::$cachefolder))return \false;
+		if (!$handle=\opendir(self::getPath()))return \false;
 		while(\false !== ($file=\readdir($handle))){
 			if ($file == '.' or $file == '..' or substr($file,-3) != '.gz' or \is_dir($file) or !$compare[$file])return \false;
 			$files++;
@@ -113,7 +113,7 @@ class cache{
 		return self::isCleared();
 	}
 	static function isCleared(){
-		if (!$handle=\opendir(self::$cachefolder))return ;
+		if (!$handle=\opendir(self::getPath()))return ;
 		while(\false !== ($file=\readdir($handle))){
 			if ($file == '.' or $file == '..' or \substr($file,-3) != '.gz' or \is_dir($file)) continue;
 			return \false;
@@ -142,6 +142,9 @@ class cache{
 		return self::$cachePath=(string)$path;
 	}
 
+	private static function getPath(){
+	    return isset(core::$data['cachePath'])?core::$data['cachePath']:self::$cachePath;
+	}
 	/**
 	 * Get key from cache
 	 * @param string $key
@@ -151,8 +154,7 @@ class cache{
 	 */
 	static function get($key,$callback=\null,$timeout=\null) {
 		if ($timeout===\null)$timeout=isset(core::$data['cacheTimeout'])?core::$data['cacheTimeout']:self::$cacheTimeout;
-		$path=isset(core::$data['cachePath'])?core::$data['cachePath']:self::$cachePath;
-		$fullpath=$path.'/'.$key.'.cache';
+		$fullpath=self::getPath().'/'.$key.'.cache';
 		$mtime=@\filemtime($fullpath);
 		if ($mtime===\false or ($timeout>0 && \time() - $mtime > $timeout)){
 			if (!\is_callable($callback))return $callback;
@@ -165,7 +167,7 @@ class cache{
 		return filedata::loaddata($fullpath);
 	}
 	static function getList($mask=''){
-		$path=isset(core::$data['cachePath'])?core::$data['cachePath']:self::$cachePath;
+		$path=self::getPath();
 		return filedata::filelist($path,'/'.$mask.'.+\.cache/',function($item){
 			return \basename($item,'.cache');
 		});
@@ -179,7 +181,7 @@ class cache{
 	}
 	static function deleteMultiple($keys){
 		foreach ($keys as $key){
-			self::delete($key);
+			self::clear($key);
 		}
 	}
 	static function setMultiple($values){
@@ -188,14 +190,12 @@ class cache{
 		}
 	}
 	static function set($key, $value) {
-		$path=isset(core::$data['cachePath'])?core::$data['cachePath']:self::$cachePath;
-		$fullpath=$path.'/'.$key.'.cache';
+		$fullpath=self::getPath().'/'.$key.'.cache';
 		filedata::savedata($fullpath, $value);
 	}
 	static function has($key,$timeout=\null){
 		if ($timeout===\null)$timeout=isset(core::$data['cacheTimeout'])?core::$data['cacheTimeout']:self::$cacheTimeout;
-		$path=isset(core::$data['cachePath'])?core::$data['cachePath']:self::$cachePath;
-		$fullpath=$path.'/'.$key.'.cache';
+		$fullpath=self::getPath().'/'.$key.'.cache';
 		$mtime=@\filemtime($fullpath);
 		return !($mtime===\false or ($timeout>0 && \time() - $mtime > $timeout));
 	}
