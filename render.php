@@ -66,4 +66,12 @@ class render{
 	static function form($form=\null){
 		return forms::render($form);
 	}
+	static function closeConnectionAndContinue(){
+		\header('Connection: close');
+		\header('Content-Length: '.\ob_get_length());
+		\ob_end_flush();
+		@\ob_flush();
+		\flush();
+		\fastcgi_finish_request();//required for PHP-FPM (PHP > 5.3.3)
+	}
 }
