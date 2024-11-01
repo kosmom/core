@@ -13,31 +13,25 @@ class curl{
 	private static $running=0;
 	private static $master;
 	private static $contents;
-
 	static function getContent($URL,$post=\null,$cookieFile=\null,$options=array()){
-		$c = \curl_init();
-		\curl_setopt($c, \CURLOPT_RETURNTRANSFER, 1);
-		\curl_setopt($c, \CURLOPT_URL, $URL);
-		\curl_setopt($c, \CURLOPT_REFERER, $URL);
-		if ($post){
-			\curl_setopt($c, \CURLOPT_POST, 1);
-			\curl_setopt($c, \CURLOPT_POSTFIELDS, $post);
-		}
-		if ($cookieFile){
-			\curl_setopt($c, \CURLOPT_COOKIEJAR, $cookieFile);
-			\curl_setopt($c, \CURLOPT_COOKIEFILE, $cookieFile);
-		}
-		\curl_setopt($c, \CURLOPT_SSL_VERIFYHOST, 0);
-		\curl_setopt($c, \CURLOPT_SSL_VERIFYPEER, 0); 
-		\curl_setopt($c, \CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17');
-		\curl_setopt($c, \CURLOPT_FOLLOWLOCATION, 1);
-		if ($options)\curl_setopt_array($c, $options);
-		$rs = \curl_exec($c);
+		$c=\curl_init();
+		\curl_setopt_array($c, $options+array(
+		    \CURLOPT_RETURNTRANSFER=>1,
+		    \CURLOPT_URL=>$URL,
+		    \CURLOPT_REFERER=>$URL,
+		    \CURLOPT_SSL_VERIFYHOST=>0,
+		    \CURLOPT_SSL_VERIFYPEER=>0,
+		    \CURLOPT_USERAGENT=>'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17',
+		    \CURLOPT_FOLLOWLOCATION=>1,
+		)+($post?array(\CURLOPT_POST=>1,\CURLOPT_POSTFIELDS=>$post):array())
+		+($cookieFile?array(\CURLOPT_COOKIEJAR=>$cookieFile,\CURLOPT_COOKIEFILE=>$cookieFile):array())
+		);
+		$rs=\curl_exec($c);
 		if ($rs===\false)throw new \Exception(\curl_error($c));
 		\curl_close($c);
 		return $rs;
 	}
-
+	
 	static function addTasks($url,$position=0,$callback=\null){
 		$task=array('url'=>\trim($url),'position'=>$position);
 		if (\is_callable($callback))$task['callback']=$callback;
