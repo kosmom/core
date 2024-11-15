@@ -58,7 +58,7 @@ class request{
 	static function protocol($SERVER=\null){
 		if ($SERVER===\null)$SERVER=$_SERVER;
 		if (self::isCmd($SERVER)) return false;
-		return 'http'.((!empty($SERVER['HTTPS']) && $SERVER['HTTPS'] !== 'off' || $SERVER['SERVER_PORT'] == 443) ? 's' : '').'://';
+		return 'http'.(($SERVER['HTTP_X_FORWARDED_PROTO']=='https' || (!empty($SERVER['HTTPS']) && $SERVER['HTTPS'] !== 'off' || $SERVER['SERVER_PORT'] == 443)) ? 's' : '').'://';
 	}
 
 	static function get($parameter,$default=\null){
