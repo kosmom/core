@@ -10,6 +10,7 @@ class model implements \Iterator{
 	var $connectionAlter;
 	var $readonly=\false;
 	var $sequence=\true;
+	var $expression=\false;
 	var $primaryField; // primary key PK (or can be set in fields var)
 	var $fields=array();
 
@@ -940,6 +941,7 @@ class model implements \Iterator{
 		if ($pkValue!==\null)$this->find($pkValue);
 	}
 	private function getScemeWithTable(){
+		if ($this->expression)return '('.$this->tableName.')';
 		return db::wrapper($this->getSchemeName(),$this->getConnections()) .'.'.db::wrapper($this->getTableName(),$this->getConnections());
 	}
 	function exists(){
