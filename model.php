@@ -945,7 +945,7 @@ class model implements \Iterator{
 		return db::wrapper($this->getSchemeName(),$this->getConnections()) .'.'.db::wrapper($this->getTableName(),$this->getConnections());
 	}
 	function exists(){
-		$sql="select exists(".$this->getSql().") as e from dual";
+		$sql="select 1 from dual where exists(".$this->getSql().")";
 		return (bool)db::ea11($sql,$this->queryBind,$this->getConnections());
 	}
 	function getSql(){
