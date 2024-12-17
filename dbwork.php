@@ -234,14 +234,14 @@ class dbwork{
 				$tablename=\strtoupper($tablename);
 				if ($schema){
 					$schema=\strtoupper($schema);
-					$sql="select INDEX_NAME from ALL_CONS_COLUMNS ac left join all_constraints acc on ac.CONSTRAINT_NAME=acc.CONSTRAINT_NAME WHERE ac.owner=:schema and ac.table_name=:tablename and position is not null";
+					$sql="select INDEX_NAME from ALL_CONS_COLUMNS ac left join all_constraints acc on ac.CONSTRAINT_NAME=acc.CONSTRAINT_NAME WHERE ac.owner=:schema and ac.table_name=:tablename and position is not null and index_name is not null";
 					$pkConstraint=db::ea11($sql,array('tablename'=>$tablename,'schema'=>$schema),$db);
 					$sql="select atc.column_name,atc.data_type,data_length,ucc.comments,atc.nullable,atc.data_default from all_tab_columns atc inner join ALL_COL_COMMENTS ucc on atc.table_name=ucc.table_name and atc.column_name=ucc.column_name where atc.table_name = :tablename and atc.OWNER=:schema order by COLUMN_ID";
 					$rs=db::ea($sql,array('tablename'=>$tablename,'schema'=>$schema),$db);
 					$sql="select ai.INDEX_NAME,COLUMN_NAME from ALL_INDEXES ai left join ALL_IND_COLUMNS aic on AI.INDEX_NAME=AIC.INDEX_NAME WHERE owner=:schema and ai.table_name=:tablename and UNIQUENESS='UNIQUE'";
 					$uniqueKey=datawork::group(db::ea($sql,array('tablename'=>$tablename,'schema'=>$schema),$db),array('INDEX_NAME','[]'),'COLUMN_NAME');
 				}else{
-					$sql="select INDEX_NAME from USER_CONS_COLUMNS ac left join user_constraints acc on ac.CONSTRAINT_NAME=acc.CONSTRAINT_NAME WHERE ac.table_name=:tablename and position is not null";
+					$sql="select INDEX_NAME from USER_CONS_COLUMNS ac left join user_constraints acc on ac.CONSTRAINT_NAME=acc.CONSTRAINT_NAME WHERE ac.table_name=:tablename and position is not null and index_name is not null";
 					$pkConstraint=db::ea11($sql,array('tablename'=>$tablename),$db);
 					$sql="select atc.column_name,atc.data_type,data_length,ucc.comments,atc.nullable,atc.data_default from user_tab_columns atc inner join USER_COL_COMMENTS ucc on atc.table_name=ucc.table_name and atc.column_name=ucc.column_name where atc.table_name = :tablename order by COLUMN_ID";
 					$rs=db::ea($sql,array('tablename'=>$tablename),$db);
