@@ -264,14 +264,14 @@ class model implements \Iterator{
 		}
 		if ($isCreate){
 			$this->on_before_create();
-			$base = array();
+			$base=array();
 		} else {
-			$base = $this->pk_value ? model::getRawData($this, $this->pk_value) : array();
+			$base=$this->pk_value?model::getRawData($this,$this->pk_value):array();
 			$this->on_before_update($base);
 		}
 		$this->on_before_save($base);
 		$this->isRowMode=$mode;
-		$base=$this->pk_value?model::getRawData($this,$this->pk_value):[];
+		$base=$this->pk_value?model::getRawData($this,$this->pk_value):array();
 		$result=$values=$this->pk_value?model::getChanged($this,$this->pk_value):$this->storage;
 		foreach ($this->fields as $fieldKey=>$fieldVal){
 			if (!@$fieldVal['dbname'])continue;
