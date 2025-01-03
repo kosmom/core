@@ -919,7 +919,7 @@ class model implements \Iterator{
 			\array_shift($this->queryBind);
 			$collection_elements=$this->collectionSource->keys();
 			if (!$this->collectionSource->is_full)$this->where($field, $collection_elements);
-			$sql='SELECT '.$field.' f,'.$aggregateSql.' a from '.$this->getScemeWithTable().$this->getWhereSqlPart().' group by '.$field;
+			$sql='SELECT '.$field.' '.db::wrapper('f',$this->getConnections()).','.$aggregateSql.' '.db::wrapper('a',$this->getConnections()).' from '.$this->getScemeWithTable().$this->getWhereSqlPart().' group by '.$field;
 			$rs=db::ea($sql,$this->queryBind,$this->getConnections());
 			$rs=datawork::group($rs,'f','a');
 			$this->queryWhere=$tempWhere;
