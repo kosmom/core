@@ -833,4 +833,6 @@ class input{
 		if (\substr($filename,0,7)=='http://' or \substr($filename,0,8)=='https://')return curl::getContent($filename);
 		return \file_get_contents($filename);
 	}
-}
+	static function sleep($seconds){
+		if ($seconds)\usleep($seconds*1000000);
+	}

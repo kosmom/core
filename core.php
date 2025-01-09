@@ -69,6 +69,8 @@ class core {
 	 * @param db_not_explain
 	 * @param controller_exception_page
 	 * @param table_header_render_callback
+	 * @param curl_safely_retry_count
+	 * @param curl_safely_retry_pause
 	 * @param render
 	 */
 	static $data=array('db_autobind'=>array(),'render'=>'bootstrap3','db_describe_cache'=>array());

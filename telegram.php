@@ -29,6 +29,8 @@ class telegram{
 	const PARSE_MODE_HTML='HTML';
 	const PARSE_MODE_NONE=\null;
 	
+	const OPTION_PROTECT_CONTENT='protect_content';
+	
 	static $parse_mode;
 	
 	static function getMe(){
@@ -140,6 +142,7 @@ class telegram{
 		$options=array();
 		if ($caption)$data['caption']=input::iconv($caption,\true);
 		if ($protect_content)$data['protect_content']=\true;
+		if ($reply_markup)$data['reply_markup']=$reply_markup;
 		if (\is_file($photoLink)){
 			$data['photo']=\curl_file_create(\realpath($photoLink));
 			$options[\CURLOPT_HTTPHEADER]=array("Content-Type"=>"multipart/form-data");
@@ -203,16 +206,14 @@ class telegram{
 		if (\is_callable(@core::$data['telegram_request'])){
 			$a=core::$data['telegram_request'];
 			return $a($api,$post);
-		}else{
-			$url='https://api.telegram.org/bot'.core::$data['telegram'].'/'.$api;
-			if (@core::$data['telegram_proxy']){
-				$options[\CURLOPT_PROXY]=core::$data['telegram_proxy']['host'];
-				$options[\CURLOPT_PROXYUSERPWD]=core::$data['telegram_proxy']['auth'];
-				$options[\CURLOPT_PROXYTYPE]=core::$data['telegram_proxy']['type'];
-			}
-			$rs=curl::getContent($url,$post,\null,$options);
-			return \json_decode($rs, \true);
 		}
+		$url='https://api.telegram.org/bot'.core::$data['telegram'].'/'.$api;
+		if (@core::$data['telegram_proxy']){
+			$options[\CURLOPT_PROXY]=core::$data['telegram_proxy']['host'];
+			$options[\CURLOPT_PROXYUSERPWD]=core::$data['telegram_proxy']['auth'];
+			$options[\CURLOPT_PROXYTYPE]=core::$data['telegram_proxy']['type'];
+		}
+		return \json_decode(curl::getContentSafely($url,$post,\null,$options), \true);
 	}
 	static function checkAuth($auth_data){
 		$check_hash=$auth_data['hash'];

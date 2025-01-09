@@ -31,7 +31,18 @@ class curl{
 		\curl_close($c);
 		return $rs;
 	}
-	
+	static function getContentSafely($URL,$post=\null,$cookieFile=\null,$options=array()){
+		$retryCount=isset(core::$data['curl_safely_retry_count'])?core::$data['curl_safely_retry_count']-1:1;
+		$retryPause=isset(core::$data['curl_safely_retry_pause'])?core::$data['curl_safely_retry_pause']:1;
+		for ($i=0;$i<$retryCount;$i++){
+			try {
+				return self::getContent($URL,$post,$cookieFile,$options);
+			} catch (\Exception $exc) {
+				input::sleep($retryPause);
+			}
+		}
+		return self::getContent($URL,$post,$cookieFile,$options);
+	}
 	static function addTasks($url,$position=0,$callback=\null){
 		$task=array('url'=>\trim($url),'position'=>$position);
 		if (\is_callable($callback))$task['callback']=$callback;

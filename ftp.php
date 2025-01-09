@@ -95,6 +95,7 @@ class ftp{
 	static function mkdir($dstDir,$connId){
 		$dstDir=\str_replace('\\','/',$dstDir);
 		$segments=\explode('/',$dstDir);
+		$dir='';
 		foreach ($segments as $segment){
 			$dir.='/'.$segment;
 			@\ftp_mkdir($connId,$dir);
