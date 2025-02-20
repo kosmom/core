@@ -106,9 +106,7 @@ class dbwork{
 				return self::$describeStorage[$db][$defaultScheme][$tablename]=filedata::loaddata($cache_file);
 			}
 		}
-		$primaryKey=array();
-		$uniqueKey=array();
-		$data=array();
+		$primaryKey=$uniqueKey=$foreignKey=$indexKey=$data=array();
 		switch(db::type($db)){
 			case 'mysql':
 				/************************ MYSQL *************************/
