@@ -570,6 +570,10 @@ class model implements \Iterator{
 		return $this;
 	}
 
+        function id(){
+            return $this->{$this->primaryField};
+        }
+
 	/**
 	 * @deprecated since version 3.5 use where function
 	 */
