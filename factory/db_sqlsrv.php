@@ -17,7 +17,7 @@ class db_sqlsrv {
 	private $connect;
 	var $m_result=\false; // have last query result
 	var $error_resume=\false;
-	private $result_array=array('sele'=>\true,'desc'=>\true,'show'=>\true);
+	private $result_array=array('sele'=>\true,'desc'=>\true,'show'=>\true,'with'=>\true);
 
 	function __construct($data,$connectionName=''){
 		$this->data=$data;
