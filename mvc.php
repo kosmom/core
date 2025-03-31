@@ -399,21 +399,22 @@ class mvc{
 		}
 		if (request::isCmd()){
 			global $argv;
-			if (@\strpos($argv[1], '?')!==\false){ //parse get params
-				\parse_str(\substr($argv[1],\strpos($argv[1], '?')+1), $_GET);
-				$_SERVER['REDIRECT_URL']=\substr($argv[1],0,\strpos($argv[1], '?'));
+			$p=@\strpos($argv[1],'?');
+			if ($p!==\false){ //parse get params
+				\parse_str(\substr($argv[1],$p+1),$_GET);
+				$_SERVER['REDIRECT_URL']=\substr($argv[1],0,$p);
 			}else{
 				@$_SERVER['REDIRECT_URL']=$argv[1];
 			}
 			if (\substr($_SERVER['REDIRECT_URL'],0,\strlen(self::$appFolder))==self::$appFolder)$_SERVER['REDIRECT_URL']=\substr($_SERVER['REDIRECT_URL'], \strlen(self::$appFolder));
-			$_SERVER['REDIRECT_URL']=\str_replace('\\', '/', $_SERVER['REDIRECT_URL']);
+			$_SERVER['REDIRECT_URL']=\str_replace('\\','/',$_SERVER['REDIRECT_URL']);
 			self::$links_string=\ltrim($_SERVER['REDIRECT_URL'],'/');
 		}else{
 			if (!isset($_SERVER['REDIRECT_URL'])){
-				$q=\strpos($_SERVER['REQUEST_URI'], '?');
-				$_SERVER['REDIRECT_URL']=$q===\false?$_SERVER['REQUEST_URI']:\substr($_SERVER['REQUEST_URI'],0, $q);
+				$q=\strpos($_SERVER['REQUEST_URI'],'?');
+				$_SERVER['REDIRECT_URL']=$q===\false?$_SERVER['REQUEST_URI']:\substr($_SERVER['REQUEST_URI'],0,$q);
 			}
-			self::$links_string=\substr(\ltrim(@$_SERVER['REDIRECT_URL'],'\\/'), \strlen(self::$basefolder));
+			self::$links_string=\substr(\ltrim(@$_SERVER['REDIRECT_URL'],'\\/'),\strlen(self::$basefolder));
 		}
 		self::$realHost=isset($_SERVER['HTTP_X_FORWARDED_HOST'])?$_SERVER['HTTP_X_FORWARDED_HOST']:@$_SERVER['HTTP_HOST'];
 		if (core::$charset!=core::UTF8)self::$links_string=\iconv('utf-8',core::$charset,self::$links_string);
