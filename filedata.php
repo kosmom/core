@@ -72,6 +72,7 @@ class filedata{
 	 * @return array
 	 */
 	static function loaddata($filename){
+		if (\function_exists('opcache_invalidate'))\opcache_invalidate($filename);
 		return @include $filename;
 	}
 
