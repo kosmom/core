@@ -180,7 +180,7 @@ class filedata{
 		}
 		\closedir($h);
 		return true;
-	}
+	      }
 	
 	/**
 	 * Get extension of filename
@@ -213,6 +213,29 @@ class filedata{
 		$append=\json_encode($data,\JSON_PRETTY_PRINT|\JSON_UNESCAPED_UNICODE);
 		$appendLen=\strlen($append);
 		error::log($filename,$append.$appendLen.\strlen($appendLen));
+	}
+	static function findFirstByContent($path,$contentOrFilename,$maxTry=100000){
+		$md5=\file_exists($contentOrFilename)?\md5_file($contentOrFilename):\md5($contentOrFilename);
+		$fi=new \FilesystemIterator($path,\FilesystemIterator::SKIP_DOTS);
+		$try=0;
+		while($fi->valid() && $try<$maxTry){
+			if (\md5_file($path.'/'.$fi->getFilename())===$md5)return $fi->getFilename();
+			$fi->next();
+			$try++;
+		}
+		return false;
+	}
+	static function firdAllByContent($path,$contentOrFilename,$maxTry=100000){
+		$md5=\file_exists($contentOrFilename)?\md5_file($contentOrFilename):\md5($contentOrFilename);
+		$fi=new \FilesystemIterator($path,\FilesystemIterator::SKIP_DOTS);
+		$try=0;
+		$out=array();
+		while($fi->valid() && $try<$maxTry){
+			if (\md5_file($path.'/'.$fi->getFilename())===$md5)$out[]=$fi->getFilename();
+			$fi->next();
+			$try++;
+		}
+		return $out;
 	}
 	static function readLastDataPart($handlerOrPath,$offset=\null){
 		$handler=self::getHandler($handlerOrPath,$offset);
