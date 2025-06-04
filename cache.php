@@ -18,10 +18,14 @@ class cache{
 			unset($_SESSION);
 		}
 		$text=\file_get_contents('http://'.$_SERVER['HTTP_HOST'].'/'.$link);
-		if (!$text)return \false;
+		if (!$text)return false;
 		\file_put_contents($cachefile,\gzencode(self::compressHtml($text),9));
 		if (isset($temp))$_SESSION=$temp;
-		return \true;
+		return true;
+	}
+	static function once($param='_default'){
+		if (isset(self::$onces[$param]))return false;
+		return self::$onces[$param]=true;
 	}
 	/**
 	 * @deprecated since version 3.4
