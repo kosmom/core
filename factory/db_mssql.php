@@ -4,7 +4,7 @@ namespace c\factory;
 class db_mssql{
 	var $data;
 	var $cn;
-	private $connect;
+	var $connect;
 	var $m_result=\false;
 	var $error_resume=\true;
 	private $result_array=array('sele'=>\true,'show'=>\true);

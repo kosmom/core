@@ -83,6 +83,12 @@ class db{
 		}
 		return $db[0];
 	}
+        
+        static function getConnection($db){
+            $db=self::dbPrepare($db);
+            if (empty(self::$dbs[core::$env][$db]))self::connect($db);
+            return self::$dbs[core::$env][$db];
+        }
 	/**
 	 * Execute SQL
 	 */

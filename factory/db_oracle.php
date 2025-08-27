@@ -14,7 +14,7 @@ class db_oracle {
 		);
 	var $data;
 	var $cn;
-	private $connect;
+	var $connect;
 	var $m_result=\false;
 
 	function __construct($data,$connection_name=''){
@@ -343,9 +343,9 @@ class db_oracle {
 	
 	function db_limit($sql, $from=0, $count=0){
 		//if (!$from)return 'select * from ('.$sql.') WHERE rownum < '.((int)$count+1);
-        if (isset($this->data['version']) && $this->data['version']>11){
-        	return $sql.($from?' OFFSET '.(int)$from.' ROWS':'').($count?' FETCH NEXT '.(int)$count.' ROWS ONLY':'');
-        }
+                if (isset($this->data['version']) && $this->data['version']>11){
+                    return $sql.($from?' OFFSET '.(int)$from.' ROWS':'').($count?' FETCH NEXT '.(int)$count.' ROWS ONLY':'');
+                }
 		$from++;
 		return 'select * from (SELECT rownum rnum, aa.* FROM ('.$sql.') aa) WHERE rnum >= '.(int)$from.' AND rnum < '.(\intval($from + $count));
 	}

@@ -16,7 +16,7 @@ class db_pgsql {
 	private $insert_id;
 	private $num_rows;
 	private $affected_rows;
-	private $connect;
+	var $connect;
 	var $m_result=\false; // have last query result
 	var $error_resume=\false;
 	private $result_array=array('sele'=>\true,'desc'=>\true,'show'=>\true);
