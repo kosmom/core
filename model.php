@@ -570,9 +570,9 @@ class model implements \Iterator{
 		return $this;
 	}
 
-        function id(){
-            return $this->{$this->primaryField};
-        }
+    function id(){
+        return $this->{$this->primaryField};
+    }
 
 	/**
 	 * @deprecated since version 3.5 use where function
@@ -923,7 +923,7 @@ class model implements \Iterator{
 			\array_shift($this->queryBind);
 			$collection_elements=$this->collectionSource->keys();
 			if (!$this->collectionSource->is_full)$this->where($field, $collection_elements);
-			$sql='SELECT '.$field.' '.db::wrapper('f',$this->getConnections()).','.$aggregateSql.' '.db::wrapper('a',$this->getConnections()).' from '.$this->getScemeWithTable().$this->getWhereSqlPart().' group by '.$field;
+			$sql='SELECT '.$field.' '.db::wrapper('f',$this->getConnections()).','.$aggregateSql.' '.db::wrapper('a',$this->getConnections()).' from '.$this->getScemeWithTable().' '.$this->tableAlias.$this->getWhereSqlPart().' group by '.$field;
 			$rs=db::ea($sql,$this->queryBind,$this->getConnections());
 			$rs=datawork::group($rs,'f','a');
 			$this->queryWhere=$tempWhere;
