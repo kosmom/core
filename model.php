@@ -1049,8 +1049,7 @@ class model implements \Iterator{
 				if (isset($this->collectionSource->collectionSourceCache[$local_key])){
 					$baseCollection=$this->collectionSource->collectionSourceCache[$local_key];
 				}else{
-					$a=$this->collectionSource->pluck($local_key);
-					$baseCollection=$this->collectionSource->collectionSourceCache[$local_key]=new collection_object(\array_unique($a),$this->collectionSource->generator,$local_key);
+					$baseCollection=$this->collectionSource->collectionSourceCache[$local_key]=new collection_object(\array_values(\array_unique($this->collectionSource->pluck($local_key))),$this->collectionSource->generator,$local_key);
 				}
 			}
 		}
