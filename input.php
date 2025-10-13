@@ -836,3 +836,4 @@ class input{
 	static function sleep($seconds){
 		if ($seconds)\usleep($seconds*1000000);
 	}
+}
