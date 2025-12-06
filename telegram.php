@@ -136,6 +136,32 @@ class telegram{
 		if ($revoke_messages!==null)$data['revoke_messages']=$revoke_messages;
 		return input::iconv(self::request('banChatMember',$data));
 	}
+        static function sendMediaGroup($chat_id,$mediaArray,$caption=null,$protect_content=false){
+            self::check();
+            $data=array('chat_id'=>$chat_id);
+            $media=$options=array();
+            $hasLocalFiles=false;
+            foreach ($mediaArray as $index=>$item){
+                $mediaItem=array();
+                if (\is_file($item)){
+                    $hasLocalFiles=true;
+                    $attachName="file_{$index}";
+                    $mediaItem=array('type'=>'photo','media'=>"attach://{$attachName}");
+                    $data[$attachName]=\curl_file_create(\realpath($item));
+                }else{
+                    $mediaItem=array('type'=>'photo','media'=>$item);
+                }
+                if ($index===0 && $caption!==null)$mediaItem['caption']=input::iconv($caption, true);
+                $media[]=$mediaItem;
+            }
+            $data['media']=input::jsonEncode($media);
+            if ($protect_content)$data['protect_content']=true;
+            if ($hasLocalFiles){
+                $options[CURLOPT_HTTPHEADER]=array("Content-Type: multipart/form-data");
+                $options[CURLOPT_SAFE_UPLOAD]=true;
+            }
+            return input::iconv(self::request('sendMediaGroup',$data,$options));
+        }
 	static function sendPhoto($chat_id,$photoLink,$caption=\null,$reply_markup=\null,$protect_content=\false){
 		self::check();
 		$data=array('chat_id'=>$chat_id);
