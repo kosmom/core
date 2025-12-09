@@ -9,19 +9,19 @@ class datawork{
 	const FORMS='{{c\forms}}';
 	const KEY='{{!KEY!}}';
 	static $header=array();
-	static $numstring=\false; // first string after header - is number string 1 2 3 4 5...
+	static $numstring=false; // first string after header - is number string 1 2 3 4 5...
 	private static $branch=array();
 	/**
 	* Convert array to c\datawork::header struct
 	*/
-	static function tag($dataWithHeader,$headers=\null){
-		if (empty(self::$header) && empty($headers)) throw new \Exception('Need set c\\datawork::$header array first');
+	static function tag($dataWithHeader,$headers=null){
+		if (empty(self::$header) && empty($headers))throw new \Exception('Need set c\\datawork::$header array first');
 		if (empty($headers))$headers=self::$header;
 		// 1st string - header
 		$data_header=\array_shift($dataWithHeader);
 		$link_header=array();
 		// for each column find match
-		foreach($data_header as $num=> $name){
+		foreach($data_header as $num=>$name){
 			$name=trim($name);
 			if (!isset($headers[$name]))continue;
 			$link_header[$num]=$headers[$name];
@@ -30,7 +30,7 @@ class datawork{
 		if (self::$numstring){
 			$data_header=\array_shift($dataWithHeader);
 			foreach ($data_header as $key=>$item){
-				if (($key+1)!=$item && !empty($item))  throw new \Exception('Error in number string');
+				if (($key+1)!=$item && !empty($item))throw new \Exception('Error in number string');
 			}
 		}
 
@@ -47,7 +47,7 @@ class datawork{
 	 * same group function
 		 * @deprecated since version 3.4
 	 */
-	static function key($array,$key,$val=\false){
+	static function key($array,$key,$val=false){
 		return self::group($array,$key,$val);
 	}
 
@@ -74,13 +74,13 @@ class datawork{
 		return $out;
 	}
 
-	static function flatten($array,$concat='.', $prefix = '') {
-		$result = array();
+	static function flatten($array,$concat='.', $prefix='') {
+		$result=array();
 		foreach($array as $key=>$value) {
 			if(\is_array($value)) {
 				$result+= self::flatten($value,$concat, $prefix . $key . $concat);
 			}else {
-				$result[$prefix.$key] = $value;
+				$result[$prefix.$key]=$value;
 			}
 		}
 		return $result;
@@ -89,7 +89,7 @@ class datawork{
 	static function unflatten($array,$concat='.'){
 		$buffer=array();
 		foreach ($array as $key=>$value){
-			$keys=  \explode($concat, $key);
+			$keys=\explode($concat, $key);
 			switch (\count($keys)){
 				case 5:
 					$buffer[$keys[0]][$keys[1]][$keys[2]][$keys[3]][$keys[4]]=$value;
@@ -119,7 +119,7 @@ class datawork{
 	 * @param string|boolean|callable $val if not exist will be return $array[$key]=>$item, if exists will be return $array[$key]=>$array[$val]
 	 * @return array
 	 */
-	static function group($array,$key,$val=\false){
+	static function group($array,$key,$val=false){
 		if ($array instanceof \SplFixedArray)$array=$array->toArray();
 
 		if (!\is_array($array) && !$array instanceof collection && !$array instanceof collection_object){
@@ -129,21 +129,20 @@ class datawork{
 				debug::groupEnd();
 				debug::trace('Datawork key group operation - array is not array',error::WARNING);
 			}
-			return \false;
+			return false;
 		}
 		if (!\is_array($key))$key=array($key);
 		$k0=$key[0];
-		if (\sizeof($key)>2){
+		if (\count($key)>2){
 			foreach ($key as $item){
-				if (\is_string($item)) continue;
-				if (\is_bool($item)) continue;
+				if (\is_string($item) || \is_bool($item))continue;
 				return self::key2($array,$key,$val);
 			}
 		}
-		if (\PHP_VERSION_ID>=50500 && $k0=='[]' && !\is_object($val) && !\is_array($val) && $val!==\true && $val!==\false && \is_array($array)){
+		if (\PHP_VERSION_ID>=50500 && $k0=='[]' && !\is_object($val) && !\is_array($val) && $val!==true && $val!==false && \is_array($array)){
 			return \array_column($array,$val);
 		}
-		if (\PHP_VERSION_ID>=50500 && empty($key[1]) && $val!=self::KEY && $key[0]!=self::KEY && !\is_object($val) && !\is_array($val) && !\is_object($k0) && !\is_array($k0) && $val!==\true && $val!==\false && \is_array($array)){
+		if (\PHP_VERSION_ID>=50500 && empty($key[1]) && $val!=self::KEY && $key[0]!=self::KEY && !\is_object($val) && !\is_array($val) && !\is_object($k0) && !\is_array($k0) && $val!==true && $val!==false && \is_array($array)){
 			return \array_column($array,$val,$k0);
 		}
 		$out=array();
@@ -153,10 +152,10 @@ class datawork{
 					foreach ($array as $tkey=>$item)$out[]=self::arrayGroup($val,$tkey,$item);
 				}elseif (\is_object($val)){
 					foreach ($array as $item)$out[]=$val($item);
-				}elseif ($val===\false){
+				}elseif ($val===false){
 					foreach ($array as $item)$out[]=$item;
-				}elseif ($val===\true){
-					foreach ($array as $item)$out[]=\true;
+				}elseif ($val===true){
+					foreach ($array as $item)$out[]=true;
 				}elseif ($val===self::KEY){
 					foreach ($array as $tkey=>$i)$out[]=$tkey;
 				}else{
@@ -167,10 +166,10 @@ class datawork{
 					foreach ($array as $tkey=>$item)$out[$tkey]=self::arrayGroup($val,$tkey,$item);
 				}elseif (\is_object($val)){
 					foreach ($array as $tkey=>$item)$out[$tkey]=$val($item);
-				}elseif ($val===\false){
+				}elseif ($val===false){
 					foreach ($array as $tkey=>$item)$out[$tkey]=$item;
-				}elseif ($val===\true){
-					foreach ($array as $tkey=>$item)$out[$tkey]=\true;
+				}elseif ($val===true){
+					foreach ($array as $tkey=>$item)$out[$tkey]=true;
 				}elseif ($val===self::KEY){
 					foreach ($array as $tkey=>$item)$out[$tkey]=$tkey;
 				}else{
@@ -181,10 +180,10 @@ class datawork{
 					foreach ($array as $tkey=>$item)$out[$k0($item)]=self::arrayGroup($val,$tkey,$item);
 				}elseif (\is_object($val)){
 					foreach ($array as $item)$out[$k0($item)]=$val($item);
-				}elseif ($val===\false){
+				}elseif ($val===false){
 					foreach ($array as $item)$out[$k0($item)]=$item;
-				}elseif ($val===\true){
-					foreach ($array as $item)$out[$k0($item)]=\true;
+				}elseif ($val===true){
+					foreach ($array as $item)$out[$k0($item)]=true;
 				}elseif ($val===self::KEY){
 					foreach ($array as $tkey=>$item)$out[$k0($item)]=$tkey;
 				}else{
@@ -195,10 +194,10 @@ class datawork{
 					foreach ($array as $tkey=>$item)$out[$item->$k0]=self::arrayGroup($val,$tkey,$item);
 				}elseif (\is_object($val)){
 					foreach ($array as $item)$out[$item->$k0]=$val($item);
-				}elseif ($val===\false){
+				}elseif ($val===false){
 					foreach ($array as $item)$out[$item->$k0]=$item;
-				}elseif ($val===\true){
-					foreach ($array as $item)$out[$item->$k0]=\true;
+				}elseif ($val===true){
+					foreach ($array as $item)$out[$item->$k0]=true;
 				}elseif ($val===self::KEY){
 					foreach ($array as $tkey=>$item)$out[$item->$k0]=$tkey;
 				}else{
@@ -211,10 +210,10 @@ class datawork{
 					foreach ($array as $tkey=>$item)$out[]=self::arrayGroup($val,$tkey,$item);
 				}elseif (\is_object($val)){
 					foreach ($array as $item)$out[]=$val($item);
-				}elseif ($val===\false){
+				}elseif ($val===false){
 					foreach ($array as $item)$out[]=$item;
-				}elseif ($val===\true){
-					foreach ($array as $item)$out[]=\true;
+				}elseif ($val===true){
+					foreach ($array as $item)$out[]=true;
 				}elseif ($val===self::KEY){
 					foreach ($array as $tkey=>$i)$out[]=$tkey;
 				}else{
@@ -225,10 +224,10 @@ class datawork{
 					foreach ($array as $tkey=>$item)$out[$tkey]=self::arrayGroup($val,$tkey,$item);
 				}elseif (\is_object($val)){
 					foreach ($array as $tkey=>$item)$out[$tkey]=$val($item);
-				}elseif ($val===\false){
+				}elseif ($val===false){
 					foreach ($array as $tkey=>$item)$out[$tkey]=$item;
-				}elseif ($val===\true){
-					foreach ($array as $tkey=>$item)$out[$tkey]=\true;
+				}elseif ($val===true){
+					foreach ($array as $tkey=>$item)$out[$tkey]=true;
 				}elseif ($val===self::KEY){
 					foreach ($array as $tkey=>$item)$out[$tkey]=$tkey;
 				}else{
@@ -239,10 +238,10 @@ class datawork{
 					foreach ($array as $tkey=>$item)$out[$k0($item)]=self::arrayGroup($val,$tkey,$item);
 				}elseif (\is_object($val)){
 					foreach ($array as $item)$out[$k0($item)]=$val($item);
-				}elseif ($val===\false){
+				}elseif ($val===false){
 					foreach ($array as $item)$out[$k0($item)]=$item;
-				}elseif ($val===\true){
-					foreach ($array as $item)$out[$k0($item)]=\true;
+				}elseif ($val===true){
+					foreach ($array as $item)$out[$k0($item)]=true;
 				}elseif ($val===self::KEY){
 					foreach ($array as $tkey=>$item)$out[$k0($item)]=$tkey;
 				}else{
@@ -253,10 +252,10 @@ class datawork{
 					foreach ($array as $tkey=>$item)$out[$item[$k0]]=self::arrayGroup($val,$tkey,$item);
 				}elseif (\is_object($val)){
 					foreach ($array as $item)$out[$item[$k0]]=$val($item);
-				}elseif ($val===\false){
+				}elseif ($val===false){
 					foreach ($array as $item)$out[$item[$k0]]=$item;
-				}elseif ($val===\true){
-					foreach ($array as $item)$out[$item[$k0]]=\true;
+				}elseif ($val===true){
+					foreach ($array as $item)$out[$item[$k0]]=true;
 				}elseif ($val===self::KEY){
 					foreach ($array as $tkey=>$item)$out[$item[$k0]]=$tkey;
 				}else{
@@ -272,10 +271,10 @@ class datawork{
 						foreach ($array as $tkey=>$item)$out[$k0($item)][]=self::arrayGroup($val,$tkey,$item);
 					}elseif (\is_object($val)){
 						foreach ($array as $item)$out[$k0($item)][]=$val($item);
-					}elseif ($val===\false){
+					}elseif ($val===false){
 						foreach ($array as $item)$out[$k0($item)][]=$item;
-					}elseif ($val===\true){
-						foreach ($array as $item)$out[$k0($item)][]=\true;
+					}elseif ($val===true){
+						foreach ($array as $item)$out[$k0($item)][]=true;
 					}elseif ($val===self::KEY){
 						foreach ($array as $tkey=>$item)$out[$k0($item)][]=$tkey;
 					}else{
@@ -286,10 +285,10 @@ class datawork{
 						foreach ($array as $tkey=>$item)$out[$tkey][]=self::arrayGroup($val,$tkey,$item);
 					}elseif (\is_object($val)){
 						foreach ($array as $tkey=>$item)$out[$tkey][]=$val($item);
-					}elseif ($val===\false){
+					}elseif ($val===false){
 						foreach ($array as $tkey=>$item)$out[$tkey][]=$item;
-					}elseif ($val===\true){
-						foreach ($array as $tkey=>$item)$out[$tkey][]=\true;
+					}elseif ($val===true){
+						foreach ($array as $tkey=>$item)$out[$tkey][]=true;
 					}elseif ($val===self::KEY){
 						foreach ($array as $tkey=>$item)$out[$tkey][]=$tkey;
 					}else{
@@ -300,10 +299,10 @@ class datawork{
 						foreach ($array as $tkey=>$item)$out[$item[$k0]][]=self::arrayGroup($val,$tkey,$item);
 					}elseif (\is_object($val)){
 						foreach ($array as $item)$out[$item[$k0]][]=$val($item);
-					}elseif ($val===\false){
+					}elseif ($val===false){
 						foreach ($array as $item)$out[$item[$k0]][]=$item;
-					}elseif ($val===\true){
-						foreach ($array as $item)$out[$item[$k0]][]=\true;
+					}elseif ($val===true){
+						foreach ($array as $item)$out[$item[$k0]][]=true;
 					}elseif ($val===self::KEY){
 						foreach ($array as $tkey=>$item)$out[$item[$k0]][]=$tkey;
 					}else{
@@ -319,10 +318,10 @@ class datawork{
 							foreach ($array as $tkey=>$item)$out[$k0($item)][$k1($item)]=self::arrayGroup($val,$tkey,$item);
 						}elseif (\is_object($val)){
 							foreach ($array as $item)$out[$k0($item)][$k1($item)]=$val($item);
-						}elseif ($val===\false){
+						}elseif ($val===false){
 							foreach ($array as $item)$out[$k0($item)][$k1($item)]=$item;
-						}elseif ($val===\true){
-							foreach ($array as $item)$out[$k0($item)][$k1($item)]=\true;
+						}elseif ($val===true){
+							foreach ($array as $item)$out[$k0($item)][$k1($item)]=true;
 						}elseif ($val===self::KEY){
 							foreach ($array as $tkey=>$item)$out[$k0($item)][$k1($item)]=$tkey;
 						}else{
@@ -333,10 +332,10 @@ class datawork{
 							foreach ($array as $tkey=>$item)$out[$k0($item)][$tkey]=self::arrayGroup($val,$tkey,$item);
 						}elseif (\is_object($val)){
 							foreach ($array as $tkey=>$item)$out[$k0($item)][$tkey]=$val($item);
-						}elseif ($val===\false){
+						}elseif ($val===false){
 							foreach ($array as $tkey=>$item)$out[$k0($item)][$tkey]=$item;
-						}elseif ($val===\true){
-							foreach ($array as $tkey=>$item)$out[$k0($item)][$tkey]=\true;
+						}elseif ($val===true){
+							foreach ($array as $tkey=>$item)$out[$k0($item)][$tkey]=true;
 						}elseif ($val===self::KEY){
 							foreach ($array as $tkey=>$item)$out[$k0($item)][$tkey]=$tkey;
 						}else{
@@ -347,10 +346,10 @@ class datawork{
 							foreach ($array as $tkey=>$item)$out[$k0($item)][$item[$k1]]=self::arrayGroup($val,$tkey,$item);
 						}elseif (\is_object($val)){
 							foreach ($array as $item)$out[$k0($item)][$item[$k1]]=$val($item);
-						}elseif ($val===\false){
+						}elseif ($val===false){
 							foreach ($array as $item)$out[$k0($item)][$item[$k1]]=$item;
-						}elseif ($val===\true){
-							foreach ($array as $item)$out[$k0($item)][$item[$k1]]=\true;
+						}elseif ($val===true){
+							foreach ($array as $item)$out[$k0($item)][$item[$k1]]=true;
 						}elseif ($val===self::KEY){
 							foreach ($array as $tkey=>$item)$out[$k0($item)][$item[$k1]]=$tkey;
 						}else{
@@ -363,10 +362,10 @@ class datawork{
 							foreach ($array as $tkey=>$item)$out[$tkey][$k1($item)]=self::arrayGroup($val,$tkey,$item);
 						}elseif (\is_object($val)){
 							foreach ($array as $tkey=>$item)$out[$tkey][$k1($item)]=$val($item);
-						}elseif ($val===\false){
+						}elseif ($val===false){
 							foreach ($array as $tkey=>$item)$out[$tkey][$k1($item)]=$item;
-						}elseif ($val===\true){
-							foreach ($array as $tkey=>$item)$out[$tkey][$k1($item)]=\true;
+						}elseif ($val===true){
+							foreach ($array as $tkey=>$item)$out[$tkey][$k1($item)]=true;
 						}elseif ($val===self::KEY){
 							foreach ($array as $tkey=>$item)$out[$tkey][$k1($item)]=$tkey;
 						}else{
@@ -377,10 +376,10 @@ class datawork{
 							foreach ($array as $tkey=>$item)$out[$tkey][$tkey]=self::arrayGroup($val,$tkey,$item);
 						}elseif (\is_object($val)){
 							foreach ($array as $tkey=>$item)$out[$tkey][$tkey]=$val($item);
-						}elseif ($val===\false){
+						}elseif ($val===false){
 							foreach ($array as $tkey=>$item)$out[$tkey][$tkey]=$item;
-						}elseif ($val===\true){
-							foreach ($array as $tkey=>$item)$out[$tkey][$tkey]=\true;
+						}elseif ($val===true){
+							foreach ($array as $tkey=>$item)$out[$tkey][$tkey]=true;
 						}elseif ($val===self::KEY){
 							foreach ($array as $tkey=>$item)$out[$tkey][$tkey]=$tkey;
 						}else{
@@ -391,10 +390,10 @@ class datawork{
 							foreach ($array as $tkey=>$item)$out[$tkey][$item[$k1]]=self::arrayGroup($val,$tkey,$item);
 						}elseif (\is_object($val)){
 							foreach ($array as $tkey=>$item)$out[$tkey][$item[$k1]]=$val($item);
-						}elseif ($val===\false){
+						}elseif ($val===false){
 							foreach ($array as $tkey=>$item)$out[$tkey][$item[$k1]]=$item;
-						}elseif ($val===\true){
-							foreach ($array as $tkey=>$item)$out[$tkey][$item[$k1]]=\true;
+						}elseif ($val===true){
+							foreach ($array as $tkey=>$item)$out[$tkey][$item[$k1]]=true;
 						}elseif ($val===self::KEY){
 							foreach ($array as $tkey=>$item)$out[$tkey][$item[$k1]]=$tkey;
 						}else{
@@ -408,10 +407,10 @@ class datawork{
 							foreach ($array as $tkey=>$item)$out[$item[$k0]][$k1($item)]=self::arrayGroup($val,$tkey,$item);
 						}elseif (\is_object($val)){
 							foreach ($array as $item)$out[$item[$k0]][$k1($item)]=$val($item);
-						}elseif ($val===\false){
+						}elseif ($val===false){
 							foreach ($array as $item)$out[$item[$k0]][$k1($item)]=$item;
-						}elseif ($val===\true){
-							foreach ($array as $item)$out[$item[$k0]][$k1($item)]=\true;
+						}elseif ($val===true){
+							foreach ($array as $item)$out[$item[$k0]][$k1($item)]=true;
 						}elseif ($val===self::KEY){
 							foreach ($array as $tkey=>$item)$out[$item[$k0]][$k1($item)]=$tkey;
 						}else{
@@ -422,10 +421,10 @@ class datawork{
 							foreach ($array as $tkey=>$item)$out[$item[$k0]][$tkey]=self::arrayGroup($val,$tkey,$item);
 						}elseif (\is_object($val)){
 							foreach ($array as $tkey=>$item)$out[$item[$k0]][$tkey]=$val($item);
-						}elseif ($val===\false){
+						}elseif ($val===false){
 							foreach ($array as $tkey=>$item)$out[$item[$k0]][$tkey]=$item;
-						}elseif ($val===\true){
-							foreach ($array as $tkey=>$item)$out[$item[$k0]][$tkey]=\true;
+						}elseif ($val===true){
+							foreach ($array as $tkey=>$item)$out[$item[$k0]][$tkey]=true;
 						}elseif ($val===self::KEY){
 							foreach ($array as $tkey=>$item)$out[$item[$k0]][$tkey]=$tkey;
 						}else{
@@ -436,10 +435,10 @@ class datawork{
 							foreach ($array as $tkey=>$item)$out[$item[$k0]][$item[$k1]]=self::arrayGroup($val,$tkey,$item);
 						}elseif (\is_object($val)){
 							foreach ($array as $item)$out[$item[$k0]][$item[$k1]]=$val($item);
-						}elseif ($val===\false){
+						}elseif ($val===false){
 							foreach ($array as $item)$out[$item[$k0]][$item[$k1]]=$item;
-						}elseif ($val===\true){
-							foreach ($array as $item)$out[$item[$k0]][$item[$k1]]=\true;
+						}elseif ($val===true){
+							foreach ($array as $item)$out[$item[$k0]][$item[$k1]]=true;
 						}elseif ($val===self::KEY){
 							foreach ($array as $tkey=>$item)$out[$item[$k0]][$item[$k1]]=$tkey;
 						}else{
@@ -455,10 +454,10 @@ class datawork{
 					foreach ($array as $tkey=>$item)$out[$item[$k0]][$item[$key[1]]][]=self::arrayGroup($val,$tkey,$item);
 				}elseif (\is_object($val)){
 					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][]=$val($item);
-				}elseif ($val===\false){
+				}elseif ($val===false){
 					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][]=$item;
-				}elseif ($val===\true){
-					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][]=\true;
+				}elseif ($val===true){
+					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][]=true;
 				}elseif ($val===self::KEY){
 					foreach ($array as $tkey=>$item)$out[$item[$k0]][$item[$key[1]]][]=$tkey;
 				}else{
@@ -469,10 +468,10 @@ class datawork{
 					foreach ($array as $tkey=>$item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]]=self::arrayGroup($val,$tkey,$item);
 				}elseif (\is_object($val)){
 					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]]=$val($item);
-				}elseif ($val===\false){
+				}elseif ($val===false){
 					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]]=$item;
-				}elseif ($val===\true){
-					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]]=\true;
+				}elseif ($val===true){
+					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]]=true;
 				}elseif ($val===self::KEY){
 					foreach ($array as $tkey=>$item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]]=$tkey;
 				}else{
@@ -486,10 +485,10 @@ class datawork{
 					foreach ($array as $tkey=>$item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]][]=self::arrayGroup($val,$tkey,$item);
 				}elseif (\is_object($val)){
 					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]][]=$val($item);
-				}elseif ($val===\false){
+				}elseif ($val===false){
 					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]][]=$item;
-				}elseif ($val===\true){
-					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]][]=\true;
+				}elseif ($val===true){
+					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]][]=true;
 				}elseif ($val===self::KEY){
 					foreach ($array as $tkey=>$item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]][]=$tkey;
 				}else{
@@ -500,10 +499,10 @@ class datawork{
 					foreach ($array as $tkey=>$item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]][$item[$key[3]]]=self::arrayGroup($val,$tkey,$item);
 				}elseif (\is_object($val)){
 					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]][$item[$key[3]]]=$val($item);
-				}elseif ($val===\false){
+				}elseif ($val===false){
 					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]][$item[$key[3]]]=$item;
-				}elseif ($val===\true){
-					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]][$item[$key[3]]]=\true;
+				}elseif ($val===true){
+					foreach ($array as $item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]][$item[$key[3]]]=true;
 				}elseif ($val===self::KEY){
 					foreach ($array as $tkey=>$item)$out[$item[$k0]][$item[$key[1]]][$item[$key[2]]][$item[$key[3]]]=$tkey;
 				}else{
@@ -515,7 +514,7 @@ class datawork{
 	}
 
 
-	private static function key2($array,$key,$val=\false){
+	private static function key2($array,$key,$val=false){
 	// 2 times longest
 		$out=array();
 		foreach ($array as $k=>$item){
@@ -540,8 +539,8 @@ class datawork{
 
 	private static function result($item,$val,$key){
 		if (\is_object($val))return $val($item);
-		if ($val===\false)return $item;
-		if ($val===\true)return \true;
+		if ($val===false)return $item;
+		if ($val===true)return true;
 		if ($val===self::KEY)return $key;
 		if (\is_array($val))return self::arrayGroup($val,$key,$item);
 		return $item[$val];
@@ -557,7 +556,7 @@ class datawork{
 		$out=array();
 		foreach($describeArray['data'] as $key=>$value){
 			$out[$key]['name']=isset($value['comment'])?$value['comment']:$key;
-			if (!\in_array($value['type'],array('CLOB','BLOB')))$out[$key]['sort']=\true;
+			if (!\in_array($value['type'],array('CLOB','BLOB')))$out[$key]['sort']=true;
 		}
 		return $out;
 	}
@@ -574,8 +573,8 @@ class datawork{
 	 * @return array|boolean
 	 */
 	static function describeToForm($describeArray){
-		if (empty($describeArray['data']))return \false;
-		if (!\is_array($describeArray['data']))return \false;
+		if (empty($describeArray['data']))return false;
+		if (!\is_array($describeArray['data']))return false;
 		$out=array();
 		foreach ($describeArray['data'] as $name=>$item){
 			$out[$name]=array();
@@ -670,12 +669,12 @@ class datawork{
 	 * @param boolean $includeMainBranch include main branch
 	 * @return array
 	 */
-	static function tree($array,$keyField,$parentField,$childrenName='children',$mainbranch=\null,$includeMainBranch=\false){
+	static function tree($array,$keyField,$parentField,$childrenName='children',$mainbranch=null,$includeMainBranch=false){
 		foreach ($array as $item){
 			self::$branch[$item[$parentField]][]=$item;
 			if ($includeMainBranch && $item[$keyField]==$mainbranch)$start=$item;
 		}
-		if (\is_null($mainbranch))$mainbranch=$item[$parentField];
+		if ($mainbranch===null)$mainbranch=$item[$parentField];
 		$return=self::fillBranch(self::$branch[$mainbranch],$keyField,$childrenName);
 		if ($includeMainBranch){
 			$start[$childrenName]=$return;
@@ -722,12 +721,12 @@ class datawork{
 	 * @param array $after
 	 * @param array $listfields list of fields
 	 */
-	static function difference($before,$after,$listfields=\false){
+	static function difference($before,$after,$listfields=false){
 		$difference=array();
 		if ($listfields==self::FORMS)$listfields=forms::getFormDescription();
 		foreach ($after as $key=>$value){
-			if (!isset($before[$key]))  continue; // not compare vars without match
-			if ($value==$before[$key])  continue; // no difference
+			if (!isset($before[$key]))continue; // not compare vars without match
+			if ($value==$before[$key])continue; // no difference
 			$new=$value;
 			$old=$before[$key];
 			$field=$fieldText=$key;
@@ -753,23 +752,23 @@ class datawork{
 		return $difference;
 	}
 
-	static function stable_uasort(&$array, $cmpFunction) {
-		$index = 0;
-		foreach ($array as &$item) {
-			$item = array($index++, $item);
+	static function stable_uasort(&$array,$cmpFunction){
+		$index=0;
+		foreach ($array as &$item){
+			$item=array($index++,$item);
 		}
-		$result = \uasort($array, function($a, $b) use($cmpFunction) {
-			$result = \call_user_func($cmpFunction, $a[1], $b[1]);
-			return $result == 0 ? $a[0] - $b[0] : $result;
+		$result=\uasort($array,function($a,$b) use($cmpFunction) {
+			$result=\call_user_func($cmpFunction,$a[1],$b[1]);
+			return $result==0?$a[0]-$b[0]:$result;
 		});
-		foreach ($array as &$item) {
-			$item = $item[1];
+		foreach ($array as &$item){
+			$item=$item[1];
 		}
 		return $result;
 	}
 	static function positionCompare($a,$b){
-		if ((float)@$a['position'] == (float)@$b['position'])return 0;
-		return ((float)@$a['position'] < (float)@$b['position']) ? -1 : 1;
+		if ((float)@$a['position']==(float)@$b['position'])return 0;
+		return ((float)@$a['position']<(float)@$b['position'])?-1:1;
 	}
 	/**
 	 * Transform array with only vals to array with keys==vals

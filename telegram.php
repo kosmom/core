@@ -27,7 +27,7 @@ class telegram{
 	const PARSE_MODE_MARKDOWN='Markdown';
 	const PARSE_MODE_MARKDOWN2='MarkdownV2';
 	const PARSE_MODE_HTML='HTML';
-	const PARSE_MODE_NONE=\null;
+	const PARSE_MODE_NONE=null;
 	
 	const OPTION_PROTECT_CONTENT='protect_content';
 	
@@ -46,53 +46,53 @@ class telegram{
 		if ($rs['ok']!=true)throw new Exception('file get error');
 		return curl::getContent('https://api.telegram.org/file/bot'.core::$data['telegram'].'/'.$rs['result']['file_path']);
 	}
-	static function sendLocation($chat_id,$latitude,$longitude,$reply_markup=\null){
+	static function sendLocation($chat_id,$latitude,$longitude,$reply_markup=null){
 		self::check();
 		$data=array('chat_id'=>$chat_id,'latitude'=>$latitude,'longitude'=>$longitude);
 		if ($reply_markup)$data['reply_markup']=$reply_markup;
 		return self::request('sendLocation',$data);
 	}
 	static function sendMessageWithInlineKey($chat_id,$text,$keyboardArray){
-		$resp = array("inline_keyboard" => $keyboardArray);
-		$reply = \json_encode($resp);
-		return self::sendMessage($chat_id, $text, $reply);
+		$resp=array("inline_keyboard"=>$keyboardArray);
+		$reply=\json_encode($resp);
+		return self::sendMessage($chat_id,$text,$reply);
 	}
 	static function editMessageWithInlineKey($chat_id,$message_id,$text,$keyboardArray){
-		$resp = array("inline_keyboard" => $keyboardArray);
-		$reply = \json_encode($resp);
-		return self::editMessage($chat_id,$message_id, $text, $reply);
+		$resp=array("inline_keyboard"=>$keyboardArray);
+		$reply=\json_encode($resp);
+		return self::editMessage($chat_id,$message_id,$text,$reply);
 	}
-	static function sendMessageWithKey($chat_id,$text,$keyboardArray,$resizable=\true,$one_time=\true){
-		$resp = array("keyboard" => $keyboardArray,"resize_keyboard" => $resizable,"one_time_keyboard" => $one_time);
-		$reply = \json_encode($resp);
-		return self::sendMessage($chat_id, $text, $reply);
+	static function sendMessageWithKey($chat_id,$text,$keyboardArray,$resizable=true,$one_time=true){
+		$resp=array("keyboard"=>$keyboardArray,"resize_keyboard"=>$resizable,"one_time_keyboard"=>$one_time);
+		$reply=\json_encode($resp);
+		return self::sendMessage($chat_id,$text,$reply);
 	}
 	static function sendMessageWithRemoveKey($chat_id,$text){
-		$resp = array("remove_keyboard" => \true);
-		$reply = \json_encode($resp);
-		return self::sendMessage($chat_id, $text, $reply);
+		$resp=array("remove_keyboard"=>true);
+		$reply=\json_encode($resp);
+		return self::sendMessage($chat_id,$text,$reply);
 	}
 	static function sendMessageWithForceReply($chat_id,$text){
-		$resp = array("force_reply" => \true);
-		$reply = \json_encode($resp);
-		return self::sendMessage($chat_id, $text, $reply);
+		$resp=array("force_reply"=>true);
+		$reply=\json_encode($resp);
+		return self::sendMessage($chat_id,$text,$reply);
 	}
 	static function leaveChat($chat_id){
 		self::check();
 		return self::request('leaveChat',array('chat_id'=>$chat_id));
 	}
-	static function sendMessage($chat_id,$text,$reply_markup=\null,$protect_content=\false,$reply_to_message_id=\null){
+	static function sendMessage($chat_id,$text,$reply_markup=null,$protect_content=false,$reply_to_message_id=null){
 		self::check();
-		$data=array('chat_id'=>$chat_id,'text'=>input::iconv($text,\true));
+		$data=array('chat_id'=>$chat_id,'text'=>input::iconv($text,true));
 		if (self::$parse_mode)$data['parse_mode']=self::$parse_mode;
 		if ($reply_markup)$data['reply_markup']=$reply_markup;
-		if ($protect_content)$data['protect_content']=\true;
+		if ($protect_content)$data['protect_content']=true;
 		if ($reply_to_message_id)$data['reply_to_message_id']=$reply_to_message_id;
 		return self::request('sendMessage',$data);
 	}
-	static function editMessage($chat_id,$message_id,$text,$reply_markup=\null){
+	static function editMessage($chat_id,$message_id,$text,$reply_markup=null){
 		self::check();
-		$data=array('chat_id'=>$chat_id,'message_id'=>$message_id,'text'=>input::iconv($text,\true));
+		$data=array('chat_id'=>$chat_id,'message_id'=>$message_id,'text'=>input::iconv($text,true));
 		if (self::$parse_mode)$data['parse_mode']=self::$parse_mode;
 		if ($reply_markup)$data['reply_markup']=$reply_markup;
 		return self::request('editMessageText',$data);
@@ -102,7 +102,7 @@ class telegram{
 		$data=array('chat_id'=>$chat_id,'message_id'=>$message_id);
 		return self::request('deleteMessage',$data);
 	}
-	static function editDocument($chat_id,$message_id,$link,$caption=\null,$reply_markup=\null){
+	static function editDocument($chat_id,$message_id,$link,$caption=null,$reply_markup=null){
 		self::check();
 		$data=array('chat_id'=>$chat_id,'message_id'=>$message_id);
 		if ($reply_markup)$data['reply_markup']=$reply_markup;
@@ -111,7 +111,7 @@ class telegram{
 			$data['document']=\curl_file_create(\realpath($link));
 			$media['media']='attach://document';
 			$options[\CURLOPT_HTTPHEADER]=array("Content-Type"=>"multipart/form-data");
-			$options[\CURLOPT_SAFE_UPLOAD]=\true;
+			$options[\CURLOPT_SAFE_UPLOAD]=true;
 		}else{
 			$media['media']=$link;
 		}
@@ -129,7 +129,7 @@ class telegram{
 		self::check();
 		return input::iconv(self::request('sendChatAction',array('chat_id'=>$chat_id,'action'=>$action)));
 	}
-	static function banChatMember($chat_id,$user_id,$until_date=\null,$revoke_messages=\null){
+	static function banChatMember($chat_id,$user_id,$until_date=null,$revoke_messages=null){
 		self::check();
 		$data=array('chat_id'=>$chat_id,'user_id'=>$user_id);
 		if ($until_date)$data['until_date']= input::strtotime($until_date);
@@ -162,34 +162,34 @@ class telegram{
             }
             return input::iconv(self::request('sendMediaGroup',$data,$options));
         }
-	static function sendPhoto($chat_id,$photoLink,$caption=\null,$reply_markup=\null,$protect_content=\false){
+	static function sendPhoto($chat_id,$photoLink,$caption=null,$reply_markup=null,$protect_content=false){
 		self::check();
 		$data=array('chat_id'=>$chat_id);
 		$options=array();
-		if ($caption)$data['caption']=input::iconv($caption,\true);
-		if ($protect_content)$data['protect_content']=\true;
+		if ($caption)$data['caption']=input::iconv($caption,true);
+		if ($protect_content)$data['protect_content']=true;
 		if ($reply_markup)$data['reply_markup']=$reply_markup;
 		if (\is_file($photoLink)){
 			$data['photo']=\curl_file_create(\realpath($photoLink));
 			$options[\CURLOPT_HTTPHEADER]=array("Content-Type"=>"multipart/form-data");
-			$options[\CURLOPT_SAFE_UPLOAD]=\true;
+			$options[\CURLOPT_SAFE_UPLOAD]=true;
 		}else{
 			$data['photo']=$photoLink;
 		}
 		return input::iconv(self::request('sendPhoto',$data,$options));
 	}	
-	static function sendDocument($chat_id,$link,$caption=\null,$reply_markup=\null,$protect_content=\false){
+	static function sendDocument($chat_id,$link,$caption=null,$reply_markup=null,$protect_content=false){
 		self::check();
 		$data=array('chat_id'=>$chat_id);
 		if ($reply_markup)$data['reply_markup']=$reply_markup;
-		if ($protect_content)$data['protect_content']=\true;
+		if ($protect_content)$data['protect_content']=true;
 		if (self::$parse_mode)$data['parse_mode']=self::$parse_mode;
 		$options=array();
-		if ($caption)$data['caption']=input::iconv($caption,\true);
+		if ($caption)$data['caption']=input::iconv($caption,true);
 		if (\is_file($link)){
 			$data['document']=\curl_file_create(\realpath($link));
 			$options[\CURLOPT_HTTPHEADER]=array("Content-Type"=>"multipart/form-data");
-			$options[\CURLOPT_SAFE_UPLOAD]=\true;
+			$options[\CURLOPT_SAFE_UPLOAD]=true;
 		}else{
 			$data['document']=$link;
 		}
@@ -199,7 +199,7 @@ class telegram{
 		if (!$rs['ok'])throw new \Exception($rs['description'],$rs['error_code']);
 		return $rs;
 	}
-	static function sendMessageOrFault($chat_id,$text,$reply_markup=\null){
+	static function sendMessageOrFault($chat_id,$text,$reply_markup=null){
 		$rs=self::sendMessage($chat_id,$text,$reply_markup);
 		return self::checkResponse($rs);
 	}
@@ -222,13 +222,13 @@ class telegram{
 	 * get Webhook data
 	 * @return array
 	 */
-	static function getData() {
-		return \json_decode(input::iconv(\file_get_contents("php://input")),\true);
+	static function getData(){
+		return \json_decode(input::iconv(\file_get_contents("php://input")),true);
 	}
 	static function check(){
 		if (!isset(core::$data['telegram']))throw new \Exception('need set c\\core::$data[\'telegram key\'] from BotFather');
 	}
-	private static function request($api,$post=\null,$options=array()){
+	private static function request($api,$post=null,$options=array()){
 		if (\is_callable(@core::$data['telegram_request'])){
 			$a=core::$data['telegram_request'];
 			return $a($api,$post);
@@ -239,7 +239,7 @@ class telegram{
 			$options[\CURLOPT_PROXYUSERPWD]=core::$data['telegram_proxy']['auth'];
 			$options[\CURLOPT_PROXYTYPE]=core::$data['telegram_proxy']['type'];
 		}
-		return \json_decode(curl::getContentSafely($url,$post,\null,$options), \true);
+		return \json_decode(curl::getContentSafely($url,$post,null,$options),true);
 	}
 	static function checkAuth($auth_data){
 		$check_hash=$auth_data['hash'];
@@ -252,8 +252,8 @@ class telegram{
 		$data_check_string=\implode("\n", $data_check_arr);
 		$secret_key=\hash('sha256',core::$data['telegram'],true);
 		$hash=\hash_hmac('sha256',$data_check_string,$secret_key);
-		if (\strcmp($hash,$check_hash)!==0)return \false;
-		if ((\time()-$auth_data['auth_date'])>86400)return \false;
-		return \true;
+		if (\strcmp($hash,$check_hash)!==0)return false;
+		if ((\time()-$auth_data['auth_date'])>86400)return false;
+		return true;
 	}
 }

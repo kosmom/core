@@ -14,55 +14,55 @@ class debug{
 	static $debugBuffer = array();
 
 	private static function getDifference(){
-		if (!isset($_SERVER['REQUEST_TIME_FLOAT']))$_SERVER['REQUEST_TIME_FLOAT']=microtime(\true);
-		$from_start=\microtime(\true)-$_SERVER['REQUEST_TIME_FLOAT'];
+		if (!isset($_SERVER['REQUEST_TIME_FLOAT']))$_SERVER['REQUEST_TIME_FLOAT']=microtime(true);
+		$from_start=\microtime(true)-$_SERVER['REQUEST_TIME_FLOAT'];
 		$str=\substr($from_start,0,5).' ('.\substr($from_start-self::$lastTimer,0,5).')';
 		self::$lastTimer=$from_start;
 		return $str;
 	}
 
 	private static function readFileVar($file,$string){
-		if (!($f = \fopen($file, "r"))) throw new \Exception('Read file error');
+		if (!($f=\fopen($file,"r")))throw new \Exception('Read file error');
 		$s=0;
 		while (!\feof($f)) {
-			$line = \fgets($f);
+			$line=\fgets($f);
 			$s++;
 			if ($s==$string)break;
 		}
 		$line=\trim(\substr($line,0,\strpos($line,'=')));
 		\fclose($f);
-		if (\substr($line,0,1)!='$')return \false;
+		if (\substr($line,0,1)!='$')return false;
 		return $line;
 	}
 
 	static function alert($value='',$variable='',$file='',$line=''){
-		if (\is_array($value))$value=\str_replace("\n",'\\n',\print_r($value,\true));
+		if (\is_array($value))$value=\str_replace("\n",'\\n',\print_r($value,true));
 		if ($variable!='')$variable.=' = \n';
 		if ($file!='')$file='['.$file.']';
 		if ($line!='')$line='['.$line.']';
 		echo "<script>alert('".\str_replace("\r",'',\str_replace('\\','\\\\',$file.$line).$variable.\strtr(array("'"=>'\\\'',"\n"=>'\\n'),$value))."')</script>";
 	}
 	static function timer(){
-		$mtime = \microtime(\true);
-		if (!self::$timer && $_SERVER['REQUEST_TIME_FLOAT']) self::$timer = $_SERVER['REQUEST_TIME_FLOAT'];
+		$mtime = \microtime(true);
+		if (!self::$timer && $_SERVER['REQUEST_TIME_FLOAT'])self::$timer=$_SERVER['REQUEST_TIME_FLOAT'];
 		$timout=$mtime-self::$timer;
 		self::$timer=$mtime;
 		return $timout;
 	}
 	static function count($message){
-		self::$debugBuffer[]=array('count', $message);
+		self::$debugBuffer[]=array('count',$message);
 	}
 	static function dir($array){
-		self::$debugBuffer[]=array('dir', $array);
+		self::$debugBuffer[]=array('dir',$array);
 	}
 	static function table($array){
-		if (empty($array)) return \false;
-		self::$debugBuffer[]=array('table', $array);
+		if (empty($array))return false;
+		self::$debugBuffer[]=array('table',$array);
 	}
-	static function group($header,$type=error::INFO,$collapsed=\true,$increaseCounter=\true){
+	static function group($header,$type=error::INFO,$collapsed=true,$increaseCounter=true){
 		if (@core::$data['label']){
-			self::consoleLog(core::$data['label'], error::HEADER);
-			core::$data['label'] = '';
+			self::consoleLog(core::$data['label'],error::HEADER);
+			core::$data['label']='';
 		}
 		if (!self::$groupCounter){
 			$need = self::getBacktrace();
@@ -75,14 +75,14 @@ class debug{
 		if ($increaseCounter)self::$groupCounter++;
 		self::$debugBuffer[]=array('group',$string,$type,$collapsed);
 	}
-	static function groupEnd($decreaseCounter=\true){
+	static function groupEnd($decreaseCounter=true){
 		if ($decreaseCounter)self::$groupCounter--;
 		self::$debugBuffer[]=array('groupEnd');
 	}
 	
 	private static function getBacktrace(){
 		if (!self::$bugtrace_file_from)self::$bugtrace_file_from=\strlen(mvc::$base__DIR__)+1;
-		$out=debug_backtrace(\false);
+		$out=debug_backtrace(false);
 		\array_shift($out);
 		$debug=\array_shift($out);
 		foreach ($out as $item){
@@ -93,7 +93,7 @@ class debug{
 		if (empty($need))return $debug;
 		return $need;
 	}
-	static function trace($message='',$type=error::INFO, $args=\null){
+	static function trace($message='',$type=error::INFO,$args=null){
 		if (self::$groupCounter){
 			$string=$message;
 		}else{
@@ -104,10 +104,10 @@ class debug{
 		if (self::$bugtrace_report=='console'){
 			self::consoleLog($string,$type);
 			if ($args){
-				if (\is_array($args) or \is_object($args)){
+				if (\is_array($args) || \is_object($args)){
 					self::dir($args);
 				}else{
-					self::consoleLog($args,\null,\false);
+					self::consoleLog($args,null,false);
 				}
 			}
 		}
@@ -208,7 +208,7 @@ class debug{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function console_log($message,$type=\null){
+	static function console_log($message,$type=null){
 		return self::consoleLog($message,$type);
 	}
 	/**
@@ -216,7 +216,7 @@ class debug{
 	 * @param string $message console message
 	 * @param int $type error::TYPE type of message
 	 */
-	static function consoleLog($message,$type=\null,$wrapped=\true){
+	static function consoleLog($message,$type=null,$wrapped=true){
 		self::$debugBuffer[]=array('log',$message,$type,$wrapped);
 	}
 	static function stat(){
@@ -227,7 +227,7 @@ class debug{
 		self::trace('Time from MVC init: '.\round(self::timer()*1000,2).' ms', error::INFO);
 		self::trace('Memory: Usage: '.\round(\memory_get_usage()/1000).' Kb. Peak: '.\round(\memory_get_peak_usage()/1000).' Kb', error::INFO);
 		if (isset(core::$data['stat']))self::dir(core::$data['stat']);
-		self::group('Included_files: '.\sizeof($files));
+		self::group('Included_files: '.\count($files));
 		self::dir($files);
 		self::groupEnd();
 		self::groupEnd();
@@ -237,10 +237,10 @@ class debug{
 	 * @param mixed $var
 	 * @param boolean $isDie
 	 */
-	static function z($var,$isDie=\true){
+	static function z($var,$isDie=true){
 		if (core::$ajax && !core::$partition){
 			if ($isDie)ajax::clearAnswers();
-			error::addWarning("<pre>".\print_r($var,\true)."</pre>");
+			error::addWarning("<pre>".\print_r($var,true)."</pre>");
 			if ($isDie)ajax::render();
 			return;
 		}
@@ -248,7 +248,7 @@ class debug{
 		if($isDie)die;
 	}
 
-	static function dump($var,$exit=\false){
+	static function dump($var,$exit=false){
 		self::z($var,$exit);
 	}
 }

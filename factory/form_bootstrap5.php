@@ -15,9 +15,9 @@ class form_bootstrap5{
 		$out=$this->renderFieldFormGroupBegin($item);
 		if (@!$item['range'] && isset($item['ico']) && $this->form->prop['type']=='md-form')$out.= '<i class="'.$item['ico'].' prefix grey-text"></i>';
 		if ($this->form->prop['type']=='md-form'){
-				return $out.$this->renderFieldField($item,$renderName).$this->renderFieldLabel($item,$renderName).$this->renderFieldFormGroupEnd($item);
+			return $out.$this->renderFieldField($item,$renderName).$this->renderFieldLabel($item,$renderName).$this->renderFieldFormGroupEnd($item);
 		}else{
-				return $out.$this->renderFieldLabel($item).$this->renderFieldField($item,$renderName).$this->renderFieldFormGroupEnd($item);
+			return $out.$this->renderFieldLabel($item).$this->renderFieldField($item,$renderName).$this->renderFieldFormGroupEnd($item);
 		}
 	}
 
@@ -125,9 +125,9 @@ class form_bootstrap5{
 		if ($item['type']=='float'){
 			$item['type']='number';
 			if (!isset($item['attributes']['step']))$item['attributes']['step']='.0000001';
-			$item['value']= str_replace(',', '.', @$item['value']);
+			$item['value']=\str_replace(',', '.', @$item['value']);
 		}
-		$renderValue=isset($item['value'])?((!is_string($item['value']) && is_callable($item['value']))?$item['value']($item):$item['value']):@$item['default'];
+		$renderValue=isset($item['value'])?((!\is_string($item['value']) && \is_callable($item['value']))?$item['value']($item):$item['value']):@$item['default'];
 		if (@$item['range']){
 			$value['min']=(isset($renderValue['min'])?'value="'.\c\input::htmlspecialchars($renderValue['min']).'" ':'');
 			$value['max']=(isset($renderValue['max'])?'value="'.\c\input::htmlspecialchars($renderValue['max']).'" ':'');
@@ -148,7 +148,7 @@ class form_bootstrap5{
 					$masks[]="'".$maskKey."':'".$mask."'";
 				}
 				$item['attributes']['data-inputmask']=\implode(',',$masks);
-			}elseif($mask=='email' or $mask=='mail' or $mask=='phone' or $mask=='ip' or $mask=='date' or $mask=='mm/dd/yyyy'){
+			}elseif($mask=='email' || $mask=='mail' || $mask=='phone' || $mask=='ip' || $mask=='date' || $mask=='mm/dd/yyyy'){
 				if ($mask=='mail')$mask=='email';
 				$item['attributes']['data-inputmask']="'alias':'".$mask."'";
 			}elseif (\substr($mask,0,1)=="'"){
@@ -184,7 +184,7 @@ class form_bootstrap5{
 				$classes.=' '.\c\input::htmlspecialchars($item['classes']);
 			}
 		}
-		$arg=array('name'=>$renderName,'attributes'=>$attributes,'value'=>$value,'classes'=>$classes,'multiple'=>\false,'placeholder'=>$placeholder);
+		$arg=array('name'=>$renderName,'attributes'=>$attributes,'value'=>$value,'classes'=>$classes,'multiple'=>false,'placeholder'=>$placeholder);
 		if (isset(\c\core::$data['form_render'][@$item['type']])){
 			if (\is_callable(\c\core::$data['form_render'][$item['type']])){
 				$a=\c\core::$data['form_render'][$item['type']];
@@ -220,9 +220,9 @@ class form_bootstrap5{
 			case 'select':
 				$multiple=!empty($item['multiple']);
 				if ($item['render']=='auto'){
-					if (\sizeof($item['values'])>10 || (!$required && !$multiple)){
+					if (\count($item['values'])>10 || (!$required && !$multiple)){
 						$item['render']='select';
-					}elseif ($this->form->prop['type']=='form-inline' || \sizeof($item['values'])>5){
+					}elseif ($this->form->prop['type']=='form-inline' || \count($item['values'])>5){
 						if ($multiple){
 							$item['render']='check';
 						}else{

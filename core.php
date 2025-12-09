@@ -37,19 +37,19 @@ class core {
 	 * Debuging project
 	 * @var boolean
 	 */
-	static $debug=\false;
+	static $debug=false;
 
 	/**
 	 * Ajax render style
 	 * @var boolean
 	 */
-	static $ajax=\false;
+	static $ajax=false;
 
 	/**
 	 * Partition Page render style
 	 * @var boolean
 	 */
-	static $partition=\false;
+	static $partition=false;
 
 	/**
 	 * Version of application
@@ -85,32 +85,32 @@ class core {
 			$f= \str_replace('\\','/',\substr($class,2)).'.php';
 			if (isset(self::$data['include_dir']) && \file_exists(self::$data['include_dir'].'/'.$f)){
 				include self::$data['include_dir'].'/'.$f;
-				return \true;
+				return true;
 			}
 			if (isset(self::$data['include_class_dir']) && \file_exists(self::$data['include_class_dir'].'/'.$f)){
 				include self::$data['include_class_dir'].'/'.$f;
-				return \true;
+				return true;
 			}
 			if (\file_exists(__DIR__.'/'.$f)){
 				include __DIR__.'/'.$f;
-				return \true;
+				return true;
 			}
 			if (\file_exists(__DIR__.'/model/'.$f)){
 				include __DIR__.'/model/'.$f;
-				return \true;
+				return true;
 			}
 		}else{
 			$f= \str_replace('\\','/',$class).'.php';
 			if (\file_exists(__DIR__.'/models/'.$f)){
 				include __DIR__.'/models/'.$f;
-				return \true;
+				return true;
 			}
 			if (isset(self::$data['include_dir']) && \file_exists(self::$data['include_dir'].'/'.$f)){
 				include self::$data['include_dir'].'/'.$f;
-				return \true;
+				return true;
 			}
 		}
-		return \false;
+		return false;
 	}
 }
 \spl_autoload_register('c\\core::load');
@@ -136,8 +136,8 @@ class super{
 	function header($code){
 		return error::header($code);
 	}
-	function redirect($url=\null,$__DIR__=\null){
-		$__DIR__===\null?error::redirect($url):mvc::redirect($url,$__DIR__);
+	function redirect($url=null,$__DIR__=null){
+		$__DIR__===null?error::redirect($url):mvc::redirect($url,$__DIR__);
 	}
 	function redirectToRoute($route_name,$params=array()){
 		mvc::redirectToRoute($route_name,$params);
@@ -148,7 +148,7 @@ class super{
 	function addCss($css){
 		return mvc::addCss($css);
 	}
-	function addJs($js,$isComponent=\false){
+	function addJs($js,$isComponent=false){
 		return mvc::addJs($js,$isComponent);
 	}
 	function addComponent($component){
@@ -157,7 +157,7 @@ class super{
 	function addScript($js){
 		return mvc::addScript($js);
 	}
-	function addJsVarAsArray($var,$value=\null){
+	function addJsVarAsArray($var,$value=null){
 		return mvc::addJsVarAsArray($var,$value);
 	}
 	function thrownException($message,$code=0){
@@ -171,7 +171,7 @@ function translate($text,$vars=array()){
 function t($text,$vars=array()){
 	return translate::t($text,$vars);
 }
-function curl($URL,$post=\null,$cookieFile=\null,$options=array()){
+function curl($URL,$post=null,$cookieFile=null,$options=array()){
 	return curl::getContent($URL,$post,$cookieFile,$options);
 }
 function config(){

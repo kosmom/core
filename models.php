@@ -16,7 +16,7 @@ class models{
 		return self::requireModel($className);
 	}
 	static function requireModel($className){
-		if (isset(self::$models[$className]))return \false;
+		if (isset(self::$models[$className]))return false;
 
 	if (\class_exists($className)){
 			self::$models[$className]=new $className;
@@ -34,18 +34,18 @@ class models{
 		$temp=new models_object();
 		return $temp->query($queryString);
 	}
-	static function builder($className,$alias=\false){
+	static function builder($className,$alias=false){
 		$temp=new models_object();
 		return $temp->builder($className,$alias);
 	}
 
-	static function from($className,$alias=\false){
+	static function from($className,$alias=false){
 		$temp=new models_object();
 		return $temp->builder($className,$alias);
 
 	}
 
-	static function get($className,$alias=\false){
+	static function get($className,$alias=false){
 		$temp=new models_object();
 		return $temp->builder($className,$alias);
 	}
@@ -53,10 +53,10 @@ class models{
 	}
 	class models_object{
 	private $groupArray=array(
-		'count'=>\true,
-		'min'=>\true,
-		'max'=>\true,
-		'avg'=>\true
+		'count'=>true,
+		'min'=>true,
+		'max'=>true,
+		'avg'=>true
 	);
 	private $limitStart=0;
 	private $limitCount=0;
@@ -70,10 +70,10 @@ class models{
 	private $queryJoins=array();
 	private $queryOrders=array();
 	private $queryWhere=array();
-	private $queryGroupMode=\false;
+	private $queryGroupMode=false;
 	private $queryOn=array();
 	private $queryBind=array();
-	private $wasSelect=\false;
+	private $wasSelect=false;
 
 	function query($queryString){
 		$parts=explode('>',$queryString);
@@ -84,12 +84,10 @@ class models{
 			\preg_match_all('|\[(.*)\]|U',$part,$wheres);
 			$part=preg_replace('|\[.*\]|U','',$part);
 
-
 			// select {}
 			$selects=array();
 			\preg_match_all('|\{(.*)\}|U',$part,$selects);
 			$part=preg_replace('|\{.*\}|U','',$part);
-
 
 			$alias=array();
 			\preg_match('|^\w+|',$part,$alias);
@@ -97,7 +95,7 @@ class models{
 
 			$specific=array();
 			\preg_match_all('|([\.\#\:\/\\\\])(\w*)|',$part,$specific);
-			$className=\null;
+			$className=null;
 			foreach ($specific[1] as $numberic=>$class){
 				switch($class){
 					case '.':
@@ -109,7 +107,7 @@ class models{
 
 			//action
 			if (!$this->queryJoins){
-				$this->builder($className,$alias?$alias:\false);
+				$this->builder($className,$alias?$alias:false);
 			}else{
 				$this->join($className,$alias);
 			}
@@ -161,17 +159,17 @@ class models{
 		if (\is_array($connections)){
 			$out=array();
 			foreach ($connections as $cKey=>$cVal){
-				if (\is_numeric($cKey) or \is_bool($cKey)){
-					$out[$cVal]=\true;
-				}elseif (\is_numeric($cVal) or \is_bool($cVal)){
-					$out[$cKey]=\true;
+				if (\is_numeric($cKey) || \is_bool($cKey)){
+					$out[$cVal]=true;
+				}elseif (\is_numeric($cVal) || \is_bool($cVal)){
+					$out[$cKey]=true;
 				}else{
 					throw new \Exception('Cant import possible connections');
 				}
 			}
 			return $out;
-		}elseif (is_string($connections)){
-			return array($connections=>\true);
+		}elseif (\is_string($connections)){
+			return array($connections=>true);
 		}
 	}
 	private function addPossibleConnections($className){
@@ -180,19 +178,19 @@ class models{
 	private function intersectPossibleConnections($className){
 		$this->possibleConnections=\array_intersect_key($this->possibleConnections,$this->importConnectios($className));
 	}
-	function builder($className,$alias=\false){
+	function builder($className,$alias=false){
 		if (!$alias)$alias=$className;
 		models::requireModel($className);
 		$this->addPossibleConnections($className);
 		if (\method_exists(models::$models[$className],'construct'))models::$models[$className]->construct($this);
 		$this->activeModel=$className;
-				$this->activeAlias=$alias;
+		$this->activeAlias=$alias;
 		$this->queryJoins=array($alias=>array('class'=>$className));
-		$this->queryModels=array($className=>\true);
+		$this->queryModels=array($className=>true);
 		return $this;
 	}
 
-	function join($className,$alias=\false,$withAlias=\false){
+	function join($className,$alias=false,$withAlias=false){
 		if (!$alias)$alias=$className;
 		models::requireModel($className);
 		$this->queryModels[$className]=$alias;
@@ -203,40 +201,40 @@ class models{
 		if (empty($this->possibleConnections))throw new \Exception('no possible connection');
 		// find join class
 		if (\method_exists(models::$models[$className],'construct'))models::$models[$className]->construct($this);
-		$found=\false;
+		$found=false;
 		if ($withAlias){
 			if (empty($this->queryJoins[$withAlias]))throw new \Exception('alias '.$alias.' not exists');
 			//var_dump($this->queryJoins);
 			// if set with class is alias
 			foreach (models::$models[$className]->joins as $toClassName=>$props){
-				if ($toClassName!=$this->queryJoins[$withAlias]['class'])  continue;
-				if (is_string($props))$props=array('field'=>$props);
+				if ($toClassName!=$this->queryJoins[$withAlias]['class'])continue;
+				if (\is_string($props))$props=array('field'=>$props);
 				// in current models has connection parameters - field from - hou set. field to - key
 				$fieldFrom=$props['field'];
 				$fieldTo=models::$models[$toClassName]->getPrimaryField();
-				$found=\true;
+				$found=true;
 				break;
 			}
 			foreach (models::$models[$this->queryJoins[$withAlias]['class']]->joins as $toClassName=>$props){
-				if ($toClassName!=$className) continue;
-				if (is_string($props))$props=array('field'=>$props);
+				if ($toClassName!=$className)continue;
+				if (\is_string($props))$props=array('field'=>$props);
 				// in current models has connection parameters - field from - hou set. field to - key
 				$fieldTo=$props['field'];
 				$fieldFrom=models::$models[$toClassName]->getPrimaryField();
-				$found=\true;
+				$found=true;
 				break;
 			}
 		}else{
 			// all connects for modules equal with current set
 			foreach (models::$models[$className]->joins as $toClassName=>$props){
-				if (!isset($this->queryModels[$toClassName]))  continue;
+				if (!isset($this->queryModels[$toClassName]))continue;
 				if (\is_string($props))$props=array('field'=>$props);
 				// link found. get fields
 				$withAlias=$toClassName;
 				// in current models has connection parameters - field from - hou set. field to - key
 				$fieldFrom=$props['field'];
 				$fieldTo=models::$models[$toClassName]->getPrimaryField();
-				$found=\true;
+				$found=true;
 				break;
 			}
 			if (!$found){
@@ -244,13 +242,13 @@ class models{
 				// check used models with has if its has chains
 				foreach ($this->queryJoins as $al=>$prop){
 					foreach (models::$models[$prop['class']]->joins as $toClassName=>$props){
-						if (!isset($this->queryModels[$toClassName]))  continue;
+						if (!isset($this->queryModels[$toClassName]))continue;
 						if (\is_string($props))$props=array('field'=>$props);
 						// link found.get fields
 						$withAlias=$al;
 						$fieldFrom=models::$models[$toClassName]->getPrimaryField();
 						$fieldTo=$props['field'];
-						$found=\true;
+						$found=true;
 						break(2);
 					}
 				}
@@ -264,47 +262,47 @@ class models{
 		$this->activeAlias=$alias;
 		return $this;
 	}
-	function order($field,$order='',$prior=999,$alias=\null,$func=\false,$expression=\false){
+	function order($field,$order='',$prior=999,$alias=null,$func=false,$expression=false){
 		if (!$alias)$alias=$this->activeAlias;
-		if (!\in_array($order,array('','asc','desc')))  throw new \Exception('sort order status wrong');
+		if (!\in_array($order,array('','asc','desc')))throw new \Exception('sort order status wrong');
 		if ($order=='asc')$order='';
 		if ($order=='desc')$order=' desc';
 		$this->queryOrders[$prior][]=array('alias'=>$alias,'field'=>$field,'order'=>$order,'func'=>$func,'expression'=>$expression);
 		return $this;
 	}
-	function orderBy($field,$order='',$prior=999,$alias=\null,$func=\false,$expression=\false){
+	function orderBy($field,$order='',$prior=999,$alias=null,$func=false,$expression=false){
 		return $this->order($field,$order,$prior,$alias,$func,$expression);
 	}
-	function unselect($as,$alias=\null){
+	function unselect($as,$alias=null){
 		if (!\is_array($as))$as=array($as);
 		\array_walk($as,function(&$item){
 			$item='-'.$item;
 		});
 		return $this->select($as,$alias);
 	}
-	function select($raw_fields,$tableAlias=\null){
+	function select($raw_fields,$tableAlias=null){
 		if (!$tableAlias)$tableAlias=$this->activeAlias;
 		if (\is_string($raw_fields))$raw_fields=array($raw_fields);
 		$fields=array();
 		foreach ($raw_fields as $field){
 			if ($field=='*'){
-				$this->wasSelect=\true;
+				$this->wasSelect=true;
 				$rs=\array_keys(models::$models[$this->queryJoins[$tableAlias]['class']]->fields);
 				foreach ($rs as $item){
 					$as=$item;
 					if (isset(models::$models[$this->queryJoins[$tableAlias]['class']]->fields[$item]['as']))$as=models::$models[$this->queryJoins[$tableAlias]['class']]->fields[$item]['as'];
-					$fields[$item]= $as;
+					$fields[$item]=$as;
 				}
 			}elseif (\substr($field,0,1)=='-'){
 				if (!$this->wasSelect)  $this->select("*");
 				$as=\substr($field,1);
 				$fields=\array_filter($fields,function($row)use($as){
-					if ($row==$as)return \false;
-					return \true;
+					if ($row==$as)return false;
+					return true;
 				});
 				unset($this->queryFields[$as]);
 			}else{
-				$this->wasSelect=\true;
+				$this->wasSelect=true;
 				$as=$field;
 				if (isset(models::$models[$this->queryJoins[$tableAlias]['class']]->fields[$field]['as']))$as=models::$models[$this->queryJoins[$tableAlias]['class']]->fields[$field]['as'];
 				$fields[$field]=$as;
@@ -315,12 +313,12 @@ class models{
 		$modelFields=models::$models[$this->queryJoins[$tableAlias]['class']]->fields;
 		$modelExpressions=models::$models[$this->queryJoins[$tableAlias]['class']]->expressions;
 		foreach ($fields as $field=>$as){
-			$func=\false;
+			$func=false;
 			$last=\substr($as,-1,1);
-			if ($last=='/' or $last=='\\')$as=trim(substr($as,0,-1));
+			if ($last=='/' || $last=='\\')$as=\trim(\substr($as,0,-1));
 			if (\is_numeric($field))$field=$as;
 			$pos=\strpos($as,' ');
-			if ($pos!==\false){
+			if ($pos!==false){
 				$field=\substr($as,0,$pos);
 				$as=\substr($as,$pos+1);
 				$func=array();
@@ -328,34 +326,34 @@ class models{
 				if ($func){
 					$field=$func[2];
 					$func=\strtolower($func[1]);
-					if (!$this->queryGroupMode && isset($this->groupArray[$func]))$this->queryGroupMode=\true;
+					if (!$this->queryGroupMode && isset($this->groupArray[$func]))$this->queryGroupMode=true;
 				}
 			}
 			if (isset($modelFieldGroups[$field])){
 				$final_fields=$modelFieldGroups[$field];
-				$as=\false;
+				$as=false;
 			}else{
 				$final_fields=array($field);
 			}
 			foreach ($final_fields as $final_field){
 	//$final_field=strtolower($final_field);
 	//				echo $final_field;
-				if (!$func && !isset($modelFields[$final_field]) && !isset($modelExpressions[$final_field]) )throw new \Exception('field "'.$final_field.'" not exist in "'.$this->queryJoins[$tableAlias]['class'].'" model');
+				if (!$func && !isset($modelFields[$final_field]) && !isset($modelExpressions[$final_field]))throw new \Exception('field "'.$final_field.'" not exist in "'.$this->queryJoins[$tableAlias]['class'].'" model');
 				if ($final_field=='*'){
 					$format='number';
 				}else{
 					$format=$modelFields[$final_field]['type'];
 				}
-				$fill=array('format'=>$format,'func'=>$func,'class'=>$this->queryJoins[$tableAlias]['class'],'alias'=>$tableAlias,'expression'=>\false);
+				$fill=array('format'=>$format,'func'=>$func,'class'=>$this->queryJoins[$tableAlias]['class'],'alias'=>$tableAlias,'expression'=>false);
 				if (isset($modelExpressions[$final_field])){
-					$fill['expression']=\true;
+					$fill['expression']=true;
 					$fill['field']=$modelExpressions[$final_field];
 				}else{
 					$fill['field']=isset($modelFields[$final_field]['dbname'])?$modelFields[$final_field]['dbname']:$final_field;
 				}
 
-				$this->queryFields[$as===\false?$final_field:$as]=$fill;
-				if ($last=='/' or $last=='\\')$this->order($this->expressions($field,$tableAlias), $last=='/'?'asc':'desc',999,$tableAlias,$func,$fill['expression']);
+				$this->queryFields[$as===false?$final_field:$as]=$fill;
+				if ($last=='/' || $last=='\\')$this->order($this->expressions($field,$tableAlias),$last=='/'?'asc':'desc',999,$tableAlias,$func,$fill['expression']);
 			}
 		}
 		return $this;
@@ -377,8 +375,8 @@ class models{
 		}
 		return $value;
 	}
-	private function sqlExpression($where,$need_write_alias=\null){
-		if ($where['expression']===\true){
+	private function sqlExpression($where,$need_write_alias=null){
+		if ($where['expression']===true){
 			return \str_replace('{{alias}}',($need_write_alias?$where['alias'].'.':''),$where['field']).' '.$where['prop'].' '.$where['value'];
 		}elseif ($where['expression']){
 			return $where['expression'];
@@ -394,9 +392,9 @@ class models{
 	}
 	function getFields(){
 		if (empty($this->queryFields))$this->select('*');
-		$need_write_alias=(\sizeof($this->queryJoins)>1);
+		$need_write_alias=(\count($this->queryJoins)>1);
 		$out=array();
-		foreach ($this->queryFields as $as =>$prop){
+		foreach ($this->queryFields as $as=>$prop){
 			$out[$as]=models::$models[$prop['class']]->fields[$as];
 			if ($need_write_alias)$out[$as]['name']=array($prop['alias'],$prop['field']);
 		}
@@ -407,7 +405,7 @@ class models{
 		if ($this->queryWhere){
 			$wheres=array();
 			foreach ($this->queryWhere as $where){
-				$wheres[]=$this->sqlExpression($where,\false);
+				$wheres[]=$this->sqlExpression($where,false);
 			}
 			$sql.=' WHERE '.\implode(' AND ',$wheres);
 		}
@@ -415,7 +413,7 @@ class models{
 	}
 	function getSql(){
 		if (empty($this->queryFields))$this->select('*');
-		$needWriteAlias=(sizeof($this->queryJoins)>1);
+		$needWriteAlias=(count($this->queryJoins)>1);
 		$select=array();
 		foreach ($this->queryFields as $as =>$prop){
 			if (models::$models[$prop['class']]->fields[$as]['nosql'])continue;
@@ -482,8 +480,8 @@ class models{
 	 * @throws Exception
 	 */
 	function update($params){
-		if (\sizeof($this->queryJoins)>1)  throw new \Exception('Query with joins cannot be updated');
-		if (empty($params))  throw new \Exception('Params must be set');
+		if (\count($this->queryJoins)>1)throw new \Exception('Query with joins cannot be updated');
+		if (empty($params))throw new \Exception('Params must be set');
 		$set=array();
 		foreach ($params as $field=>$value){
 			$set[]=$this->expressions($field,$this->activeAlias).'=:update_'.$field;
@@ -504,25 +502,25 @@ class models{
 		if (is_array($bind))$this->queryBind+=$bind;
 		return $this;
 	}
-	function where($field,$prop,$value=\null,$alias=\null){
+	function where($field,$prop,$value=null,$alias=null){
 		$this->whereCondition($field,$prop,$value,$alias);
 		return $this;
 	}
-	function is($field,$value=\null,$alias=\null){
-			if ($value===\null){
+	function is($field,$value=null,$alias=null){
+			if ($value===null){
 				$this->whereCondition($field,'is not null','',$alias);
 			}else{
 				$this->whereCondition($field,'=',$value,$alias);
 			}
 			return $this;
 	}
-	function between($field,$valueFrom,$valueTo,$alias=\null){
+	function between($field,$valueFrom,$valueTo,$alias=null){
 		$this->whereCondition($field,'>',$valueFrom,$alias);
 		$this->whereCondition($field,'<',$valueTo,$alias);
 		return $this;
 	}
-	function on($field,$prop,$value=\null){
-		$this->whereCondition($field,$prop,$value,\null,\true);
+	function on($field,$prop,$value=null){
+		$this->whereCondition($field,$prop,$value,null,true);
 		return $this;
 	}
 	private function bindFind($field,$value){
@@ -536,12 +534,12 @@ class models{
 		if (isset(models::$models[$this->queryJoins[$alias]['class']]->fields[$param]['dbname']))return models::$models[$this->queryJoins[$alias]['class']]->fields[$param]['dbname'];
 		return $param;
 	}
-	private function whereCondition($field,$prop,$value,$alias=\null,$on=\false){
+	private function whereCondition($field,$prop,$value,$alias=null,$on=false){
 		if (\is_object($value))$value=(string)$value;
 		if (!$alias)$alias=$this->activeAlias;
 		if ($prop=='=<')$prop='<=';
 		if ($prop=='=>')$prop='>=';
-		$quotes=array('"'=>\true,"'"=>\true);
+		$quotes=array('"'=>true,"'"=>true);
 		switch ($prop){
 			case 'filter_diap':
 			case 'filter-diap':
@@ -570,7 +568,7 @@ class models{
 		}
 		$field_val=$this->expressions($field,$alias);
 		$result=array('alias'=>$alias,'prop'=>$prop,'field'=>$field_val,'value'=>$value);
-		if ($field_val!=$field)$result['expression']=\true;
+		if ($field_val!=$field)$result['expression']=true;
 		if ($on){
 			$this->queryOn[$alias][]=$result;
 		}else{
@@ -606,7 +604,7 @@ class models{
 			if (isset(models::$models[$field['class']]->fields[$fieldKey])){
 				$field['field_prop']=models::$models[$field['class']]->fields[$fieldKey];
 			}
-			if (models::$models[$field['class']]->getPrimaryField()==$fieldKey)$field['field_prop']['pk']=\true;
+			if (models::$models[$field['class']]->getPrimaryField()==$fieldKey)$field['field_prop']['pk']=true;
 		}
 		return $fieldAttributes;
 	}
@@ -640,7 +638,7 @@ class models{
 		}
 		$this->is(models::$models[$this->activeModel]->getPrimaryField(),$pk_value);
 		foreach ($this->possibleConnections as $connect=>$t)break;
-		$model= new model(array(models::$models[$this->activeModel]->getPrimaryField()=>$pk_value), $this->getFieldAttributes(), $connect,\false);
+		$model= new model(array(models::$models[$this->activeModel]->getPrimaryField()=>$pk_value),$this->getFieldAttributes(),$connect,false);
 		$model->lazy=array($this->getSql(),$this->getBinds(),$this->getConnections());
 		return $model;
 	}
@@ -659,7 +657,7 @@ class models{
 		foreach ($this->possibleConnections as $connect=>$t)break;
 		$data=$this->ea1();
 		if (!$data)throw new \Exception('no data found');
-		return new model($data, $this->getFieldAttributes(), $connect,\false);
+		return new model($data, $this->getFieldAttributes(), $connect,false);
 	}
 
 	/**
@@ -685,8 +683,8 @@ class models{
 	//function getFields(){
 		// todo: make total field description as in class for sql builder
 	//}
-	function lister($onPage=10,$page=\null){
-		if (\is_null($page))$page=(int)$_GET['page'];
+	function lister($onPage=10,$page=null){
+		if ($page===null)$page=(int)$_GET['page'];
 		$limitCount=$this->limitCount;
 		$limitStart=$this->limitStart;
 		$this->limitCount=0;
@@ -696,12 +694,12 @@ class models{
 		$this->limitStart=$limitStart;
 		return array('count'=>$cnt,
 			'count_on_page'=>$onPage,
-			'pages'=>($onPage?\ceil($cnt / $onPage):1),
+			'pages'=>($onPage?\ceil($cnt/$onPage):1),
 			'cur_page'=>$page,
-			);
+		);
 	}
-	function count($distinctField=\null){
-		if ($distinctField===\null){
+	function count($distinctField=null){
+		if ($distinctField===null){
 			$this->queryFields=array('count'=>array('func'=>'count', 'expression'=>'*','alias'=>'count'));
 		}else{
 			$this->queryFields=array('count'=>array('func'=>'count', 'expression'=>'distinct '.$distinctField,'as'=>'count'));

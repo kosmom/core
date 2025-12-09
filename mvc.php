@@ -14,14 +14,14 @@ class mvc{
 	static $canonical_links;
 	static $url_links=array();
 	static $links_string='';
-	static $noHeader=\false;
-	static $noBody=\false;
+	static $noHeader=false;
+	static $noBody=false;
 	static $page_counter=1;
 	static $params_counter=0;
 	private static $layoutCounter=0;
 	static $url=array();
 	static $page_url=array();
-	static $partical_content_folder=\false;
+	static $partical_content_folder=false;
 	static $indexfile=array();
 	static $bodyAttributes=array();
 	private static $isConfig;
@@ -44,36 +44,36 @@ class mvc{
 	 * make mvc component autoinclude js css in each module. may be slower
 	 * @var boolean
 	 */
-	static $search_css_js=\true;
+	static $search_css_js=true;
 	/**
 	 * make mvc component autoinclude config.php in each module. may be slower
 	 * @var boolean
 	 */
-	static $search_config=\true;
+	static $search_config=true;
 	/**
 	 * make mvc component autoinclude translate_lang.php in each module. may be slower
 	 * @var boolean
 	 */
-	static $search_translate=\true;
+	static $search_translate=true;
 	/**
 	 * make mvc component autoinclude middleware.php in each module. may be slower
 	 * @var boolean
 	 */
-	static $search_middleware=\true;
+	static $search_middleware=true;
 	/**
 	 * find folder as regexp in controllerPage
 	 * @var boolean
 	 */
-	static $foldersRegexp=\false;
+	static $foldersRegexp=false;
 	static $titleSeparator='->';
 
 	/* seo elements */
 	static $title=array();
-	static $title_inverse=\true;
+	static $title_inverse=true;
 	static $description;
 	static $keywords;
 	static $themeColor;
-	static $noindex=\false;
+	static $noindex=false;
 	static $meta=array('viewport'=>'width=device-width, initial-scale=1.0');
 
 	/* decoration elements */
@@ -86,17 +86,17 @@ class mvc{
 	static $css_dict=array();
 	static $js_dict=array(); // imported dictionary of scripts
 	static $css=array();
-	static $js_first=\false; // insert javascripts at beginning of page
+	static $js_first=false; // insert javascripts at beginning of page
 	static $required_js=array(); // total array required scripts
 	
 	private static $js=array();
 	
-	private static $jsHard=\false;
-	private static $isRoute=\false;
+	private static $jsHard=false;
+	private static $isRoute=false;
 	private static $lastDir;
 
 	private static $routes=array();
-	private static $routeMatch=\false;
+	private static $routeMatch=false;
 	private static $routeAs;
 	private static $routeLazyCallback;
 	private static $virtualDir;
@@ -106,7 +106,7 @@ class mvc{
 	 *
 	 * @var string|boolean content for included pages (if it have)
 	 */
-	static $content=\true;
+	static $content=true;
 	private static $folder;
 	private static $nextFolder;
 	
@@ -115,8 +115,8 @@ class mvc{
 		return core::$ajax;
 	}
 
-	static function virtualRoute($folder,$baseDir=\null,$startFromBaseDir=\true){
-		self::$virtualDir=$baseDir===\null?self::$base__DIR__.\DIRECTORY_SEPARATOR.self::$appFolder:$baseDir;
+	static function virtualRoute($folder,$baseDir=null,$startFromBaseDir=true){
+		self::$virtualDir=$baseDir===null?self::$base__DIR__.\DIRECTORY_SEPARATOR.self::$appFolder:$baseDir;
 		self::$virtualFolder=$folder;
 		if ($startFromBaseDir)self::controllerRoute(self::getRemaningParams());
 	}
@@ -126,27 +126,27 @@ class mvc{
 	}
 
 	static function contentAction($data){
-		if ($data===\false || $data===1)return \true;
+		if ($data===false || $data===1)return true;
 		// draw output content with scripts
 		echo $data;
 		if (core::$debug){
 			debug::stat();
 			debug::groupEnd();
 		}
-		die(self::drawJs(\true));
+		die(self::drawJs(true));
 	}
 
 	static function content(){
-		self::$jsHard=\true;
-		if (self::$content===\true){
+		self::$jsHard=true;
+		if (self::$content===true){
 			// find next folder after that
 			// autosearch next folder when no controllerPage
-			if (empty(self::$nextFolder))self::controllerPageInstant(rtrim (self::$folder,'\\/'));
+			if (empty(self::$nextFolder))self::controllerPageInstant(\rtrim(self::$folder,'\\/'));
 			self::$folder=self::$nextFolder;
-			self::$nextFolder=\null;
+			self::$nextFolder=null;
 			if (!\is_dir(self::$folder)){
-				self::$folder=\null;
-				return \true;
+				self::$folder=null;
+				return true;
 			}
 			self::$content='_';
 			$dir=self::getRealDir(self::$folder);
@@ -156,7 +156,7 @@ class mvc{
 			}
 			self::$current__DIR__=\realpath($dir);
 		}
-		if (!self::$folder)return \true; // same folder drive to the end
+		if (!self::$folder)return true; // same folder drive to the end
 
 		switch (self::$content){
 		case '_':
@@ -201,7 +201,7 @@ class mvc{
 				if (\file_exists($dir.'index.css'))self::addCss($dir.'index.css');
 				if (\file_exists($dir.'index.js'))self::addJs($dir.'index.js');
 			}
-			return self::$isRoute=self::$content=\true;
+			return self::$isRoute=self::$content=true;
 		default:
 			self::$content='index.php';
 			return self::$folder.self::$content;
@@ -234,20 +234,20 @@ class mvc{
 		if (isset($route['as']))self::$routes[$route['as']]=array('url'=>self::getUrl($route['dir']).$route['url'],'prepared'=>0);
 
 		// if route is found - new route ignored
-		if (self::$routeMatch)return \false;
+		if (self::$routeMatch)return false;
 		// compore with url against folder
 
 		$match_vars=array();
 		$order=0;
-		if (isset($route['is_ajax']) && $route['is_ajax']!==self::isAjax())return \false;
-		if (isset($route['scheme']) && $route['scheme']!=$_SERVER['REQUEST_SCHEME'])return \false;
-		if (isset($route['method']) && !\in_array(\strtolower($_SERVER['REQUEST_METHOD']), $route['method']))return \false;
-		if (isset($route['domain']) && $route['domain']!=self::$realHost)return \false;
+		if (isset($route['is_ajax']) && $route['is_ajax']!==self::isAjax())return false;
+		if (isset($route['scheme']) && $route['scheme']!=$_SERVER['REQUEST_SCHEME'])return false;
+		if (isset($route['method']) && !\in_array(\strtolower($_SERVER['REQUEST_METHOD']),$route['method']))return false;
+		if (isset($route['domain']) && $route['domain']!=self::$realHost)return false;
 		//middleware
 		$url=self::getParamAsString();
-		if (\strpos($route['url'],'{')===\false && $route['url']!==$url)return \false;
+		if (\strpos($route['url'],'{')===false && $route['url']!==$url)return false;
 
-		$regexp=\preg_replace_callback('/\{(.*)\}/sU',function($matches) use(&$match_vars,&$order){
+		$regexp=\preg_replace_callback('/\{(.*)\}/sU',function($matches)use(&$match_vars,&$order){
 			$params=\explode('|',$matches[1]);
 			$attributes=array();
 			//if (isset(mvc::$route_placeholder[$params[0]]))$attributes=$temp[$params[0]];
@@ -258,8 +258,8 @@ class mvc{
 			return '('.$attributes['regexp'].')';
 		},$route['url']);
 		$matches=array();
-		if (!\preg_match('|^'.$regexp.'$|',$url,$matches))return \false;
-		self::$routeMatch=\true;
+		if (!\preg_match('|^'.$regexp.'$|',$url,$matches))return false;
+		self::$routeMatch=true;
 		$return=array();
 		if (isset($route['as']))self::$routeAs=$route['as'];
 		$order=0;
@@ -279,8 +279,8 @@ class mvc{
 		if ($route['page'])return self::controllerPageForce($route['dir'],$route['page']);
 	}
 
-	static function getParamFromRoute($routeAs=\null){
-		if ($routeAs!==\null)return self::$routeMatch[$routeAs];
+	static function getParamFromRoute($routeAs=null){
+		if ($routeAs!==null)return self::$routeMatch[$routeAs];
 		return self::$routeMatch;
 	}
 
@@ -312,7 +312,7 @@ class mvc{
 	/**
 	 * @deprecated since version 3.4
 	*/
-	static function get_real_dir($__DIR__=\null,$withApp=\true){
+	static function get_real_dir($__DIR__=null,$withApp=true){
 		return self::getRealDir($__DIR__,$withApp);
 	}
 
@@ -322,10 +322,10 @@ class mvc{
 	 * @param bool|string $withApp with app path|from __DIR__
 	 * @return string
 	 */
-	static function getRealDir($__DIR__=\null,$withApp=\true){ 
-		if ($__DIR__===\null)$__DIR__=self::$current__DIR__;
-		if ($withApp===\true)return \str_replace('\\','/',\substr($__DIR__,\strlen(self::$base__DIR__)+1));
-		if ($withApp===\false)return \str_replace('\\','/',\substr($__DIR__,\strlen(self::$base__DIR__)+5));
+	static function getRealDir($__DIR__=null,$withApp=true){ 
+		if ($__DIR__===null)$__DIR__=self::$current__DIR__;
+		if ($withApp===true)return \str_replace('\\','/',\substr($__DIR__,\strlen(self::$base__DIR__)+1));
+		if ($withApp===false)return \str_replace('\\','/',\substr($__DIR__,\strlen(self::$base__DIR__)+5));
 		return \str_replace('\\','/',\substr($__DIR__,\strlen($withApp)-\strlen($__DIR__)+1));
 	}
 
@@ -340,7 +340,7 @@ class mvc{
 	/**
 	 * @deprecated since version 3.4
 	*/
-	static function module_exists($path='',$__DIR__=\null){
+	static function module_exists($path='',$__DIR__=null){
 		return self::moduleExists($path,$__DIR__);
 	}
 	/**
@@ -349,7 +349,7 @@ class mvc{
 	 * @param string|null $__DIR__
 	 * @return boolean
 	*/
-	static function moduleExists($path='',$__DIR__=\null){
+	static function moduleExists($path='',$__DIR__=null){
 		if (empty($__DIR__))$__DIR__=self::$base__DIR__.'/'.self::$appFolder.'/';
 		if (\substr($path,0,1)=='/'){
 			$path=\substr($path,1);
@@ -364,8 +364,8 @@ class mvc{
 	 * @param string $__DIR__ current dir
 	 * @param int $header
 	 */
-	static function redirect($path='',$__DIR__=\null,$header=302){
-		if ($__DIR__===\null)$__DIR__=self::$current__DIR__;
+	static function redirect($path='',$__DIR__=null,$header=302){
+		if ($__DIR__===null)$__DIR__=self::$current__DIR__;
 		if (\substr($path,0,1)=='/')error::redirect('/'.self::$basefolder.substr($path,1),$header);
 		if (!empty($__DIR__))$path='/'.self::$basefolder.self::$url[$__DIR__].(self::$url[$__DIR__]?'/':'').$path;
 		if (core::$charset!=core::UTF8)$path=\iconv(core::$charset,'utf-8',$path);
@@ -382,7 +382,7 @@ class mvc{
 	 * Prepare full links array from $_GET['link'] param
 	 * @param string|null $__DIR__
 	 */
-	static function init($__DIR__=\null){
+	static function init($__DIR__=null){
 		chdir($__DIR__);
 		if (core::$debug){
 			debug::consoleLog(date('H:i:s').' Core MVC debug started',error::SUCCESS);
@@ -393,26 +393,26 @@ class mvc{
 		if (request::isAjax())ajax::init();
 		$dir=\trim(\dirname($_SERVER['SCRIPT_NAME']),'\\/');
 		if ($dir)self::$basefolder=$dir.'/';
-		if ($__DIR__!==\null){
+		if ($__DIR__!==null){
 			self::$base__DIR__=$__DIR__;
 			self::$next_dir=array($__DIR__.\DIRECTORY_SEPARATOR.self::$appFolder);
 		}
 		if (request::isCmd()){
 			global $argv;
 			$p=@\strpos($argv[1],'?');
-			if ($p!==\false){ //parse get params
+			if ($p!==false){ //parse get params
 				\parse_str(\substr($argv[1],$p+1),$_GET);
 				$_SERVER['REDIRECT_URL']=\substr($argv[1],0,$p);
 			}else{
 				@$_SERVER['REDIRECT_URL']=$argv[1];
 			}
-			if (\substr($_SERVER['REDIRECT_URL'],0,\strlen(self::$appFolder))==self::$appFolder)$_SERVER['REDIRECT_URL']=\substr($_SERVER['REDIRECT_URL'], \strlen(self::$appFolder));
+			if (\substr($_SERVER['REDIRECT_URL'],0,\strlen(self::$appFolder))==self::$appFolder)$_SERVER['REDIRECT_URL']=\substr($_SERVER['REDIRECT_URL'],\strlen(self::$appFolder));
 			$_SERVER['REDIRECT_URL']=\str_replace('\\','/',$_SERVER['REDIRECT_URL']);
 			self::$links_string=\ltrim($_SERVER['REDIRECT_URL'],'/');
 		}else{
 			if (!isset($_SERVER['REDIRECT_URL'])){
 				$q=\strpos($_SERVER['REQUEST_URI'],'?');
-				$_SERVER['REDIRECT_URL']=$q===\false?$_SERVER['REQUEST_URI']:\substr($_SERVER['REQUEST_URI'],0,$q);
+				$_SERVER['REDIRECT_URL']=$q===false?$_SERVER['REQUEST_URI']:\substr($_SERVER['REQUEST_URI'],0,$q);
 			}
 			self::$links_string=\substr(\ltrim(@$_SERVER['REDIRECT_URL'],'\\/'),\strlen(self::$basefolder));
 		}
@@ -427,7 +427,7 @@ class mvc{
 		if (self::$isConfig)return ;
 		if (\file_exists(__DIR__.'/global-config/mvc.php'))include __DIR__.'/global-config/mvc.php';
 		if (\file_exists('config/mvc.php'))include 'config/mvc.php';
-		self::$isConfig=\true;
+		self::$isConfig=true;
 	}
 	/**
 	 * @deprecated since version 3.4
@@ -447,29 +447,29 @@ class mvc{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function draw_js($inlineOnly=\false){
+	static function draw_js($inlineOnly=false){
 		return self::drawJs($inlineOnly);
 	}
-	static function drawJs($inlineOnly=\false){
+	static function drawJs($inlineOnly=false){
 		$out='';
 		if (core::$debug) {
 			if (core::$ajax)debug::groupEnd();
 			$debugOut=debug::debugOutput();
-			if ($debugOut)array_unshift(self::$js,array(implode(';',$debugOut),self::$jsHard,3));
+			if ($debugOut)array_unshift(self::$js,array(\implode(';',$debugOut),self::$jsHard,3));
 		}
-		$scriptMode=\false;
+		$scriptMode=false;
 		foreach (self::$js as $script){
 			if ($script[2]==3){
 				if (!$scriptMode){
 					$out.='<script>';
-					$scriptMode=\true;
+					$scriptMode=true;
 				}
 				$out.=$script[0].';';
 			}else{
 				if ($inlineOnly)continue;
 				if ($scriptMode){
 					$out.='</script>';
-					$scriptMode=\false;
+					$scriptMode=false;
 				}
 				$out.=($script[3]?'<!--[if '.$script[3].']>':'').'<script src="'.$script[0].'"></script>'.($script[3]?'<![endif]-->':'');
 			}
@@ -485,7 +485,7 @@ class mvc{
 		return self::drawCss();
 	}
 	static function drawCss(){
-		if (!self::$css) return \false;
+		if (!self::$css) return false;
 		$out='';
 		foreach (self::$css as $key=>$item){
 			$out.='<link href="'.$item[0].(!isset(self::$css_dict[$key]) && core::$version?'?v='.core::$version:'').'" rel=stylesheet>';
@@ -497,19 +497,19 @@ class mvc{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function this_page_url($__DIR__=\null){
+	static function this_page_url($__DIR__=null){
 		return self::getUrl($__DIR__);
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function this_page_link($__DIR__=\null){
+	static function this_page_link($__DIR__=null){
 		return self::getUrl($__DIR__);
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function url($__DIR__=\null){
+	static function url($__DIR__=null){
 		return self::getUrl($__DIR__);
 	}
 
@@ -520,7 +520,7 @@ class mvc{
 	 * @return string URL
 	 * @deprecated since version 3.4
 	 */
-	static function get_url($__DIR__=\null){
+	static function get_url($__DIR__=null){
 		return self::getUrl($__DIR__);
 	}
 	/**
@@ -529,8 +529,8 @@ class mvc{
 	 * @param string $__DIR__
 	 * @return string URL
 	 */
-	static function getUrl($__DIR__=\null){
-		if ($__DIR__===\null)$__DIR__=self::$current__DIR__;
+	static function getUrl($__DIR__=null){
+		if ($__DIR__===null)$__DIR__=self::$current__DIR__;
 		if (empty($__DIR__))return self::$basefolder.'/';
 		return @self::$url[$__DIR__]?self::$url[$__DIR__].'/':'';
 	}
@@ -540,24 +540,24 @@ class mvc{
 		return '/'.self::$basefolder.self::routePrepare($routeAs,$params);
 	}
 
-	private static function routePrepare($routeName,$params=\null){
+	private static function routePrepare($routeName,$params=null){
 		if (empty(self::$routes[$routeName]))throw new \Exception('Route not exist');
 		$route=&self::$routes[$routeName];
 		switch ($route['prepared']){
-			case \false:
+			case false:
 		$order=0;
-		$route['url']=\preg_replace_callback('/\{(.*)\}/sU',function($matches) use(&$route,&$order){
+		$route['url']=\preg_replace_callback('/\{(.*)\}/sU',function($matches)use(&$route,&$order){
 			$params=\explode('|',$matches[1]);
 			$route['vars'][$params[0]]=array('position'=>$order++);
 			if (isset($params[1]))$route['vars'][$params[0]]['default']=$params[1];
 			return '{'.$params[0].'}';
 		},$route['url']);
-			$route['prepared']=\true;
-			case \true:
+			$route['prepared']=true;
+			case true:
 			// preparing row for fast cache
 			$out=$route['url'];
 			foreach ($route['vars'] as $param=>$item){
-				if (!isset($params[$param]) && !isset($item['default'])) throw new \Exception('Required params '.$param.' mistmach');
+				if (!isset($params[$param]) && !isset($item['default']))throw new \Exception('Required params '.$param.' mistmach');
 				$out=str_replace('{'.$param.'}',isset($params[$param])?$params[$param]:$item['default'],$out);
 			}
 			return $out;
@@ -567,11 +567,11 @@ class mvc{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function get_absolute_url($__DIR__=\null){
+	static function get_absolute_url($__DIR__=null){
 		return self::getAbsoluteUrl($__DIR__);
 	}
-	static function getAbsoluteUrl($__DIR__=\null){
-		if ($__DIR__===\null)$__DIR__=self::$current__DIR__;
+	static function getAbsoluteUrl($__DIR__=null){
+		if ($__DIR__===null)$__DIR__=self::$current__DIR__;
 		return request::protocol().self::$realHost.'/'.self::$basefolder.self::getUrl($__DIR__);
 	}
 
@@ -596,7 +596,7 @@ class mvc{
 			self::$css[$css]=array($css,self::$jsHard);
 			return new super(); // not in dictonary
 		}
-		if (isset(self::$css[$css]))return \true;
+		if (isset(self::$css[$css]))return true;
 		if (\is_array(self::$css_dict[$css])){
 			self::$css[$css]=array(self::$css_dict[$css]['url'].(isset(self::$css_dict[$css]['version'])?'?v='.self::$css_dict[$css]['version']:''),self::$jsHard);
 		}else{
@@ -608,7 +608,7 @@ class mvc{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function add_js($js,$isComponent=\false){
+	static function add_js($js,$isComponent=false){
 		return self::addJs($js,$isComponent);
 	}
 	/**
@@ -616,7 +616,7 @@ class mvc{
 	 * @param string $js
 	 * @return super
 	 */
-	static function addJs($js,$isComponent=\false){
+	static function addJs($js,$isComponent=false){
 		if (core::$ajax)return new super();
 		self::getConfig();
 		$version='';
@@ -627,14 +627,14 @@ class mvc{
 				$version=(core::$version?'?v='.core::$version:'');
 				if (!\file_exists($js)){
 					if (core::$debug && !isset(self::$debugMessages[$js])){
-						self::$debugMessages[$js]=\true;
+						self::$debugMessages[$js]=true;
 						debug::trace('Js '.$js.' not exists',error::ERROR);
 					}
 					return new super();
 				}
 			}
 			self::$required_js[$js]=self::$jsHard;
-			self::$js[]=array($js.$version,self::$jsHard,1,\false);
+			self::$js[]=array($js.$version,self::$jsHard,1,false);
 		}elseif (\is_array(self::$js_dict[$js])){
 			$jslink=self::$js_dict[$js]['url'];
 			if (isset(self::$required_js[$jslink]))return new super(); //already in use
@@ -644,12 +644,12 @@ class mvc{
 					$isComponent?self::addComponent($item):self::addJs($item);
 				}
 			}
-			self::$js[]=array($jslink.(isset(self::$js_dict[$js]['version'])?'?v='.self::$js_dict[$js]['version']:''),self::$jsHard,2,isset(self::$js_dict[$js]['if'])?self::$js_dict[$js]['if']:\false);
+			self::$js[]=array($jslink.(isset(self::$js_dict[$js]['version'])?'?v='.self::$js_dict[$js]['version']:''),self::$jsHard,2,isset(self::$js_dict[$js]['if'])?self::$js_dict[$js]['if']:false);
 			self::$required_js[$jslink]=self::$jsHard;
 		}else{
 			$jslink=self::$js_dict[$js];
 			if (isset(self::$required_js[$jslink]))return new super(); //already in use
-			self::$js[]=array($jslink,self::$jsHard,2,\false);
+			self::$js[]=array($jslink,self::$jsHard,2,false);
 			self::$required_js[$jslink]=self::$jsHard;
 		}
 		return new super();
@@ -670,9 +670,9 @@ class mvc{
 	 * @return boolean
 	 */
 	static function addComponent($component){
-		if (core::$ajax)return \false;
+		if (core::$ajax)return false;
 		if (empty(self::$js_dict) && empty(self::$css_dict))include __DIR__.'/global-config/mvc.php';
-		if (isset(self::$js_dict[$component]))self::addJs($component,\true);
+		if (isset(self::$js_dict[$component]))self::addJs($component,true);
 		if (isset(self::$css_dict[$component]))self::addCss($component);
 		return new super();
 	}
@@ -704,7 +704,7 @@ class mvc{
 	 * @param any $value
 	 * @return super
 	 */
-	static function addJsVar($var,$value=\null){
+	static function addJsVar($var,$value=null){
 		if (\is_array($var)){
 			foreach ($var as $key=>$item){
 				self::addJsVar($key,$item);
@@ -731,7 +731,7 @@ class mvc{
 	 * @param any $value
 	 * @return super
 	 */
-	static function addJsVarAsArray($var,$value=\null){
+	static function addJsVarAsArray($var,$value=null){
 		if (\is_array($var)){
 			foreach ($var as $key=>$item){
 				self::addJsVarAsArray($key,$item);
@@ -752,28 +752,27 @@ class mvc{
 	static function header(){
 		if (\headers_sent()){
 			if (core::$debug){
-				$file='';
-				$line='';
+				$line=$file='';
 				\headers_sent($file,$line);
 				debug::consoleLog('header was sended, in '.$file.':'.$line.' templates are ignored',error::ERROR);
 			}
 			//echo self::drawJs();
 			self::$next_dir=array();
-			return \false;
+			return false;
 		}
 		if (self::$routeLazyCallback){
 			\call_user_func_array(self::$routeLazyCallback[0],self::routeFill(self::$routeLazyCallback[0],self::$routeLazyCallback[1]));
-			self::$routeLazyCallback=\null;
+			self::$routeLazyCallback=null;
 		}
 		self::$page_counter=0;
 		self::$params_counter=0;
-		if (request::isCmd())return \false;
+		if (request::isCmd())return false;
 		if (!self::$noHeader){
-			if (self::$partical_content_folder!==\false)return \false;
+			if (self::$partical_content_folder!==false)return false;
 			if (core::$ajax)ajax::render();
 			if (self::$description)self::$meta['description']=self::$description;
 			if (self::$keywords)self::$meta['keywords']=self::$keywords;
-			if (self::$noindex)self::$meta['noindex']=self::$noindex===\true?'noindex,follow':self::$noindex;
+			if (self::$noindex)self::$meta['noindex']=self::$noindex===true?'noindex,follow':self::$noindex;
 			if (self::$themeColor)self::$meta['theme-color']=self::$themeColor;
 	?><!DOCTYPE html>
 <html>
@@ -800,10 +799,10 @@ echo '>';
 }
 	}
 	static function footer(){
-		if (request::isCmd())return \false;
+		if (request::isCmd())return false;
 		if (core::$debug)debug::stat();
 		echo self::drawCss();
-		if (self::$partical_content_folder!==\false)return \true;
+		if (self::$partical_content_folder!==false)return true;
 		// until addJs addCss with __DIR__ not working
 		echo self::drawJs();
 		if (!self::$noBody)echo '</body>';
@@ -885,7 +884,7 @@ echo '>';
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function get_menu($__DIR__=\null,$addition_menu=\null,$level=1){
+	static function get_menu($__DIR__=null,$addition_menu=null,$level=1){
 	   return self::getMenu($__DIR__,$addition_menu,$level);
 	}
 	/**
@@ -895,15 +894,15 @@ echo '>';
 	 * @param int|null $level Number menu levels as submenu
 	 * @return array|fileprop[]|boolean Struct of subpages or false if no array
 	 */
-	static function getMenu($__DIR__=\null,$additionMenu=\null,$level=1){
-	   if ($__DIR__===\null)$__DIR__=self::$current__DIR__;
+	static function getMenu($__DIR__=null,$additionMenu=null,$level=1){
+	   if ($__DIR__===null)$__DIR__=self::$current__DIR__;
 	   return self::getMenuPart($__DIR__,$__DIR__,'',$additionMenu,$level);
 	}
 
 	private static function getMenuPart($__DIR__,$base__DIR__,$href,$additionMenu,$level){
 		$modules=array();
-		if (!($handle = \opendir($__DIR__)))return \false;
-		while (\false !== ($file = readdir($handle))) {
+		if (!($handle=\opendir($__DIR__)))return false;
+		while (false!==($file=readdir($handle))) {
 			if ($file=='.' || $file=='..' || \substr($file,0,1)=='_')continue;
 			if (\is_file($__DIR__.\DIRECTORY_SEPARATOR.$file))continue;
 			$nextfile=$__DIR__.\DIRECTORY_SEPARATOR.$file.\DIRECTORY_SEPARATOR.'index.php';
@@ -929,10 +928,10 @@ echo '>';
 			}
 		}
 		$nextpage=@self::$url_links[self::$__DIR__counter[$__DIR__]];
-		if ($nextpage && isset($modules[$nextpage]))$modules[$nextpage]->active=\true;
+		if ($nextpage && isset($modules[$nextpage]))$modules[$nextpage]->active=true;
 		\uasort($modules,array('c\\datawork','positionCompare'));
 		if ($level>1)foreach ($modules as &$module){
-			$submenu=self::getMenuPart($module->__DIR__,self::$base__DIR__,$module->href,\null,$level-1);
+			$submenu=self::getMenuPart($module->__DIR__,self::$base__DIR__,$module->href,null,$level-1);
 			if ($submenu)$module->submenu=$submenu;
 		}
 		return $modules;
@@ -941,7 +940,7 @@ echo '>';
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function controller_page_instant($__DIR__=\null){
+	static function controller_page_instant($__DIR__=null){
 		return self::controllerPageInstant($__DIR__);
 	}
 	/**
@@ -949,24 +948,24 @@ echo '>';
 	 * @param string $__DIR__
 	 * @return boolean
 	 */
-	static function controllerPageInstant($__DIR__=\null){
-		if ($__DIR__===\null)$__DIR__=self::$current__DIR__;
+	static function controllerPageInstant($__DIR__=null){
+		if ($__DIR__===null)$__DIR__=self::$current__DIR__;
 		$next_part=@self::$links[self::$page_counter-1];
-		if (!$next_part)return \false;
-		if (\substr($next_part,0,1)=='_')return \false;
-		if (!\is_dir($__DIR__.\DIRECTORY_SEPARATOR.$next_part))return \false;
+		if (!$next_part)return false;
+		if (\substr($next_part,0,1)=='_')return false;
+		if (!\is_dir($__DIR__.\DIRECTORY_SEPARATOR.$next_part))return false;
 		self::controllerPage($__DIR__);
-		return \true;
+		return true;
 	}
 
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function controller_page($__DIR__=\null,$default='_default',$exception=\null,$routes=\null){
+	static function controller_page($__DIR__=null,$default='_default',$exception=null,$routes=null){
 		return self::controllerPage($__DIR__,$default,$exception,$routes);
 	}
-	static function nextPage($default=\null,$exception=\null,$__DIR__=\null){
-		if ($default===\null){
+	static function nextPage($default=null,$exception=null,$__DIR__=null){
+		if ($default===null){
 			return self::controllerPageInstant($__DIR__);
 		}else{
 			return self::controllerPage($__DIR__,$default,$exception);
@@ -987,18 +986,18 @@ echo '>';
 	 * @param array $routes routes array of dynamic page
 	 * @return string var of next dynamic page
 	 */
-	static function controllerPage($__DIR__=\null,$default='_default',$exception=\null,$routes=\null){
-		if ($__DIR__===\null)$__DIR__=self::$current__DIR__;
+	static function controllerPage($__DIR__=null,$default='_default',$exception=null,$routes=null){
+		if ($__DIR__===null)$__DIR__=self::$current__DIR__;
 		if (self::$lastDir==$__DIR__){
 			self::$page_counter--;
 			unset(self::$url_links[self::$page_counter]);
 		}
-		$result=\null;
+		$result=null;
 		$default=self::relativeFilePath($default, $__DIR__);
-		if ($exception===\null){
-			$exception=empty(core::$data['controller_exception_page']) ? $default : core::$data['controller_exception_page'];
+		if ($exception===null){
+			$exception=empty(core::$data['controller_exception_page'])?$default:core::$data['controller_exception_page'];
 		}
-		if (\is_array($exception) && $routes===\null){
+		if (\is_array($exception) && $routes===null){
 			$routes=$exception;
 			$exception=$default;
 		}
@@ -1045,7 +1044,7 @@ echo '>';
 						}
 					}
 				}
-				if ($result===\null){
+				if ($result===null){
 					// if page not exists - not set links
 					$exception=self::relativeFilePath($exception,$__DIR__);
 					if (\is_dir($__DIR__.\DIRECTORY_SEPARATOR.$exception)){
@@ -1056,7 +1055,7 @@ echo '>';
 				}
 			}
 		}
-		self::$url[$__DIR__.\DIRECTORY_SEPARATOR.self::$file_links[self::$page_counter]]=(empty($nextPart) or \substr($nextPart,0,1)=='_')?self::$url[$__DIR__]:\implode('/',self::$url_links);
+		self::$url[$__DIR__.\DIRECTORY_SEPARATOR.self::$file_links[self::$page_counter]]=(empty($nextPart) || \substr($nextPart,0,1)=='_')?self::$url[$__DIR__]:\implode('/',self::$url_links);
 		self::$next_dir[self::$page_counter]=$temp=$__DIR__.\DIRECTORY_SEPARATOR.self::$file_links[self::$page_counter];
 		//if (self::$lastDir==$__DIR__)array_pop(self::$next_dir);
 		self::$indexfile[$temp]=\implode('/',self::$file_links);
@@ -1064,7 +1063,7 @@ echo '>';
 	//self::$story[self::$page_counter]['link']=self::$url[$__DIR__];
 		//self::$story[self::$page_counter]['link']=self::$indexfile[$temp];
 		self::$page_counter++;
-		self::$isRoute=\true;
+		self::$isRoute=true;
 		self::$lastDir=$__DIR__;
 		return isset($return)?$return:($nextPart?$nextPart:$default);
 	}
@@ -1089,14 +1088,14 @@ echo '>';
 		return self::controllerPageForce($__DIR__,$default);
 	}
 	static function controllerPageForce($__DIR__,$default='_default'){
-		if ($__DIR__===\null)$__DIR__=self::$current__DIR__;
+		if ($__DIR__===null)$__DIR__=self::$current__DIR__;
 		if (self::$lastDir==$__DIR__){
 			self::$page_counter--;
 			unset(self::$url_links[self::$page_counter]);
 		}
 		self::$url[$__DIR__]=\implode('/',self::$url_links);
 		self::$indexfile[$__DIR__]=\implode('/',self::$file_links);
-		if (!\file_exists($__DIR__.'/'.$default.'/index.php'))return self::$nextFolder=\false;
+		if (!\file_exists($__DIR__.'/'.$default.'/index.php'))return self::$nextFolder=false;
 		self::$file_links[self::$page_counter]=$default;
 		//self::$url[$__DIR__]=implode(DIRECTORY_SEPARATOR,self::$indexfile);
 		self::$url[$__DIR__.\DIRECTORY_SEPARATOR.self::$file_links[self::$page_counter]]=\implode('/',self::$url_links);
@@ -1106,7 +1105,7 @@ echo '>';
 		self::$nextFolder=$temp.\DIRECTORY_SEPARATOR;
 		self::$page_counter++;
 		self::$lastDir=$__DIR__;
-		return self::$isRoute=\true;
+		return self::$isRoute=true;
 	}
 
 	/**
@@ -1142,11 +1141,11 @@ echo '>';
 		self::$links_string=$routePath;
 		self::$links=\explode('/',self::$links_string);
 		self::$url=self::$indexfile=self::$file_links=self::$title=array();
-		self::$url_links=self::$folder=self::$routeAs=self::$routeLazyCallback=\null;
+		self::$url_links=self::$folder=self::$routeAs=self::$routeLazyCallback=null;
 		self::$page_counter=1;
-		self::$content=self::$isRoute=\true;
+		self::$content=self::$isRoute=true;
 		self::$story=array(array('link'=>''));
-		self::$routeMatch=self::$lastDir=\false;
+		self::$routeMatch=self::$lastDir=false;
 		self::$nextFolder=self::$base__DIR__.\DIRECTORY_SEPARATOR.self::$appFolder.\DIRECTORY_SEPARATOR;//.($startDir?$startDir.'/':'');
 		self::clearScripts();
 	}
@@ -1169,7 +1168,7 @@ echo '>';
 				debug::consoleLog('Input route var: '.$iteration);
 			}
 			self::$page_counter++;
-			if (($iteration==='' or $iteration===\null) && isset($route['default'])){
+			if (($iteration==='' or $iteration===null) && isset($route['default'])){
 				$out[$name]=$route['default'];
 				if (core::$debug){
 					debug::consoleLog('Route was choose by default: '.$route['default'],error::WARNING);
@@ -1184,7 +1183,7 @@ echo '>';
 					debug::consoleLog('Route not validate ans set by default: '.$route['default'],error::WARNING);
 					debug::groupEnd();
 				}
-				$out[$name]=isset($route['default'])?$route['default']:\false;
+				$out[$name]=isset($route['default'])?$route['default']:false;
 				continue;
 			}
 			if (core::$debug){
@@ -1213,17 +1212,17 @@ echo '>';
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function layout_start_with($__DIR__=\null){
+	static function layout_start_with($__DIR__=null){
 		return self::layoutStartWith($__DIR__);
 	}
 	/**
 	 * Start layout from __DIR__
 	 * @param string $__DIR__
 	 */
-	static function layoutStartWith($__DIR__=\null){
-		if ($__DIR__===\null)$__DIR__=self::$current__DIR__;
+	static function layoutStartWith($__DIR__=null){
+		if ($__DIR__===null)$__DIR__=self::$current__DIR__;
 		$found=\array_search($__DIR__,self::$next_dir);
-		if ($found===\false)return self::$next_dir=array($__DIR__);
+		if ($found===false)return self::$next_dir=array($__DIR__);
 		$out=array();
 		foreach (self::$next_dir as $key=>$val){
 			if ($key<$found)continue;
@@ -1235,14 +1234,14 @@ echo '>';
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function layout_start_after($__DIR__=\null){
+	static function layout_start_after($__DIR__=null){
 		return self::layoutStartAfter($__DIR__);
 	}
-	static function layoutStartAfter($__DIR__=\null){
-		if ($__DIR__===\null)$__DIR__=self::$current__DIR__;
-		$__DIR__= \str_replace('/', \DIRECTORY_SEPARATOR, $__DIR__);
+	static function layoutStartAfter($__DIR__=null){
+		if ($__DIR__===null)$__DIR__=self::$current__DIR__;
+		$__DIR__=\str_replace('/', \DIRECTORY_SEPARATOR,$__DIR__);
 		$found=\array_search($__DIR__,self::$next_dir);
-		if ($found!==\false){
+		if ($found!==false){
 			$out=array();
 			foreach (self::$next_dir as $key=>$val){
 				if ($key<$found+1)continue;
@@ -1293,7 +1292,7 @@ echo '>';
 	/**
 	 * @deprecated since version 3.4 use viewPage
 	 */
-	static function view_page($showError=\null){
+	static function view_page($showError=null){
 		return self::viewPage($showError);
 	}
 	/**
@@ -1301,21 +1300,21 @@ echo '>';
 	* @param boolean $showError auto show error in beginnig of next layout
 	* @return string|boolean filename of found subpage layout
 	 */
-	static function viewPage($showError=\null){
-		if ($showError==\null){
+	static function viewPage($showError=null){
+		if ($showError==null){
 			if (self::$layoutCounter){
-				$showError=\true;
+				$showError=true;
 			}else{
-				if (self::$partical_content_folder===\false){
-					$showError=\false;
+				if (self::$partical_content_folder===false){
+					$showError=false;
 				}else{
 					self::layoutStartAfter(self::$base__DIR__.\DIRECTORY_SEPARATOR.self::$appFolder.self::$partical_content_folder);
-					$showError=\true;
+					$showError=true;
 				}
 			}
 		}
 		self::$layoutCounter++;
-		if ($showError!==\false)render::showAlerts();
+		if ($showError!==false)render::showAlerts();
 		do {
 			$dir=\array_shift(self::$next_dir);
 			if (!$dir)return __DIR__.'/empty';
@@ -1326,7 +1325,7 @@ echo '>';
 	/**
 	 * @deprecated since version 3.4 use viewPageDefault
 	 */
-	static function view_page_default($defaultCallable, $showError=\true){
+	static function view_page_default($defaultCallable,$showError=true){
 		return self::viewPageDefault($defaultCallable,$showError);
 	}
 	/**
@@ -1335,15 +1334,15 @@ echo '>';
 	 * @param boolean $showError
 	 * @return string|boolean
 	 */
-	static function viewPageDefault($defaultCallable, $showError=\true){
+	static function viewPageDefault($defaultCallable,$showError=true){
 		$page=self::viewPage($showError);
-		if ($page===\false)return $defaultCallable();
+		if ($page===false)return $defaultCallable();
 		return $page;
 	}
 	/**
 	 * @deprecated since version 3.4 use viewDefault
 	 */
-	static function view_default($default_callable, $show_error=\true){
+	static function view_default($default_callable,$show_error=true){
 		return self::viewPageDefault($default_callable,$show_error);
 	}
 	/**
@@ -1352,19 +1351,19 @@ echo '>';
 	 * @param boolean $show_error
 	 * @return string|boolean
 	 */
-	static function viewDefault($default_callable, $show_error=\true){
+	static function viewDefault($default_callable,$show_error=true){
 		return self::viewPageDefault($default_callable,$show_error);
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function view_layout($layout,$__DIR__=\null){
+	static function view_layout($layout,$__DIR__=null){
 		return self::viewLayout($layout,$__DIR__);
 	}
-	static function viewLayout($layout,$__DIR__=\null){
+	static function viewLayout($layout,$__DIR__=null){
 		$next=\array_reverse(self::$indexfile);
-		foreach ($next as $key=>$dir) {
-			if (\file_exists($way = $key.'/'.$layout.'.phtml'))return $way;
+		foreach ($next as $key=>$dir){
+			if (\file_exists($way=$key.'/'.$layout.'.phtml'))return $way;
 			if ($key==$__DIR__)break;
 		}
 		return __DIR__.'/empty';

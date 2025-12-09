@@ -9,7 +9,7 @@ class smarty{
 		return date::smartdate($ddmmyy_hhmi);
 	}
 	static function mailto($address,$text='',$encode='javascript_charcode'){
-		if (empty($text)) $text=$address;
+		if (empty($text))$text=$address;
 		switch ($encode){
 			case 'javascript':
 				$string='document.write(\'<a href="mailto:'.$address.'">'.$text.'</a>\');';
@@ -39,10 +39,10 @@ class smarty{
 		$broken_number =\explode(',',$number);
 		return ($broken_number[0]===0?'0':\str_replace('&','&nbsp;',\number_format($broken_number[0],0,'.','&'))).(@$broken_number[1]?$delimeter.$broken_number[1]:'');
 	}
-	static function smartnumber($number,$round=\null){
+	static function smartnumber($number,$round=null){
 		$number2=\str_replace(',','.',$number);
 		if (!\is_numeric($number2))return $number;
-		if ($round!==\null)$number2=\round($number2,$round);
+		if ($round!==null)$number2=\round($number2,$round);
 		if (\substr($number2,0,1)=='.')return '0'.$number2;
 		return (float)$number2;
 	}

@@ -10,14 +10,14 @@ class form implements \ArrayAccess{
 	var $defaultResolver='c\\factory\\form_bootstrap';
 	var $prop=array('type'=>'normal');
 	private $data;
-	private $ajax=\false;
-	private $fileForm=\false;
+	private $ajax=false;
+	private $fileForm=false;
 	var $fields=array();
 	var $subform;
 	var $counter;
 	private $submit;
-	private $needSort=\false;
-	var $disabledReturn=\true;
+	private $needSort=false;
+	var $disabledReturn=true;
 	var $attributes;
 	var $classes=array();
 	var $target;
@@ -36,11 +36,11 @@ class form implements \ArrayAccess{
 	 * @return formfield|null
 	 */
 	function offsetGet($offset){
-		return $this->offsetExists($offset)?new formfield($this->fields[$offset]):\null;
+		return $this->offsetExists($offset)?new formfield($this->fields[$offset]):null;
 	}
 
-	function offsetSet($offset, $value){
-		if (\is_null($offset))throw new \Exception('can not add empty field to form');
+	function offsetSet($offset,$value){
+		if ($offset===null)throw new \Exception('can not add empty field to form');
 		if ($this->offsetExists($offset))unset($this->fields[$offset]);
 		$this->addField($offset,$value);
 	}
@@ -49,7 +49,7 @@ class form implements \ArrayAccess{
 		unset($this->fields[$offset]);
 	}
 
-	function __construct($fields=\null){
+	function __construct($fields=null){
 		if (\is_array($fields))$this->addFields($fields);
 		if (isset(core::$data['form_prop_type']))$this->prop['type']=core::$data['form_prop_type'];
 	}
@@ -65,7 +65,7 @@ class form implements \ArrayAccess{
 				if (@$request[$field]==$value)return array('field'=>$field,'value'=>$value);
 			}
 		}
-		return \false;
+		return false;
 	}
 	/**
 	 * @deprecated since version 3.4
@@ -75,11 +75,11 @@ class form implements \ArrayAccess{
 	}
 	function disabledReturn($false){
 		$this->disabledReturn=$false;
-		return \true;
+		return true;
 	}
 
-	function classes($classes=\null){
-		if ($classes===\null)return $this->classes;
+	function classes($classes=null){
+		if ($classes===null)return $this->classes;
 		if (\is_string($classes))$classes=array($classes);
 		$this->classes=$classes;
 		return $this;
@@ -88,8 +88,8 @@ class form implements \ArrayAccess{
 		$this->classes[]=$class;
 		return $this;
 	}
-	function attributes($attributes=\null){
-		if ($attributes===\null)return $this->attributes;
+	function attributes($attributes=null){
+		if ($attributes===null)return $this->attributes;
 		$this->attributes=$attributes;
 		return $this;
 	}
@@ -99,7 +99,7 @@ class form implements \ArrayAccess{
 	}
 
 	function destroy(){
-		$this->fields=\null;
+		$this->fields=null;
 		return $this;
 	}
 
@@ -121,10 +121,10 @@ class form implements \ArrayAccess{
 	 * @param string $name subform field key name
 	 * @param null|int counter counter of subform
 	 */
-	function getSubform($name,$counter=\null){
+	function getSubform($name,$counter=null){
 		if (!isset($this->fields[$name]))throw new \Exception('form element is miss');
 		if (!isset($this->fields[$name]['subform']))throw new \Exception('form element is not subform state');
-		if ($counter==\null)return isset($this->fields[$name]['value'])?$this->fields[$name]['value']:array();
+		if ($counter==null)return isset($this->fields[$name]['value'])?$this->fields[$name]['value']:array();
 		if (isset($this->fields[$name]['value'][$counter])){
 			return $this->fields[$name]['value'][$counter];
 		}else{
@@ -135,7 +135,7 @@ class form implements \ArrayAccess{
 		return $this->fields[$name]['value'][$counter];
 	}
 
-	function getSubformTemplate($name,$counter=\null){
+	function getSubformTemplate($name,$counter=null){
 		if (!isset($this->fields[$name]))throw new \Exception('form element is miss');
 		if (!isset($this->fields[$name]['subform']))throw new \Exception('form element is not subform state');
 		$template=clone $this->fields[$name]['subform'];
@@ -188,7 +188,7 @@ class form implements \ArrayAccess{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	function add_field($fieldKey,$params=\null){
+	function add_field($fieldKey,$params=null){
 		return $this->addField($fieldKey,$params);
 	}
 	/**
@@ -197,7 +197,7 @@ class form implements \ArrayAccess{
 	 * @param array|null $params params of field
 	 * @return form
 	 */
-	function addField($key,$params=\null){
+	function addField($key,$params=null){
 		if ($params instanceof arrayaccess)$params=(array)$params;
 		if (\is_array($key))return $this->addFields($key);
 		if (!$params)throw new \Exception('Form addField not set parameters');
@@ -208,7 +208,7 @@ class form implements \ArrayAccess{
 				$this->submit[$key][$params['value']]=1;
 				if (core::$debug && !$params['value'])debug::trace('Form add_field SUBMIT not have value parameter',error::WARNING);
 			}
-			if ($params['type']=='file')$this->fileForm=\true;
+			if ($params['type']=='file')$this->fileForm=true;
 			if (isset($params['filter'])){
 				if (core::$debug)debug::trace('Form add_field filter send. Need filters',error::WARNING);
 				$params['filters']=$params['filter'];
@@ -216,7 +216,7 @@ class form implements \ArrayAccess{
 			}
 			if ($params['type']=='subform'){
 				foreach ($params['subform']->fields as $subitem){
-					if ($subitem['type']=='file')$this->fileForm=\true;
+					if ($subitem['type']=='file')$this->fileForm=true;
 				}
 			}
 			if (!isset($params['label_full']))@$params['label_full']=$params['label'];
@@ -228,8 +228,8 @@ class form implements \ArrayAccess{
 			}
 
 			// name const transform
-			if (isset($params['name']) && is_array($params['name']) && $params['name'][1]==self::FIELD_KEY)$params['name'][1]=$key;
-			if (isset($params['position']))$this->needSort=\true;
+			if (isset($params['name']) && \is_array($params['name']) && $params['name'][1]==self::FIELD_KEY)$params['name'][1]=$key;
+			if (isset($params['position']))$this->needSort=true;
 			$this->fields[$key]=$params;
 		
 		return $this;
@@ -247,14 +247,14 @@ class form implements \ArrayAccess{
 		if (!$params)$params=array();
 		return $this->addField($fieldKey,$params+$this->fields[$asFieldKey]);
 	}
-	function addSubmitField($params=array(),$fieldKey=\null){
-		if (is_string($params))$params=array('value'=>$params);
+	function addSubmitField($params=array(),$fieldKey=null){
+		if (\is_string($params))$params=array('value'=>$params);
 		if (!$fieldKey)$fieldKey='submit'.(self::$submitCount++);
 		return $this->addField($fieldKey,$params+array('type'=>'submit','value'=>'Submit'));
 	}
 
-	function ajax($value=\null){
-		if ($value===\null)return !empty($this->ajax);
+	function ajax($value=null){
+		if ($value===null)return !empty($this->ajax);
 		$value=(bool)$value;
 		$this->ajax=$value;
 		$this->addField(array(
@@ -271,7 +271,7 @@ class form implements \ArrayAccess{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	function file_form($isFile=\null){
+	function file_form($isFile=null){
 		return $this->fileForm($isFile);
 	}
 
@@ -280,14 +280,14 @@ class form implements \ArrayAccess{
 	 * @param null|boolean $is_file
 	 * @return boolean
 	 */
-	function fileForm($is_file=\null){
-		if ($is_file===\null)return $this->fileForm;
+	function fileForm($is_file=null){
+		if ($is_file===null)return $this->fileForm;
 		$this->fileForm=(bool)$is_file;
 	}
 
-	function method($method=\null){
+	function method($method=null){
 		if (!$method)return isset($this->prop['method'])?$this->prop['method']:'POST';
-		$method=strtoupper($method);
+		$method=\strtoupper($method);
 		if (!\in_array($method,array('GET','POST')))throw new \Exception('form method is not support');
 		$this->prop['method'] = $method;
 		return $this;
@@ -344,24 +344,24 @@ class form implements \ArrayAccess{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	function set_data($data=\null){
+	function set_data($data=null){
 		return $this->setData($data);
 	}
 
-	function addDataForce($data=\null,$namePriority=\true){
-		return $this->addData($data,$namePriority,\true);
+	function addDataForce($data=null,$namePriority=true){
+		return $this->addData($data,$namePriority,true);
 	}
-	function addData($data=\null,$namePriority=\true,$force=\false){
-		$this->data=\null;
+	function addData($data=null,$namePriority=true,$force=false){
+		$this->data=null;
 		if (core::$debug)debug::group('Form setData');
-		if ($data===\null)$data=(@$this->prop['method']=='GET'?$_GET:$_POST);
+		if ($data===null)$data=(@$this->prop['method']=='GET'?$_GET:$_POST);
 		if ($this->ajax)input::filter($data,'iconv'); //? need tests
 
 		if ($data instanceof model)$data=$data->toArray();
 		if (\is_array($data)){
 			foreach ($this->fields as $key=>$item){
 				$field=$key;
-				$value=\false;
+				$value=false;
 				if ($namePriority && isset($item['name']))$field=$item['name'];
 				if (@$data[$field] instanceof model){
 					$value=(string)$data[$field];
@@ -374,7 +374,7 @@ class form implements \ArrayAccess{
 						if (isset($data[$field[0]]))$value=$data[$field[0]];
 					}
 				}
-				if ($value===\false)continue;
+				if ($value===false)continue;
 				if (@$item['filters'])input::filter($value,$item['filters']);
 				if (@$item['type']=='subform'){
 					foreach ($value as $counter=>$val){
@@ -394,14 +394,14 @@ class form implements \ArrayAccess{
 		}elseif (\is_object($data)){
 			foreach ($this->fields as $key=>$item){
 				$field=$key;
-				$value=\false;
+				$value=false;
 				if ($namePriority && isset($item['name']))$field=$item['name'];
 				if (\is_string($field)){
 					if (isset($data->$field))$value=$data->$field;
 				}elseif (\is_array($field)){ // probably not needed
 					if (isset($data->$field[0]))$value=$data->$field[0];
 				}
-				if ($value===\false)continue;
+				if ($value===false)continue;
 				if ($item['filters'])input::filter($value,$item['filters']);
 				if ($item['type']=='subform'){
 					foreach ($value as $counter=>$val){
@@ -422,7 +422,7 @@ class form implements \ArrayAccess{
 			if (core::$debug)debug::consoleLog('data is not array, data is '. gettype($data),error::ERROR);
 			if (core::$debug)debug::groupEnd();
 			if (core::$debug)debug::trace('Form set data error. Data is not array',error::ERROR);
-			return \false;
+			return false;
 		}
 		if (core::$debug)debug::groupEnd();
 		return $this;
@@ -436,11 +436,11 @@ class form implements \ArrayAccess{
 	 * @paran boolean $force set only not disabled fields
 	 * @param string form
 	 */
-	function setData($data=\null,$namePriority=\true,$force=\false){
+	function setData($data=null,$namePriority=true,$force=false){
 		return $this->addData($data,$namePriority,$force);
 	}
-	function setDataForce($data=\null,$namePriority=\true){
-		return $this->setData($data,$namePriority,\true);
+	function setDataForce($data=null,$namePriority=true){
+		return $this->setData($data,$namePriority,true);
 	}
 
 	/**
@@ -450,7 +450,7 @@ class form implements \ArrayAccess{
 		return $this->getData();
 	}
 	function getFieldValue($fieldName){
-		if ($this->data!==\null)return $this->data[$fieldName];
+		if ($this->data!==null)return $this->data[$fieldName];
 		foreach ($this->fields as $name=>$item){
 			if (isset($item['name'])){
 				if ($item['name']!=$fieldName)continue;
@@ -458,7 +458,7 @@ class form implements \ArrayAccess{
 				if ($fieldName!=$name)continue;
 			}
 			if ($item['type']=='check' || $item['type']=='checkbox' || $item['type']=='boolean')return (bool)$item['value'];
-			if (!isset($item['value']) && !isset($item['default']))return \null;
+			if (!isset($item['value']) && !isset($item['default']))return null;
 			if (isset($item['value']))return $item['value'];
 			return $item['default'];
 		}
@@ -470,7 +470,7 @@ class form implements \ArrayAccess{
 	 */
 	function getData(){
 			$out=array();
-			if ($this->data!==\null)return $this->data;
+			if ($this->data!==null)return $this->data;
 			foreach ($this->fields as $name=>$item){
 				if ($item['type']=='check' || $item['type']=='checkbox' || $item['type']=='boolean'){
 				$out[$name]=(bool)$item['value'];
@@ -507,29 +507,29 @@ class form implements \ArrayAccess{
 		return $out;
 	}
 
-	function isInvalid($data=array(),$checkData=\false){
+	function isInvalid($data=array(),$checkData=false){
 		return !$this->isValid($data,$checkData);
 	}
 
 	/**
 	 * @deprecated since version 3.4
 	 */
-	function is_valid($data=array(),$checkData=\false){
+	function is_valid($data=array(),$checkData=false){
 		return $this->isValid($data,$checkData);
 	}
 	/**
 	 * Check form values to valid
 	 * @return boolean
 	 */
-	function isValid($data=array(),$checkData=\false){
-		$valid=\true;
+	function isValid($data=array(),$checkData=false){
+		$valid=true;
 		foreach ($this->fields as $key=>$item){
 			if (@$item['disabled']) continue;
-			if (!@\is_array($item['validate']) && @!$item['subform']) continue;
+			if (!@\is_array($item['validate']) && @!$item['subform'])continue;
 			if (isset($item['subform'])){
 				foreach ($item['value'] as $value){
 					$result=$value->isValid($data[$key],$checkData); //$result=$item['subform']->isValid($data[$key],$checkData);
-					if ($result===\false)$valid=\false;
+					if ($result===false)$valid=false;
 				}
 			}else{
 				if (@$item['type']=='select' && isset($item['validate'])){
@@ -540,12 +540,12 @@ class form implements \ArrayAccess{
 				}
 				$value=$checkData?$data[$key]:@$item['value'];
 				$result=input::validate($item['type']=='file'?($_FILES[$key]['tmp_name']?$_FILES[$key]['tmp_name']:$value):$value,$item['validate'],$item,$key);
-				if ($result===\false){
+				if ($result===false){
 					if (core::$debug){
 						debug::consoleLog('Form validation false on field "'.$key.'". Field:',error::WARNING);
 						debug::dir($item);
 					}
-					$valid=\false;
+					$valid=false;
 				}
 			}
 		}
@@ -559,11 +559,11 @@ class form implements \ArrayAccess{
 			return $this->fillData();
 		}
 	function fillData(){
-		$this->data=\null;
+		$this->data=null;
 		foreach ($this->fields as $key=>&$params){
-			if (!\is_callable($params['fill']))  continue;
+			if (!\is_callable($params['fill']))continue;
 			$out=$params['fill']($this->getData(),$key);
-			if (!\is_null($out))$params['value']=$out;
+			if ($out!==null)$params['value']=$out;
 		}
 		return $this;
 	}
@@ -598,12 +598,12 @@ class form implements \ArrayAccess{
 		}
 		$out='';
 		if (!$this->subform)$out=$this->renderBeginTag();
-		if (!\is_array($this->fields))return \false;
+		if (!\is_array($this->fields))return false;
 		$sort_form=$this->fields;
 		if (!$this->needSort){
 			foreach ($this->fields as $field){
 				if (isset($field['position'])){
-					$this->needSort=\true;
+					$this->needSort=true;
 					break;
 				}
 			}
@@ -629,7 +629,7 @@ class form implements \ArrayAccess{
 	 */
 	function renderOtherFields(){
 		$out='';
-		if (!\is_array($this->fields))return \false;
+		if (!\is_array($this->fields))return false;
 		$sort_form=$this->fields;
 
 		if ($this->needSort)datawork::stable_uasort($sort_form,array('c\\datawork','positionCompare'));
@@ -761,7 +761,7 @@ class form implements \ArrayAccess{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	function render_field($name,$item=\null){
+	function render_field($name,$item=null){
 		return $this->renderField($name,$item);
 	}
 	function getResolver($name,$item){
@@ -769,21 +769,21 @@ class form implements \ArrayAccess{
 		if (\is_string($resolver))return new $resolver($this,$name);
 		return $resolver;
 	}
-	function renderField($name,$item=\null){
+	function renderField($name,$item=null){
 		$item=$this->mergeItem($name,$item);
 		$resolver=$this->getResolver($name,$item);
-		$this->renderedFields[$name]=\true;
+		$this->renderedFields[$name]=true;
 
 		//subform prepare
 		$renderName=$name;
 		if (!isset($item['name']))$item['name']=$renderName;
 		if (\is_string($item['name']))$item['name']=array($item['name']);
-		if ($this->counter!==\null)\array_unshift($item['name'],$this->counter);
-		if ($this->subform!==\null)\array_unshift($item['name'],$this->subform);
+		if ($this->counter!==null)\array_unshift($item['name'],$this->counter);
+		if ($this->subform!==null)\array_unshift($item['name'],$this->subform);
 		if (\is_array($item['name'])){
 			   $renderName=\array_shift($item['name']);
 				foreach ($item['name'] as $subitem){
-						$renderName.='['.$subitem.']';
+					$renderName.='['.$subitem.']';
 				}
 		}elseif (\is_callable($item['name'])){
 				$renderName=$item['name']($item);
@@ -791,7 +791,7 @@ class form implements \ArrayAccess{
 			return $resolver->renderField($item,$renderName);
 	}
 	private function mergeItem($name,$item){
-		if ($item===\null){
+		if ($item===null){
 			if (isset($this->fields[$name])){
 				return $this->fields[$name];
 			}else{
@@ -806,10 +806,10 @@ class form implements \ArrayAccess{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	function render_field_form_group_begin($name,$item=\null){
+	function render_field_form_group_begin($name,$item=null){
 		return $this->renderFieldFormGroupBegin($name,$item);
 	}
-	function renderFieldFormGroupBegin($name,$item=\null){
+	function renderFieldFormGroupBegin($name,$item=null){
 		if ($name)$item=$this->mergeItem($name,$item);
 		$resolver=$this->getResolver($name,$item);
 		return $resolver->renderFieldFormGroupBegin($item);
@@ -818,10 +818,10 @@ class form implements \ArrayAccess{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	function render_field_form_group_end($name,$item=\null){
+	function render_field_form_group_end($name,$item=null){
 		return $this->renderFieldFormGroupEnd($name,$item);
 	}
-	function renderFieldFormGroupEnd($name,$item=\null){
+	function renderFieldFormGroupEnd($name,$item=null){
 		if ($name)$item=$this->mergeItem($name,$item);
 		$resolver=$this->getResolver($name,$item);
 		return $resolver->renderFieldFormGroupEnd($item);
@@ -829,10 +829,10 @@ class form implements \ArrayAccess{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	function render_field_label($name,$item=\null){
+	function render_field_label($name,$item=null){
 		return $this->renderFieldLabel($name,$item);
 	}
-	function renderFieldLabel($name,$item=\null){
+	function renderFieldLabel($name,$item=null){
 		if ($name)$item=$this->mergeItem($name,$item);
 		$resolver=$this->getResolver($name,$item);
 		return $resolver->renderFieldLabel($item);
@@ -840,22 +840,22 @@ class form implements \ArrayAccess{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	function render_field_field($name,$item=\null){
+	function render_field_field($name,$item=null){
 		return $this->renderFieldField($name,$item);
 
 	}
-	function renderFieldField($name,$item=\null){
+	function renderFieldField($name,$item=null){
 		$item=$this->mergeItem($name,$item);
 		$resolver=$this->getResolver($name,$item);
-		$this->renderedFields[$name]=\true;
+		$this->renderedFields[$name]=true;
 
 		//subform prepare
 		$renderName=$name;
 
 		if (!isset($item['name']))$item['name']=$renderName;
 		if (\is_string($item['name']))$item['name']=array($item['name']);
-		if ($this->counter!==\null)\array_unshift($item['name'],$this->counter);
-		if ($this->subform!==\null)\array_unshift($item['name'],$this->subform);
+		if ($this->counter!==null)\array_unshift($item['name'],$this->counter);
+		if ($this->subform!==null)\array_unshift($item['name'],$this->subform);
 		if (\is_array($item['name'])){
 				$renderName=\array_shift($item['name']);
 				foreach ($item['name'] as $subitem){

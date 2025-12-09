@@ -8,29 +8,29 @@ namespace c;
 class translate{
 	static $charset=core::UTF8;
 	static $tDict=array();
-	private static $isdictLoaded=\false;
+	private static $isdictLoaded=false;
 
 	static function reloadLocate($locate){
 		core::$lang=$locate;
 		self::$tDict=array();
-		if (!core::$lang)return \true;
+		if (!core::$lang)return true;
 		if (\file_exists($file=__DIR__.'/global-config/translate_'.core::$lang.'.php'))include $file;
 		if (\file_exists($file='config/translate_'.core::$lang.'.php'))include $file;
-		self::$isdictLoaded=\true;
+		self::$isdictLoaded=true;
 		foreach (mvc::$url as $url=>$v){
 			if (\file_exists($file=$url.'/translate_'.core::$lang.'.php'))include $file;
 		}
-		return \true;
+		return true;
 	}
 	static function dictLP($source,$translate){
-		return self::dict($source, $translate, \true);
+		return self::dict($source,$translate,true);
 	}
-	static function dict($source,$translate,$lowerPriority=\false){
-		if ($translate=='')return \true;
-		if ($lowerPriority && isset(self::$tDict[$source]))return \false;
+	static function dict($source,$translate,$lowerPriority=false){
+		if ($translate=='')return true;
+		if ($lowerPriority && isset(self::$tDict[$source]))return false;
 		if (self::$charset==core::UTF8){
 			self::$tDict[$source]=$translate;
-			return \true;
+			return true;
 		}
 		self::$tDict[$source]=\iconv(self::$charset,core::UTF8,$translate);
 	}
@@ -38,19 +38,14 @@ class translate{
 		if (core::$lang && !self::$isdictLoaded){
 			if (\file_exists($file=__DIR__.'/global-config/translate_'.core::$lang.'.php'))include $file;
 			if (\file_exists($file='config/translate_'.core::$lang.'.php'))include $file;
-			self::$isdictLoaded=\true;
+			self::$isdictLoaded=true;
 		}
-		$magicvar=\null;
-		if (!\is_array($vars))$magicvar=$vars;
+                $magicvar=\is_array($vars)?null:$vars;
 		if (isset(self::$tDict[$text])){
-			if (core::$charset==core::UTF8){
-				$text= self::$tDict[$text];
-			}else{
-				$text=iconv(core::UTF8,core::$charset,self::$tDict[$text]);
-			}
+			$text=core::$charset==core::UTF8?self::$tDict[$text]:\iconv(core::UTF8,core::$charset,self::$tDict[$text]);
 		}
 
-		if (\strpos($text,'{')===\false)return $text;
+		if (\strpos($text,'{')===false)return $text;
 		// vars and functions
 		return \preg_replace_callback('/\{(.*)\}/sU',function($matches) use($vars,$magicvar){
 			$params=\explode('|',$matches[1]);
@@ -291,12 +286,12 @@ class translate{
 		return self::rusUrl($text);
 	}
 	static function rusUrl($text){
-		return \trim(\str_replace('--','-', \strtr(input::lower($text),self::$specArr)),'-');
+		return \trim(\str_replace('--','-',\strtr(input::lower($text),self::$specArr)),'-');
 	}
 
 	static $seokeywords=array(); // word - page
 
-	static $seopage=\false;
+	static $seopage=false;
 
 	static function seo_link($text){
 		return self::seoLink($text);
@@ -318,7 +313,7 @@ class translate{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function change_keyboard($str, $to_rus=\true,$utf8=\false){
+	static function change_keyboard($str,$to_rus=true,$utf8=false){
 		return self::changeKeyboard($str,$to_rus,$utf8);
 	}
 	/**
@@ -328,7 +323,7 @@ class translate{
 	 * @paran boolean $utf8 - is your charset is utf8? only for class use parameter
 	 * @return string
 	 */
-	static function changeKeyboard($str, $to_rus=\true,$utf8=\false){
+	static function changeKeyboard($str,$to_rus=true,$utf8=false){
 		if (!$utf8 && core::$charset!=core::UTF8)$str=iconv(core::$charset,core::UTF8,$str);
 		$trans=array('а'=>'f','б'=>',','в'=>'d','г'=>'u','д'=>'l','е'=>'t','ё'=>'`','ж'=>';','з'=>'p','и'=>'b','й'=>'q','к'=>'r','л'=>'k','м'=>'v','н'=>'y','о'=>'j','п'=>'g',
 		'р'=>'h','с'=>'c','т'=>'n','у'=>'e','ф'=>'a','х'=>'[','ц'=>'w','ч'=>'x','ш'=>'i','щ'=>'o','ъ'=>']','ы'=>'s','ь'=>'m','э'=>"'",'ю'=>'.','я'=>'z',
@@ -343,7 +338,7 @@ class translate{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function smart_keyboard_word($str,$utf8=\false){
+	static function smart_keyboard_word($str,$utf8=false){
 		self::smartKeyboardWord($str,$utf8);
 	}
 	/**
@@ -351,7 +346,7 @@ class translate{
 	 * @param string $str
 	 * @return string transform string
 	 */
-	static function smartKeyboardWord($str,$utf8=\false){
+	static function smartKeyboardWord($str,$utf8=false){
 		if (!$utf8 && core::$charset!=core::UTF8)$str=\iconv(core::$charset,core::UTF8,$str);
 		$length=\mb_strlen($str,'utf-8');
 		$weight_rus=0;
@@ -471,8 +466,8 @@ class translate{
 			}
 		}
 		$out=$str;
-		if ($rus_chars>0 && $weight_eng>=$weight_rus)$out= self::changeKeyboard($str,\false,\true);
-		if ($eng_chars>0 && $weight_rus>=$weight_eng)$out= self::changeKeyboard($str,\true,\true);
+		if ($rus_chars>0 && $weight_eng>=$weight_rus)$out=self::changeKeyboard($str,false,true);
+		if ($eng_chars>0 && $weight_rus>=$weight_eng)$out=self::changeKeyboard($str,true,true);
 		if (!$utf8 && core::$charset!=core::UTF8)$out=\iconv(core::UTF8,core::$charset,$out);
 		return $out;
 	}
@@ -493,25 +488,25 @@ class translate{
 		$words=\explode(' ',$str);
 		$out=array();
 		foreach ($words as $item){
-			$out[]=self::smartKeyboardWord($item,\true);
+			$out[]=self::smartKeyboardWord($item,true);
 		}
 		$out= \implode(' ',$out);
 		if (core::$charset!=core::UTF8)$out=\iconv(core::UTF8,core::$charset,$out);
 		return $out;
 	}
 
-	static function mat($str,$trans=\false){
+	static function mat($str,$trans=false){
 		if (core::$charset!=core::UTF8)$str=\iconv(core::$charset,core::UTF8,$str);
 		$pos=0;
 		if (\file_exists($file=__DIR__.'/global-config/mat.php'))include_once $file;
 		if (\file_exists($file='config/mat.php'))include_once $file;
 		foreach ($dict as $val){
-			if ($pos=\preg_match('/'.$val['word'].'/imu', $str)>-1){
+			if ($pos=\preg_match('/'.$val['word'].'/imu',$str)>-1){
 				if (!$trans)return $pos;
 				if (isset($val[$trans]))$str=\preg_replace('/'.$val['word'].'/imu',$val[$trans],$str);
 			}
 		}
-		if (!$trans)return \false;
+		if (!$trans)return false;
 		if (core::$charset!=core::UTF8)$str=\iconv(core::UTF8,core::$charset,$str);
 		return $str;
 	}
@@ -519,7 +514,7 @@ class translate{
 	/**
 	 * @deprecated since version 3.4 use plural method
 	 */
-	static function num_ending($number, $ending1,$ending4,$ending5=\null){
+	static function num_ending($number, $ending1,$ending4,$ending5=null){
 		return self::plural($number,$ending1,$ending4,$ending5);
 	}
 	/**
@@ -530,14 +525,14 @@ class translate{
 	 * @param $ending5 5 counts phrase,
 	 * @return string
 	 */
-	static function plural($number, $ending1,$ending4,$ending5=\null){
-		if (\is_null($number))$number=0;
+	static function plural($number,$ending1,$ending4,$ending5=null){
+		if ($number===null)$number=0;
 		if (!\is_numeric($number))$number=\str_replace(',','.',$number);
 		if (\intval($number)!=\floatval($number))return $ending4;
-		if ($ending5===\null)$ending5=$ending4;
-		$number %=100;
+		if ($ending5===null)$ending5=$ending4;
+		$number%=100;
 		if ($number>=11 && $number<=19)return $ending5;
-		$number %= 10;
+		$number%=10;
 		switch ($number){
 			case 1: return $ending1;
 			case 2:
@@ -550,10 +545,10 @@ class translate{
 	static function grammar($str){
 		if (core::$charset!=core::UTF8)$str=\iconv(core::$charset,core::UTF8,$str);
 		$str=\strtr($str,array('ё'=>'е',' ,'=>', '));
-		$p=array();$r=array();
+		$r=$p=array();
 		if (\file_exists($file=__DIR__.'/global-config/grammar.php'))include_once $file;
 		if (\file_exists($file='config/grammar.php'))include_once $file;
-		$out= \preg_replace($p,$r,$str);
+		$out=\preg_replace($p,$r,$str);
 		if (core::$charset!=core::UTF8)$out=\iconv(core::UTF8,core::$charset,$out);
 		return $out;
 	}

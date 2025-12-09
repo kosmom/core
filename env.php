@@ -31,7 +31,7 @@ class env{
 	
 	static function getAvailableSystemMemory(){
 		if (self::isWindowsOS()){
-			@\exec("wmic OS get FreePhysicalMemory", $output);
+			@\exec("wmic OS get FreePhysicalMemory",$output);
 			return (int)$output[1]*1024;
 		}else{
 			\exec('free -b',$output);

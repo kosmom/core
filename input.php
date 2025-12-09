@@ -32,7 +32,7 @@ class input{
 				}
 			}
 		}
-		return \true;
+		return true;
 	}
 	/**
 	 * Add http:// to string
@@ -41,19 +41,19 @@ class input{
 	 */
 	static function toUrl($url){
 		$lowerUrl=self::lower($url);
-		if (\substr($lowerUrl,0,7)=='http://' or \substr($lowerUrl,0,8)=='https://')return $url;
+		if (\substr($lowerUrl,0,7)=='http://' || \substr($lowerUrl,0,8)=='https://')return $url;
 		return 'http://'.$url;
 	}
 	static function clearArray($array){
 		if (\is_array($array)){
 			foreach ($array as $key=>$value){
-				if (self::clearArray($value)==\false){
+				if (self::clearArray($value)==false){
 					unset($array[$key]);
 					continue;
 				}
 			}
 		}else{
-			if (empty($array))return \false;
+			if (empty($array))return false;
 		}
 		return $array;
 	}
@@ -63,9 +63,9 @@ class input{
 	 * @param callback $callback
 	 * @return any
 	 */
-	static function array_find_index($array, $callback){
-		foreach ($array as $key => $value){
-			$result=$callback($value, $key);
+	static function array_find_index($array,$callback){
+		foreach ($array as $key=>$value){
+			$result=$callback($value,$key);
 			if ($result)return $key;
 		}
 	}
@@ -77,9 +77,9 @@ class input{
 	 */
 	static function filter(&$var,$filters=''){
 		if (!isset($var))$var='';
-		if (empty($filters))return \false;
+		if (empty($filters))return false;
 		if (\is_string($filters))$filters=array($filters);
-		if (!\is_array($filters))return \false;
+		if (!\is_array($filters))return false;
 		foreach ($filters as $filter){
 				if (\gettype($filter)=='object'){
 					$var=$filter($var);
@@ -93,7 +93,7 @@ class input{
 						$var=\trim($var);
 						break;
 					case 'grammar':
-						$var=  translate::grammar($var);
+						$var=translate::grammar($var);
 						break;
 					case 'strtolower':
 					case 'lower':
@@ -135,7 +135,7 @@ class input{
 						$var=self::ucfirst($var);
 						break;
 					case 'ucwords':
-						$var=\mb_convert_case($var, \MB_CASE_TITLE, core::$charset);
+						$var=\mb_convert_case($var,\MB_CASE_TITLE,core::$charset);
 						break;
 					case 'phone':
 						$var=self::phone($var);
@@ -145,9 +145,9 @@ class input{
 			return new super();
 	}
 	private static function valid($validator,$val,$formKey){
-		if ($validator['type']=='required' || $validator['type']=='require')return ($val!=='' && $val!==\null);
-		if ($val==='' or $val===\null)return \true;
-		if (empty($validator['inverse']))$validator['inverse']=\false;
+		if ($validator['type']=='required' || $validator['type']=='require')return ($val!=='' && $val!==null);
+		if ($val==='' || $val===null)return true;
+		if (empty($validator['inverse']))$validator['inverse']=false;
 		$i=$validator['inverse'];
 		switch ($validator['type']){
 				case 'int':
@@ -190,7 +190,7 @@ class input{
 					$extension=\strtolower(filedata::extension(request::fileName($formKey)));
 					return \in_array($extension,$validator['values']) xor $i;
 			}
-			return \true;
+			return true;
 	}
 	/**
 	 * Validate var of validate filters
@@ -203,9 +203,9 @@ class input{
 	 *		type - type of validator<br>
 	 *		text - text of report of error or false if not need report
 	 */
-	static function validate($val,$validators=\null,$label=array(),$formKey=\null){
-		if (empty($validators))return \true;
-		$valid=\true;
+	static function validate($val,$validators=null,$label=array(),$formKey=null){
+		if (empty($validators))return true;
+		$valid=true;
 		$errorDict=array(
 			'int'=>'"{label_full}" field must be numberic',
 			'number'=>'"{label_full}" field must be numberic',
@@ -226,12 +226,12 @@ class input{
 			'extension'=>'"{label_full}" file extension is wrong',
 		);
 		foreach ($validators as $validator){
-			if ($valid===\false && (!isset($validator['text']) or $validator['text']===\false))continue;
+			if ($valid===false && (!isset($validator['text']) or $validator['text']===false))continue;
 			$errorText=self::htmlspecialchars(translate::t($validator['text']!=self::VALIDATE_AUTO_TEXT?$validator['text']:($errorDict[$validator['type']]?$errorDict[$validator['type']]:'Field "{label_full}" has wrong value'),$validator+(array)$label));
 			$errorLevel=@$validator['level']?$validator['level']:error::ERROR;
 			$check=self::valid($validator, $val, $formKey);
-			if ($valid && !$check)$valid=\false;
-			if (!$check && isset($validator['text']) && $validator['text']!==\false)error::add($errorText,$errorLevel);
+			if ($valid && !$check)$valid=false;
+			if (!$check && isset($validator['text']) && $validator['text']!==false)error::add($errorText,$errorLevel);
 		}
 		return $valid;
 	}
@@ -246,8 +246,8 @@ class input{
 		do {
 		$quote=\mb_strpos($string, $symbol.$symbol,$i+1,core::$charset);
 		$finish=\mb_strpos($string, $symbol,$i+1,core::$charset);
-		if ($finish===\false)return \false;
-		if ($quote===\false)return $finish;
+		if ($finish===false)return false;
+		if ($quote===false)return $finish;
 		$i=$quote+1;
 		} while ($quote==$finish);
 		return $finish;
@@ -270,9 +270,9 @@ class input{
 	 */
 	static function findFirstPrepare(&$string){
 		$symbol=\mb_substr($string,0,1,core::$charset);
-		$delimeter=self::findFirst(\mb_substr($string,1,\null,core::$charset),$symbol);
+		$delimeter=self::findFirst(\mb_substr($string,1,null,core::$charset),$symbol);
 		$out=\mb_substr($string,1,$delimeter,core::$charset);
-		$string=\mb_substr($string,$delimeter+2,\null,core::$charset);
+		$string=\mb_substr($string,$delimeter+2,null,core::$charset);
 		return \str_replace($symbol.$symbol,$symbol,$out);
 	}
 	/**
@@ -290,17 +290,17 @@ class input{
 		$email=self::lower($email);
 		$validMail=array('gmail.com','yandex.ru','rambler.ru','mail.ru','inbox.ru','bk.ru','bigmir.net','list.ru','pochta.ru','aport.ru','hotbox.ru');
 		$emailArr =\explode('@',$email);
-		if (empty($emailArr[1]))return \false;
-		if (\in_array($emailArr[1],$validMail))return \true;
-		if (!\getmxrr($emailArr[1], $mxhostsarr))return \false;
-		return \true;
+		if (empty($emailArr[1]))return false;
+		if (\in_array($emailArr[1],$validMail))return true;
+		if (!\getmxrr($emailArr[1],$mxhostsarr))return false;
+		return true;
 	}
 	/**
 	 * @deprecated use filter method
 	 */
-	static function setPost($var,$func=array(),$cannull=\true){
-		if (empty($_POST[$var]))$_POST[$var]=\null;
-		if ($_POST[$var]==\null && $cannull)return \false;
+	static function setPost($var,$func=array(),$cannull=true){
+		if (empty($_POST[$var]))$_POST[$var]=null;
+		if ($_POST[$var]==null && $cannull)return false;
 		$v=$_POST[$var];
 		self::filter($v,$func);
 		$_POST[$var]=$v;
@@ -308,9 +308,9 @@ class input{
 	/**
 	 * @deprecated use filter method
 	 */
-	static function setGet($var,$func=array(),$cannull=\true){
+	static function setGet($var,$func=array(),$cannull=true){
 		if (empty($_GET[$var]))$_GET[$var]='';
-		if ($_GET[$var]==\null && $cannull)return \false;
+		if ($_GET[$var]==null && $cannull)return false;
 		$v=$_GET[$var];
 		self::filter($v,$func);
 		$_GET[$var]=$v;
@@ -318,7 +318,7 @@ class input{
 	/**
 	 * @deprecated use filter method
 	 */
-	static function setVal($var,$func=array(),$cannull=\true){
+	static function setVal($var,$func=array(),$cannull=true){
 		if ($var=='' && $cannull)return;
 		self::filter($var,$func);
 		return $var;
@@ -326,100 +326,19 @@ class input{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function strip_tags_attributes($sSource, $aAllowedTags = array(), $aDisabledAttributes = array('onabort', 'onactivate', 'onafterprint', 'onafterupdate', 'onbeforeactivate', 'onbeforecopy', 'onbeforecut', 'onbeforedeactivate', 'onbeforeeditfocus', 'onbeforepaste', 'onbeforeprint', 'onbeforeunload', 'onbeforeupdate', 'onblur', 'onbounce', 'oncellchange', 'onchange', 'onclick', 'oncontextmenu', 'oncontrolselect', 'oncopy', 'oncut', 'ondataavaible', 'ondatasetchanged', 'ondatasetcomplete', 'ondblclick', 'ondeactivate', 'ondrag', 'ondragdrop', 'ondragend', 'ondragenter', 'ondragleave', 'ondragover', 'ondragstart', 'ondrop', 'onerror', 'onerrorupdate', 'onfilterupdate', 'onfinish', 'onfocus', 'onfocusin', 'onfocusout', 'onhelp', 'onkeydown', 'onkeypress', 'onkeyup', 'onlayoutcomplete', 'onload', 'onlosecapture', 'onmousedown', 'onmouseenter', 'onmouseleave', 'onmousemove', 'onmoveout', 'onmouseover', 'onmouseup', 'onmousewheel', 'onmove', 'onmoveend', 'onmovestart', 'onpaste', 'onpropertychange', 'onreadystatechange', 'onreset', 'onresize', 'onresizeend', 'onresizestart', 'onrowexit', 'onrowsdelete', 'onrowsinserted', 'onscroll', 'onselect', 'onselectionchange', 'onselectstart', 'onstart', 'onstop', 'onsubmit', 'onunload','style','width','height')){
+	static function strip_tags_attributes($sSource,$aAllowedTags=array(),$aDisabledAttributes=array('onabort','onactivate','onafterprint','onafterupdate','onbeforeactivate','onbeforecopy','onbeforecut','onbeforedeactivate','onbeforeeditfocus','onbeforepaste','onbeforeprint','onbeforeunload','onbeforeupdate','onblur','onbounce','oncellchange','onchange','onclick','oncontextmenu','oncontrolselect','oncopy','oncut','ondataavaible','ondatasetchanged','ondatasetcomplete','ondblclick','ondeactivate','ondrag','ondragdrop','ondragend','ondragenter','ondragleave','ondragover','ondragstart','ondrop','onerror','onerrorupdate','onfilterupdate','onfinish','onfocus','onfocusin','onfocusout','onhelp','onkeydown','onkeypress','onkeyup','onlayoutcomplete','onload','onlosecapture','onmousedown','onmouseenter','onmouseleave','onmousemove','onmoveout','onmouseover','onmouseup','onmousewheel','onmove','onmoveend','onmovestart','onpaste','onpropertychange','onreadystatechange','onreset','onresize','onresizeend','onresizestart','onrowexit','onrowsdelete','onrowsinserted','onscroll','onselect','onselectionchange','onselectstart','onstart','onstop','onsubmit','onunload','style','width','height')){
 		return self::stripTagsAttributes($sSource,$aAllowedTags,$aDisabledAttributes);
 	}
-	static function stripTagsAttributes($sSource, $aAllowedTags = array(), $aDisabledAttributes = array(
-		'onabort',
-		'onactivate',
-		'onafterprint',
-		'onafterupdate',
-		'onbeforeactivate',
-		'onbeforecopy',
-		'onbeforecut',
-		'onbeforedeactivate',
-		'onbeforeeditfocus',
-		'onbeforepaste',
-		'onbeforeprint',
-		'onbeforeunload',
-		'onbeforeupdate',
-		'onblur',
-		'onbounce',
-		'oncellchange',
-		'onchange',
-		'onclick',
-		'oncontextmenu',
-		'oncontrolselect',
-		'oncopy',
-		'oncut',
-		'ondataavaible',
-		'ondatasetchanged',
-		'ondatasetcomplete',
-		'ondblclick',
-		'ondeactivate',
-		'ondrag',
-		'ondragdrop',
-		'ondragend',
-		'ondragenter',
-		'ondragleave',
-		'ondragover',
-		'ondragstart',
-		'ondrop',
-		'onerror',
-		'onerrorupdate',
-		'onfilterupdate',
-		'onfinish',
-		'onfocus',
-		'onfocusin',
-		'onfocusout',
-		'onhelp',
-		'onkeydown',
-		'onkeypress',
-		'onkeyup',
-		'onlayoutcomplete',
-		'onload',
-		'onlosecapture',
-		'onmousedown',
-		'onmouseenter',
-		'onmouseleave',
-		'onmousemove',
-		'onmoveout',
-		'onmouseover',
-		'onmouseup',
-		'onmousewheel',
-		'onmove',
-		'onmoveend',
-		'onmovestart',
-		'onpaste',
-		'onpropertychange',
-		'onreadystatechange',
-		'onreset',
-		'onresize',
-		'onresizeend',
-		'onresizestart',
-		'onrowexit',
-		'onrowsdelete',
-		'onrowsinserted',
-		'onscroll',
-		'onselect',
-		'onselectionchange',
-		'onselectstart',
-		'onstart',
-		'onstop',
-		'onsubmit',
-		'onunload',
-		'style',
-		'width',
-		'height')){
-		if (empty($aDisabledAttributes)) return strip_tags($sSource, implode('', $aAllowedTags));
-		return \preg_replace('/<(.*?)>/ie', "'<' . preg_replace(array('/javascript:[^\"\']*/i', '/(" . \implode('|', $aDisabledAttributes) . ")[ \\t\\n]*=[ \\t\\n]*[\"\'][^\"\']*[\"\']/i', '/\s+/'), array('', '', ' '), stripslashes('\\1')) . '>'", \strip_tags($sSource, \implode('', $aAllowedTags)));
+	static function stripTagsAttributes($sSource,$aAllowedTags=array(),$aDisabledAttributes=array('onabort','onactivate','onafterprint','onafterupdate','onbeforeactivate','onbeforecopy','onbeforecut','onbeforedeactivate','onbeforeeditfocus','onbeforepaste','onbeforeprint','onbeforeunload','onbeforeupdate','onblur','onbounce','oncellchange','onchange','onclick','oncontextmenu','oncontrolselect','oncopy','oncut','ondataavaible','ondatasetchanged','ondatasetcomplete','ondblclick','ondeactivate','ondrag','ondragdrop','ondragend','ondragenter','ondragleave','ondragover','ondragstart','ondrop','onerror','onerrorupdate','onfilterupdate','onfinish','onfocus','onfocusin','onfocusout','onhelp','onkeydown','onkeypress','onkeyup','onlayoutcomplete','onload','onlosecapture','onmousedown','onmouseenter','onmouseleave','onmousemove','onmoveout','onmouseover','onmouseup','onmousewheel','onmove','onmoveend','onmovestart','onpaste','onpropertychange','onreadystatechange','onreset','onresize','onresizeend','onresizestart','onrowexit','onrowsdelete','onrowsinserted','onscroll','onselect','onselectionchange','onselectstart','onstart','onstop','onsubmit','onunload','style','width','height')){
+		if (empty($aDisabledAttributes))return strip_tags($sSource,\implode('',$aAllowedTags));
+		return \preg_replace('/<(.*?)>/ie',"'<' . preg_replace(array('/javascript:[^\"\']*/i', '/(".\implode('|',$aDisabledAttributes).")[ \\t\\n]*=[ \\t\\n]*[\"\'][^\"\']*[\"\']/i', '/\s+/'), array('', '', ' '), stripslashes('\\1')) . '>'",\strip_tags($sSource,\implode('',$aAllowedTags)));
 	}
 	/**
 	 * Transform array as data[][field]
 	 * @deprecated dont't use this method
 	 */
 	static function formarray($array){
-		if (!\is_array($array))return \false;
+		if (!\is_array($array))return false;
 		$outarray=array();
 		$counter=0;
 		foreach ($array as $key=>$value){
@@ -433,11 +352,11 @@ class input{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function get_link($without='',$nullsIsEmpty=\true,$onlyParams=\false){
+	static function get_link($without='',$nullsIsEmpty=true,$onlyParams=false){
 		return self::getLink($without,$nullsIsEmpty,$onlyParams);
 	}
-	static function getLinkParams($without=\null,$nullsIsEmpty=\true){
-		return self::getLink($without,$nullsIsEmpty,\true);
+	static function getLinkParams($without=null,$nullsIsEmpty=true){
+		return self::getLink($without,$nullsIsEmpty,true);
 	}
 	/**
 	 * Modify GET input string, remove or replace $without parameters witn it
@@ -445,29 +364,29 @@ class input{
 	 * @param boolean $nullsIsEmpty remove or not GET variables if $without has 0 or '' value
 	 * @return string total GET string with replace $without
 	 */
-	static function getLink($without=\null,$nullsIsEmpty=\true,$onlyParams=\false){
+	static function getLink($without=null,$nullsIsEmpty=true,$onlyParams=false){
 		$out=array();
 		$flatten=array();
 		$removes=array();
 		if ($without){
 			foreach ($without as $key=>$val){
-				if ($val===\false)$removes[$key]=\true;
+				if ($val===false)$removes[$key]=true;
 			}
 			foreach (\explode('&',\http_build_query($without)) as $get){
-				$keyval=\explode('=', $get);
+				$keyval=\explode('=',$get);
 				$flatten[$keyval[0]]=$keyval[1];
 			}
 		}
 		$uri=\explode('?',$_SERVER['REQUEST_URI']);
-		$gets=\substr($_SERVER['REQUEST_URI'], \strlen($uri[0])+1);
+		$gets=\substr($_SERVER['REQUEST_URI'],\strlen($uri[0])+1);
 		if ($gets){
-			foreach (\explode('&', $gets) as $get){
-				$keyval=\explode('=', $get);
+			foreach (\explode('&',$gets) as $get){
+				$keyval=\explode('=',$get);
 				if (isset($removes[$keyval[0]]))continue;
 				if (isset($flatten[$keyval[0]]))$keyval[1]=$flatten[$keyval[0]];
-				if ($keyval[1]===\false)continue;
+				if ($keyval[1]===false)continue;
 				if ($nullsIsEmpty && $keyval[1]==='')continue;
-				$out[]=$keyval[0].($keyval[1]===\true?'':'='.$keyval[1]);
+				$out[]=$keyval[0].($keyval[1]===true?'':'='.$keyval[1]);
 			}
 		}
 		//add new parameters
@@ -497,13 +416,13 @@ class input{
 	 */
 	static function isLinkActive($params=array()){
 		foreach ($params as $param=>$value){
-			if ($value===\false){
-				if (isset($_GET[$param]))return \false;
+			if ($value===false){
+				if (isset($_GET[$param]))return false;
 			}else{
-				if ($_GET[$param]!=$value)return \false;
+				if ($_GET[$param]!=$value)return false;
 			}
 		}
-		return \true;
+		return true;
 	}
 
 	/**
@@ -524,14 +443,14 @@ class input{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function mail_test($email,$showError=\true){
+	static function mail_test($email,$showError=true){
 		return self::mailTest($email,$showError);
 	}
-	static function mailTest($email,$showError=\true){
-		if (!\preg_match('/^[\.\-_A-Za-z0-9]+?@[\.\-A-Za-z0-9]+?\.[A-Za-z0-9]{2,6}$/', $email)){
-			if ($showError)error::add(translate::t('Email {email} is incorrect',array('email'=>$email))); else return \false;
+	static function mailTest($email,$showError=true){
+		if (!\preg_match('/^[\.\-_A-Za-z0-9]+?@[\.\-A-Za-z0-9]+?\.[A-Za-z0-9]{2,6}$/',$email)){
+			if ($showError)error::add(translate::t('Email {email} is incorrect',array('email'=>$email))); else return false;
 		}
-		return \true;
+		return true;
 	}
 	static function lower($text){
 		return \mb_strtolower($text,core::$charset);
@@ -575,18 +494,18 @@ class input{
 		'!'=>' ! ',
 		'”'=>' ',
 		));
-		$text=\preg_replace('/\s\s+/', ' ', $text);
+		$text=\preg_replace('/\s\s+/',' ',$text);
 		return \str_replace('""','',$text);
 	}
 	static function phoneDigits($number){
 		$n=\trim($number);
 		if (\substr($n,0,2)=='+7')$n='8'.\substr($n,2);
 		if (\substr($n,0,2)=='7(')$n='8('.\substr($n,2);
-        return \preg_replace('/[^0-9]/', '', $n);
+		return \preg_replace('/[^0-9]/', '',$n);
 	}
 	static function phone($number){
 		$n=self::phoneDigits($number);
-        $len=\strlen($n);
+		$len=\strlen($n);
 		if (\substr($n,0,1)=='9' && $len==10){
 			$n='8'.$n;
 			$len++;
@@ -597,11 +516,11 @@ class input{
 	 * Transform numbers in text field with delimeters "-" and "," in array
 	 */
 	static function numbers($numbers){
-		$docs=\str_replace(";",'',\preg_replace('/,+/', ',', \trim($numbers,", \t\n\r\0\x0B")));
+		$docs=\str_replace(";",'',\preg_replace('/,+/',',',\trim($numbers,", \t\n\r\0\x0B")));
 		$docarc=\explode(',',$docs);
 		$tirearray=array();
 		foreach ($docarc as $key=>$value){
-			if (!\strstr($value,'-'))  continue;
+			if (!\strstr($value,'-'))continue;
 			$subdoc=\explode('-',$value);
 			$min=\min($subdoc[1],$subdoc[0]);
 			$max=\max($subdoc[1],$subdoc[0]);
@@ -610,9 +529,9 @@ class input{
 		}
 		return \array_merge($docarc,$tirearray);
 	}
-	static function bb($text, $isHtml=\false){
+	static function bb($text,$isHtml=false){
 		$text=\trim($text);
-		$strSearch = array(
+		$strSearch=array(
 		'#\n#is',
 		'#\[p\](.+?)\[\/p\]#is',
 		'#\[b\](.+?)\[\/b\]#is',
@@ -631,7 +550,7 @@ class input{
 		'#\[\*\](.*)#',
 		'#\[h(2|3|4|5|6)\](.+?)\[/h\\1\]#is',
 		'#\[video\]([a-zA-Z0-9\-_]+?)\[\/video\]#is');
-		$strReplace = array(
+		$strReplace=array(
 		'<br />',
 		'</p><p>\\1</p>',
 		'<strong>\\1</strong>',
@@ -652,16 +571,16 @@ class input{
 		"<iframe width='420' height='315' src='//www.youtube.com/embed/\\1' frameborder='0' allowfullscreen></iframe>");
 		if ($isHtml){
 			$text=\str_replace('[video]http://youtu.be/','[video]',$text);
-			return \preg_replace($strSearch, $strReplace, \htmlspecialchars($text));
+			return \preg_replace($strSearch,$strReplace,\htmlspecialchars($text));
 		}else{
-			return \htmlspecialchars_decode(\preg_replace($strReplace, $strSearch, $text));
+			return \htmlspecialchars_decode(\preg_replace($strReplace,$strSearch,$text));
 		}
 	}
 
 	static function iconvFromUtf($var){
-		return self::iconv($var,\true);
+		return self::iconv($var,true);
 	}
-	static function iconv($var,$fromUtf=\false){
+	static function iconv($var,$fromUtf=false){
 		return self::jsonFixCharset($var,core::$charset,$fromUtf);
 	}
 
@@ -670,20 +589,20 @@ class input{
 	 * @param array $var
 	 * @return string
 	 */
-	static function json_encode($var,$charset=\null){
+	static function json_encode($var,$charset=null){
 		return self::jsonEncode($var,$charset);
 	}
 
-	static function json_decode($var,$charset=\null){
+	static function json_decode($var,$charset=null){
 		return self::jsonDecode($var,$charset);
 	}
 
-	static function jsonDecode($var,$charset=\null){
-		if ($charset==\null)$charset=core::$charset;
+	static function jsonDecode($var,$charset=null){
+		if ($charset==null)$charset=core::$charset;
 		$rs=\json_decode($var,1);
 		if ($rs===null && \substr($var,0,1)!=='[')throw new \Exception('json decode error: '.\json_last_error_msg());
 		if ($charset==core::UTF8)return $rs;
-		return self::jsonFixCharset($rs,$charset,\false);
+		return self::jsonFixCharset($rs,$charset,false);
 	}
 
 	/**
@@ -691,15 +610,15 @@ class input{
 	 * @param array $var
 	 * @return string
 	 */
-	static function jsonEncode($var,$charset=\null){
-		if ($charset==\null)$charset=core::$charset;
+	static function jsonEncode($var,$charset=null){
+		if ($charset==null)$charset=core::$charset;
 		return @\json_encode(self::jsonFixCharset($var,$charset),\JSON_UNESCAPED_UNICODE|\JSON_PARTIAL_OUTPUT_ON_ERROR|(\PHP_VERSION_ID>70200?\JSON_INVALID_UTF8_IGNORE:0) );
 	}
-	private static function jsonFixCharset($var,$charset,$fromUtf=\true){
+	private static function jsonFixCharset($var,$charset,$fromUtf=true){
 		if ($charset==core::UTF8)return $var;
 		if (\is_array($var)){
-			$new = array();
-			foreach ($var as $k => $v) {
+			$new=array();
+			foreach ($var as $k=>$v) {
 				$new[self::jsonFixCharset($k,$charset,$fromUtf)]=self::jsonFixCharset($v,$charset,$fromUtf);
 			}
 			$var=$new;
@@ -707,8 +626,8 @@ class input{
 			$var=$fromUtf?\iconv($charset,core::UTF8,$var):\iconv(core::UTF8,$charset,$var);
 		}elseif (\is_object($var)){
 			$vars=\get_object_vars($var);
-			foreach ($vars as $m => $v) {
-				$var->$m = self::jsonFixCharset($v,$charset,$fromUtf);
+			foreach ($vars as $m=>$v) {
+				$var->$m=self::jsonFixCharset($v,$charset,$fromUtf);
 			}
 		}
 		return $var;
@@ -721,7 +640,7 @@ class input{
 		return self::jsVar($value);
 	}
 	static private function jsReplace($value){
-		return \str_replace(array("\r", "\n", "'","</script>"),array('', "\\n", "\'","<\/script>"),$value);
+		return \str_replace(array("\r","\n","'","</script>"),array('',"\\n","\'","<\/script>"),$value);
 	}
 	static function jsVar($value){
 		switch(\gettype($value)){
@@ -761,9 +680,9 @@ class input{
 		if (\function_exists("array_is_list"))return \array_is_list($array);
 		$i=0;
         foreach ($array as $k=>$v){
-            if ($k!==$i++)return \false;
+            if ($k!==$i++)return false;
         }
-        return \true;
+        return true;
 	}
 	static function jsVarArray($value){
 		switch(\gettype($value)){
@@ -801,16 +720,16 @@ class input{
 	 * @param string $charset
 	 * @return string
 	 */
-	static function htmlspecialchars($html,$charset=\null){
+	static function htmlspecialchars($html,$charset=null){
 		if (!$html)return $html;
-		if ($charset==\null)$charset=core::$charset;
+		if ($charset==null)$charset=core::$charset;
 		return \htmlspecialchars($html,2,$charset);
 	}
 
 	static function strtotime($time){
 		$matches=array();
-		if (\preg_match('/([12]\d\d\d)[\.\-]([0-2]\d)/', $time,$matches)){
-			return \mktime(0, 0, 0, $matches[2], 1, $matches[1]);
+		if (\preg_match('/([12]\d\d\d)[\.\-]([0-2]\d)/',$time,$matches)){
+			return \mktime(0,0,0,$matches[2],1,$matches[1]);
 		}
 		if (\is_numeric($time) && \date('d.m.Y H:i:s',$time)==$time){
 			return $time;
@@ -830,7 +749,7 @@ class input{
 	 * deprecated since 3.6
 	 */
 	static function file_get_content($filename){
-		if (\substr($filename,0,7)=='http://' or \substr($filename,0,8)=='https://')return curl::getContent($filename);
+		if (\substr($filename,0,7)=='http://' || \substr($filename,0,8)=='https://')return curl::getContent($filename);
 		return \file_get_contents($filename);
 	}
 	static function sleep($seconds){

@@ -45,7 +45,7 @@ class db{
 		if (!core::$data['db_autobind'])return $bind;
 
 		foreach (core::$data['db_autobind'] as $key=>$item){
-			if (isset($bind[$key]))  continue;
+			if (isset($bind[$key]))continue;
 			if (\preg_match('/:'.$key.'\b/i',$sql))$bind[$key]=$item;
 		}
 		return $bind;
@@ -56,8 +56,7 @@ class db{
 		return self::$dbs[core::$env][$db]->wrapper($object);
 	}
 	private static function bindToArray($sql,$bind){
-		$matches=array();
-		$out=array();
+		$out=$matches=array();
 		\preg_match_all('/:([\w]*)\b/i',$sql,$matches);
 		foreach ($matches[1] as $str_bind){
 			if (isset(core::$data['db_autobind'][$str_bind]))continue;
@@ -73,7 +72,7 @@ class db{
 	 */
 	static function autodb($db){
 		if (!\is_array($db))return $db;
-		if (\sizeof($db))return $db[0];
+		if (\count($db))return $db[0];
 		if (isset(core::$data['db']) && \in_array(core::$data['db'],$db) )return core::$data['db'];
 		foreach($db as $item){
 			if (isset(self::$dbs[core::$env][$item]))return $item;
@@ -92,8 +91,8 @@ class db{
 	/**
 	 * Execute SQL
 	 */
-	static function e($sql=\null,$bind=array(),$db=\null,$transaction=\true){
-		if ($sql==\null)global $sql;
+	static function e($sql=null,$bind=array(),$db=null,$transaction=true){
+		if ($sql==null)global $sql;
 		$db=self::dbPrepare($db);
 		if (\is_array($sql)){
 			if ($transaction)self::beginTransaction($db);
@@ -114,7 +113,7 @@ class db{
 							$out[$key]=self::ea($val['sql'],$bind,$db);
 						case 'e':
 						default:
-							$out[$key]=self::e($val['sql'],$bind,$db,\false);
+							$out[$key]=self::e($val['sql'],$bind,$db,false);
 					}
 				}else{
 					$out[$key]=self::e($val,$bind,$db);
@@ -123,7 +122,7 @@ class db{
 			if ($transaction)self::commit($db);
 			return $out;
 		}else{
-			return self::dbOutput(self::$dbs[core::$env][$db]->execute($sql,self::autobind($sql, $bind)));
+			return self::dbOutput(self::$dbs[core::$env][$db]->execute($sql,self::autobind($sql,$bind)));
 		}
 	}
 
@@ -133,10 +132,10 @@ class db{
 		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
 		return $db;
 	}
-	static function query($sql=\null,$bind=array(),$db=''){
-		if ($sql==\null)global $sql;
+	static function query($sql=null,$bind=array(),$db=''){
+		if ($sql==null)global $sql;
 		$db=self::dbPrepare($db);
-		self::$hydrators[++self::$lastHydrator]=array('link'=>self::$dbs[core::$env][$db]->query($sql,self::autobind($sql, $bind),$db),'db'=>$db);
+		self::$hydrators[++self::$lastHydrator]=array('link'=>self::$dbs[core::$env][$db]->query($sql,self::autobind($sql,$bind),$db),'db'=>$db);
 		return self::$lastHydrator;
 	}
 
@@ -153,11 +152,11 @@ class db{
 		self::$dbs[core::$env][$db]->rollback();
 	}
 
-	private static function dbOutput($result,$mode=\null){
+	private static function dbOutput($result,$mode=null){
 		if (!$result)return $result;
-		if ($mode===\null && isset(core::$data['db_output']))$mode=core::$data['db_output'];
+		if ($mode===null && isset(core::$data['db_output']))$mode=core::$data['db_output'];
 		switch ($mode){
-			case \null:
+			case null:
 			case core::DATA_DB_ARRAY:
 				return $result;
 			case core::DATA_DB_COLLECTON:
@@ -169,19 +168,19 @@ class db{
 		}
 	}
 
-	private static function execute($sql=\null,$bind=array(),$db=\null,$cacheTimeout=\null){
-		if ($sql==\null)global $sql;
+	private static function execute($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
+		if ($sql==null)global $sql;
 		$db=self::dbPrepare($db);
-		if ($cacheTimeout===\null)return self::$dbs[core::$env][$db]->execute_assoc($sql,self::autobind($sql, $bind));
+		if ($cacheTimeout===null)return self::$dbs[core::$env][$db]->execute_assoc($sql,self::autobind($sql, $bind));
 		return cache::get('db_'.\md5(\json_encode(array($sql,$db,core::$env,$bind))), function() use ($bind,$sql,$db){
-			return self::$dbs[core::$env][$db]->execute_assoc($sql,self::autobind($sql, $bind));
+			return self::$dbs[core::$env][$db]->execute_assoc($sql,self::autobind($sql,$bind));
 		}, $cacheTimeout);
 	}
 	
-	private static function execute1($sql=\null,$bind=array(),$db=\null,$cacheTimeout=\null){
-		if ($sql==\null)global $sql;
+	private static function execute1($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
+		if ($sql==null)global $sql;
 		$db=self::dbPrepare($db);
-		if ($cacheTimeout===\null)return self::$dbs[core::$env][$db]->ea1($sql,self::autobind($sql, $bind));
+		if ($cacheTimeout===null)return self::$dbs[core::$env][$db]->ea1($sql,self::autobind($sql, $bind));
 		return cache::get('db1_'.\md5(\json_encode(array($sql,$db,core::$env,$bind))), function() use ($bind,$sql,$db){
 			return self::$dbs[core::$env][$db]->ea1($sql,self::autobind($sql, $bind));
 		}, $cacheTimeout);
@@ -192,16 +191,16 @@ class db{
 	 * @param int|boolean $queryNumber
 	 * @return array|false
 	 */
-	static function fa($queryNumber=\false){
-		if ($queryNumber===\false)$queryNumber=self::$lastHydrator;
-		if (empty(self::$hydrators[$queryNumber]))return \false;
+	static function fa($queryNumber=false){
+		if ($queryNumber===false)$queryNumber=self::$lastHydrator;
+		if (empty(self::$hydrators[$queryNumber]))return false;
 		return self::$dbs[core::$env][self::$hydrators[$queryNumber]['db']]->fa(self::$hydrators[$queryNumber]['link']);
 	}
 
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function e_ref($sql,&$bind,$db=\null){
+	static function e_ref($sql,&$bind,$db=null){
 		return self::eRef($sql,$bind,$db);
 	}
 	/**
@@ -212,8 +211,8 @@ class db{
 	 * @return array
 	 * @example $sql="update table set link=link where 1=1 returning link into :test";<br>$bind=array('test'=>'max column length');<br>c\db::e_ref($sql,$bind);
 	 */
-	static function eRef($sql,&$bind,$db=\null){
-		if ($sql==\null)global $sql;
+	static function eRef($sql,&$bind,$db=null){
+		if ($sql==null)global $sql;
 		$db=self::dbPrepare($db);
 		return self::dbOutput(self::$dbs[core::$env][$db]->execute_ref($sql,$bind));
 	}
@@ -226,8 +225,8 @@ class db{
 	 * @param integer|null $cachedTimeout
 	 * @return array
 	 */
-	static function ea($sql=\null,$bind=array(),$db=\null,$cacheTimeout=\null){
-		return self::dbOutput(self::execute($sql, $bind, $db, $cacheTimeout));
+	static function ea($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
+		return self::dbOutput(self::execute($sql,$bind,$db,$cacheTimeout));
 	}
 
 	/**
@@ -237,27 +236,27 @@ class db{
 	 * @param string|null $db
 	 * @return collection_object|boolean
 	 */
-	static function eo($sql=\null,$bind=array(),$db=\null,$cacheTimeout=\null){
-		return self::dbOutput(self::execute($sql, $bind, $db, $cacheTimeout), core::DATA_DB_COLLECTON_OBJECT);
+	static function eo($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
+		return self::dbOutput(self::execute($sql,$bind,$db,$cacheTimeout),core::DATA_DB_COLLECTON_OBJECT);
 	}
 	/**
 	 * Execute assoc 1 row SQL
 	 */
-	static function ea1($sql=\null,$bind=array(),$db=\null,$cacheTimeout=\null){
-		return self::execute1($sql, $bind, $db, $cacheTimeout);
+	static function ea1($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
+		return self::execute1($sql,$bind,$db,$cacheTimeout);
 	}
 	/**
 	 * Execute object 1 row SQL
 	 */
-	static function eo1($sql=\null,$bind=array(),$db=\null,$cacheTimeout=\null){
-		return (object)self::execute($sql, $bind, $db, $cacheTimeout);
+	static function eo1($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
+		return (object)self::execute($sql,$bind,$db,$cacheTimeout);
 	}
 	/**
 	 * Execute assoc 1 cell SQL
 	 */
-	static function ea11($sql=\null,$bind=array(),$db=\null,$cacheTimeout=\null){
+	static function ea11($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
 		$out=self::ea1($sql,$bind,$db,$cacheTimeout);
-		if (!\is_array($out))return \false;
+		if (!\is_array($out))return false;
 		foreach ($out as $item)return $item;
 	}
 	static function massExecute($sql,$beginSql='begin ',$repeatSql='',$endSql="end;",$bind=array(),$db=''){
@@ -267,7 +266,7 @@ class db{
 	/**
 	 * Execute column SQL
 	 */
-	static function ec($sql=\null,$bind=array(),$db=\null,$cacheTimeout=\null){
+	static function ec($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
 		$rs=self::ea($sql,$bind,$db,$cacheTimeout);
 		$out=array();
 		foreach ($rs as $item){
@@ -303,8 +302,8 @@ class db{
 	 * @param string $variable using for binds
 	 * @return string
 	 */
-	static function in(&$bind,$value=array(),$variable=\null,$wrapper=\null){
-		if ($variable===\null)$variable='core_t_'.(self::$counter++).'_';
+	static function in(&$bind,$value=array(),$variable=null,$wrapper=null){
+		if ($variable===null)$variable='core_t_'.(self::$counter++).'_';
 		$out=array();
 		$diff=0;
 		foreach ($value as $key=>$item){
@@ -349,22 +348,22 @@ class db{
 		if (!\file_exists(__DIR__.'/factory/'.$class.'.php'))throw new \Exception('Connection type of '.$db.' in env '.core::$env.' dont recognized');
 		$class='c\\factory\\'.$class;
 		self::$dbs[core::$env][$db]=new $class(self::$db_config[core::$env][$db],$db);
-		if (!self::$dbs[core::$env][$db]->connect())return \false;
+		if (!self::$dbs[core::$env][$db]->connect())return false;
 	}
 	/**
 	 * Get last inserted ID
 	 */
-	static function last($db='',$dop=\false){
+	static function last($db='',$dop=false){
 		if ($db=='')$db=core::$data['db'];
 		if (\is_array($db))$db=self::autodb($db);
-		if (empty(self::$dbs[core::$env][$db]))return \false;
+		if (empty(self::$dbs[core::$env][$db]))return false;
 		return self::$dbs[core::$env][$db]->insertId($dop);
 	}
 
 	/**
 	 * Get last inserted ID
 	 */
-	static function lastId($db='',$dop=\false){
+	static function lastId($db='',$dop=false){
 		return self::last($db,$dop);
 	}
 	/**
@@ -373,7 +372,7 @@ class db{
 	static function rows($db=''){
 		if ($db=='')$db=core::$data['db'];
 		if (\is_array($db))$db=self::autodb($db);
-		if (empty(self::$dbs[core::$env][$db]))return \false;
+		if (empty(self::$dbs[core::$env][$db]))return false;
 		return self::$dbs[core::$env][$db]->rows();
 	}
 
@@ -398,29 +397,29 @@ class db{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function date_to_db($timestamp=\null,$format=\null,$db=''){
+	static function date_to_db($timestamp=null,$format=null,$db=''){
 	   return self::dateToDb($timestamp,$format,$db);
 	}
-	static function dateToDb($timestamp=\null,$format=\null,$db=''){
+	static function dateToDb($timestamp=null,$format=null,$db=''){
 		$db=self::dbPrepare($db);
-		if ($format===\null && !\is_numeric($timestamp))$timestamp=  strtotime($timestamp);
+		if ($format===null && !\is_numeric($timestamp))$timestamp=\strtotime($timestamp);
 		return self::$dbs[core::$env][$db]->date_to_db($timestamp,$format);
 	}
 
 	// functions from dbwork
-	static function setData($tablename,$array_in='',$sequence=\true,$db='',&$outErrors=\true,$schema=''){
+	static function setData($tablename,$array_in='',$sequence=true,$db='',&$outErrors=true,$schema=''){
 		return dbwork::setData($tablename,$array_in,$sequence,$db,$outErrors,$schema);
 	}
 	static function setDataOrFail($tablename,$arrayIn='',$sequence='',$db='',$schema=''){
 		return dbwork::setDataOrFail($tablename,$arrayIn,$sequence,$db,$schema);
 	}
-	static function filterDiap($string,$field,&$bind,$bindPrefix=\null,$blockDelimeter=',',$diapDilimeter='-'){
+	static function filterDiap($string,$field,&$bind,$bindPrefix=null,$blockDelimeter=',',$diapDilimeter='-'){
 		return dbwork::filterDiap($string,$field,$bind,$bindPrefix,$blockDelimeter,$diapDilimeter);
 	}
 	static function describeTable($tablename,$schema='',$db=''){
 		return dbwork::describeTable($tablename,$schema,$db);
 	}
-	static function setMassData($tableName,$arrayIn=array(),$parentArrayIn=array(),$clearBefore=\true,$sequence='',$db='',$schema=''){
+	static function setMassData($tableName,$arrayIn=array(),$parentArrayIn=array(),$clearBefore=true,$sequence='',$db='',$schema=''){
 		return dbwork::setMassData($tableName,$arrayIn,$parentArrayIn,$clearBefore,$sequence,$db,$schema);
 	}
 	static function getConnectScheme($db=''){
@@ -431,9 +430,9 @@ class db{
 	
 	static function getAllConnectSchemes(){
 		self::getConfig();
-		$dbs = self::$db_config[core::$env];
+		$dbs=self::$db_config[core::$env];
 		foreach ($dbs as &$db) {
-	      unset($db['password']);
+		unset($db['password']);
 	    }
 	    return $dbs;
 	}

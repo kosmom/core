@@ -15,7 +15,7 @@ class db_oracle {
 	var $data;
 	var $cn;
 	var $connect;
-	var $m_result=\false;
+	var $m_result=false;
 
 	function __construct($data,$connection_name=''){
 		$this->data=$data;
@@ -54,7 +54,7 @@ class db_oracle {
 		if (!$this->connect){
 			$error=\oci_error();
 			if (\c\core::$debug)\c\debug::trace('Oracle connection error: '.$error['message'],\c\error::ERROR);
-			if (empty(\c\core::$data['db_exception']))return \false;
+			if (empty(\c\core::$data['db_exception']))return false;
 			throw new \Exception("Error connection to oracle: .".$error['message']);
 		}
 		if (\c\core::$debug){
@@ -65,7 +65,7 @@ class db_oracle {
 		$stmt=\oci_parse($this->connect,$sql);
 		\oci_execute($stmt,$this->execute_mode);
 		\oci_free_statement($stmt);
-		return \true;
+		return true;
 	}
 
 	function execute($sql, $bind=array(), $mode='e'){
@@ -76,18 +76,18 @@ class db_oracle {
 				\c\debug::trace('clear whitespaces at begin of query for correct work. Autocorrect in debug mode',\c\error::ERROR);
 				$sql=\ltrim($sql);
 			}
-			\c\debug::trace('Connection: '.$this->cn,\false);
-			\c\debug::trace('SQL: '.$sql,\false);
+			\c\debug::trace('Connection: '.$this->cn,false);
+			\c\debug::trace('SQL: '.$sql,false);
 			if ($bind){
 				\c\debug::dir(array('BIND:'=>$bind));
 			}else{
-				\c\debug::trace('BIND: None',\false);
+				\c\debug::trace('BIND: None',false);
 			}
-			$start=\microtime(\true);
+			$start=\microtime(true);
 		}
 		if(\is_array($bind)) {
 			$bind2=array();
-			foreach($bind as $key => $value){
+			foreach($bind as $key=>$value){
 				if ($value instanceof \c\db){
 					$bind2[':'.$key]=$value;
 					unset($bind[$key]);
@@ -103,18 +103,18 @@ class db_oracle {
 				\c\debug::groupEnd();
 				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
 			}
-			if (empty(\c\core::$data['db_exception']))return \false;
+			if (empty(\c\core::$data['db_exception']))return false;
 			throw new \Exception('SQL parsing error');
 		}
 		if(\is_array($bind)) {
-			foreach($bind as $key => &$value){
+			foreach($bind as $key=>&$value){
 				\oci_bind_by_name($stmt,':'.$key, $value,-1);
 			}
 		}
 		$result=\oci_execute($stmt,$this->execute_mode);
 		if (\c\core::$debug){
-			\c\debug::consoleLog('Query get '.\round((\microtime(\true)-$start)*1000,2).' ms');
-			$start=\microtime(\true);
+			\c\debug::consoleLog('Query get '.\round((\microtime(true)-$start)*1000,2).' ms');
+			$start=\microtime(true);
 		}
 		if ($error=oci_error($stmt)){
 			if (\c\core::$debug){
@@ -122,14 +122,14 @@ class db_oracle {
 				\c\debug::groupEnd();
 				\c\debug::consoleLog('Oracle error: '.$error['code'].' - '.$error['message'],\c\error::ERROR);
 			}
-			if (empty(\c\core::$data['db_exception']))return \false;
+			if (empty(\c\core::$data['db_exception']))return false;
 			throw new \Exception('SQL execute error');
 		}
 		if (!$result){
 			if (\c\core::$debug)\c\debug::trace('No results found',\c\error::WARNING);
 			\c\debug::groupEnd();
 			\oci_free_statement($stmt);
-			return \false;
+			return false;
 		}
 
 		$subsql=\strtolower(\substr($sql,0,5));
@@ -138,22 +138,22 @@ class db_oracle {
 			$data = array();
 			switch ($mode){
 				case 'ea':
-						\oci_fetch_all($stmt,$data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_ASSOC+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
+					\oci_fetch_all($stmt,$data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_ASSOC+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
 	//while ($row = oci_fetch_array($stmt,OCI_ASSOC+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$data[] = $row;
-						break;
+					break;
 				case 'e':
-						\oci_fetch_all($stmt,$data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_BOTH+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
-						//while ($row = oci_fetch_array($stmt,OCI_BOTH+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$data[] = $row;
-						break;
+					\oci_fetch_all($stmt,$data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_BOTH+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
+					//while ($row = oci_fetch_array($stmt,OCI_BOTH+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$data[] = $row;
+					break;
 				case 'ea1':
-						$data=\oci_fetch_array($stmt,\OCI_ASSOC+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
-						break;
+					$data=\oci_fetch_array($stmt,\OCI_ASSOC+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
+					break;
 			}
 			\oci_free_statement($stmt);
-			if (\c\core::$debug)\c\debug::trace('Result fetch get '.\round((\microtime(\true)-$start)*1000,2).' ms');
+			if (\c\core::$debug)\c\debug::trace('Result fetch get '.\round((\microtime(true)-$start)*1000,2).' ms');
 		}else {
-			$data=\true;
-			if (\c\core::$debug)\c\debug::trace('Affected '.$this->rows().' rows',\false);
+			$data=true;
+			if (\c\core::$debug)\c\debug::trace('Affected '.$this->rows().' rows',false);
 		}
 		if (\c\core::$debug){
 		if (!$isResult && $mode!='e')\c\debug::trace('ea function used without result. Better use e function',\c\error::WARNING);
@@ -164,7 +164,7 @@ class db_oracle {
 						\c\debug::group('Query result');
 						\c\debug::dir($data);
 					}else{
-						\c\debug::group('Query result. Count: '.\sizeof($data),\c\error::INFO,\sizeof($data)>10);
+						\c\debug::group('Query result. Count: '.\count($data),\c\error::INFO,\count($data)>10);
 						\c\debug::table(\array_slice($data,0,30));
 						if (sizeof($data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
 					}
@@ -173,7 +173,7 @@ class db_oracle {
 					\c\debug::trace('No results found',\c\error::WARNING);
 				}
 			}else{
-				\c\debug::trace('Affected '.$this->rows().' rows',\false);
+				\c\debug::trace('Affected '.$this->rows().' rows',false);
 			}
 			// explain
 			if (!\c\core::$data['db_not_explain'] && \substr($sql,0,5)!='show '){
@@ -197,26 +197,26 @@ class db_oracle {
 				\c\debug::trace('clear whitespaces at begin of query for correct work. Autocorrect in debug mode',\c\error::ERROR);
 				$sql=\ltrim($sql);
 			}
-			\c\debug::trace('SQL: '.$sql,\false);
-			\c\debug::trace('Connection: '.$this->cn,\false);
+			\c\debug::trace('SQL: '.$sql,false);
+			\c\debug::trace('Connection: '.$this->cn,false);
 			if ($binds){
 				\c\debug::dir(array('BIND:'=>$binds));
 			}else{
-				\c\debug::trace('BIND: None',\false);
+				\c\debug::trace('BIND: None',false);
 			}
-			$start=\microtime(\true);
+			$start=\microtime(true);
 		}
 		$total_sql=array();
 		foreach ($binds as $bind){
 			$msql=$sql;
-			foreach($bind as $key => $value){
-				$msql= \str_replace(':'.$key, "'".$this->slashes($value)."'", $msql);
+			foreach($bind as $key=>$value){
+				$msql=\str_replace(':'.$key,"'".$this->slashes($value)."'",$msql);
 			}
 			$total_sql[]=$msql;
 		}
 		$sql=$begin_sql.\implode($repeat_sql,$total_sql).$end_sql;
-		\c\debug::trace('SQL:'.$sql,\false);
-		$stmt = \oci_parse($this->connect, $sql);
+		\c\debug::trace('SQL:'.$sql,false);
+		$stmt=\oci_parse($this->connect, $sql);
 		if(!$stmt){
 			$error=\oci_error($this->connect);
 			if (\c\core::$debug){
@@ -224,13 +224,13 @@ class db_oracle {
 				\c\debug::groupEnd();
 				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
 			}
-			if (empty(\c\core::$data['db_exception']))return \false;
+			if (empty(\c\core::$data['db_exception']))return false;
 			throw new \Exception('SQL parsing error');
 		}
 		$result=\oci_execute($stmt,$this->execute_mode);
 		if (\c\core::$debug){
-			\c\debug::consoleLog('Query get '.\round((\microtime(\true)-$start)*1000,2).' ms');
-			$start=\microtime(\true);
+			\c\debug::consoleLog('Query get '.\round((\microtime(true)-$start)*1000,2).' ms');
+			$start=\microtime(true);
 		}
 		if ($error=\oci_error($stmt)){
 			if (\c\core::$debug){
@@ -238,15 +238,15 @@ class db_oracle {
 				\c\debug::groupEnd();
 				\c\debug::consoleLog('Oracle error: '.$error['code'].' - '.$error['message'],\c\error::ERROR);
 			}
-			if (empty(\c\core::$data['db_exception']))return \false;
+			if (empty(\c\core::$data['db_exception']))return false;
 			throw new \Exception('SQL execute error');
 		}
 		\c\debug::groupEnd();
 		\oci_free_statement($stmt);
-		return \false;
+		return false;
 	}
 	
-	function execute_ref($sql, &$bind, $assoc=\false){
+	function execute_ref($sql, &$bind, $assoc=false){
 		if (\c\core::$debug){
 			\c\core::$data['stat']['db_queryes']++;
 			\c\debug::group('Oracle query');
@@ -254,149 +254,16 @@ class db_oracle {
 				\c\debug::trace('clear whitespaces at begin of query for correct work. Autocorrect in debug mode',\c\error::ERROR);
 				$sql=\ltrim($sql);
 			}
-			\c\debug::trace('Connection: '.$this->cn,\false);
-			\c\debug::trace('SQL: '.$sql,\false);
+			\c\debug::trace('Connection: '.$this->cn,false);
+			\c\debug::trace('SQL: '.$sql,false);
 			if ($bind){
 				\c\debug::dir(array('BIND:'=>$bind));
 			}else{
-				\c\debug::trace('BIND: None',\false);
+				\c\debug::trace('BIND: None',false);
 			}
-			$start=\microtime(\true);
+			$start=\microtime(true);
 		}
 		if(\is_array($bind)){
-			$bind2=array();
-			foreach($bind as $key => $value){
-				if ($value instanceof \c\db){
-					$bind2[':'.$key]=$value;
-					unset($bind[$key]);
-				}
-				$sql=\strtr($sql,$bind2);
-			}
-		}
-		$stmt=\oci_parse($this->connect,$sql);
-		if(!$stmt){
-			$error=\oci_error($this->connect);
-			if (\c\core::$debug){
-				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
-				\c\debug::groupEnd();
-				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
-			}
-			if (empty(\c\core::$data['db_exception']))return \false;
-			throw new \Exception('SQL parsing error');
-		}
-		if(\is_array($bind) && \count($bind)) {
-			foreach($bind as $key => &$value) {
-				\oci_bind_by_name($stmt,":".$key, $value,-1);
-			}
-		}
-		$result=\oci_execute($stmt);
-		if (!$result){
-			$error=\oci_error($this->connect);
-			if (\c\core::$debug){
-				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
-				\c\debug::groupEnd();
-				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
-			}
-			if (empty(\c\core::$data['db_exception']))return \false;
-			throw new \Exception('SQL execute error');
-		}
-		
-		$subsql=\strtolower(\substr($sql,0,5));
-		$isResult=$subsql == 'selec' || $subsql=='with ';
-		if($isResult){
-			$data=array();
-			if ($assoc){
-				\oci_fetch_all($stmt,$data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_ASSOC+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
-				//while ($row = oci_fetch_array($stmt,OCI_ASSOC+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$data[] = $row;
-			}else{
-				\oci_fetch_all($stmt,$data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_BOTH+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
-				//while ($row = oci_fetch_array($stmt,OCI_BOTH+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$data[] = $row;
-			}
-		}else{
-			$data=\true;
-		}
-		if (\c\core::$debug){
-			if ($isResult){
-				if ($data){
-					\c\debug::group('Query result. Count: '.\sizeof($data),\c\error::INFO,\sizeof($data)>10);
-					\c\debug::table(\array_slice($data,0,30));
-					if (sizeof($data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
-					\c\debug::groupEnd();
-				}else{
-					\c\debug::trace('No results found',\c\error::WARNING);
-				}
-			}else{
-				\c\debug::trace('Affected '.$this->rows().' rows',\false);
-			}
-			\c\debug::groupEnd();
-		}
-//		oci_free_statement($stmt);
-		return $data;
-	}
-
-	function execute_assoc($sql,$bind=array()){
-		return $this->execute($sql, $bind,'ea');
-	}
-	function ea1($sql, $bind=array()){
-		return $this->execute_assoc_1($sql,$bind);
-	}
-	
-	function db_limit($sql, $from=0, $count=0){
-		//if (!$from)return 'select * from ('.$sql.') WHERE rownum < '.((int)$count+1);
-                if (isset($this->data['version']) && $this->data['version']>11){
-                    return $sql.($from?' OFFSET '.(int)$from.' ROWS':'').($count?' FETCH NEXT '.(int)$count.' ROWS ONLY':'');
-                }
-		$from++;
-		return 'select * from (SELECT rownum rnum, aa.* FROM ('.$sql.') aa) WHERE rnum >= '.(int)$from.' AND rnum < '.(\intval($from + $count));
-	}
-
-	function rows(){
-		if ($this->m_result) return \oci_num_rows($this->m_result);
-		return 0;
-	}
-
-	function insertId($seq=\false){
-		if(!$seq) return 0;
-		$sql='SELECT '.$seq.'.currval last FROM dual';
-		$rs=$this->execute($sql,$this->execute_mode);
-		return isset($rs[0]['LAST'])?$rs[0]['LAST']:0;
-	}
-	function explain($sql){
-		$stmt=\oci_parse($this->connect,"delete from plan_table where statement_id='core_sql'");
-		if(!$stmt)return \false;
-		\oci_execute($stmt,$this->execute_mode);
-
-		$stmt=\oci_parse($this->connect,"explain plan set statement_id='core_sql' for ".$sql);
-		if(!$stmt)return \false;
-		@\oci_execute($stmt,$this->execute_mode);
-
-		$stmt=\oci_parse($this->connect, "select lpad(' ',depth)||operation operation,options,case when object_owner is null then '' else object_owner||'.' end||object_name object,filter_predicates||access_predicates predicates,cost from PLAN_TABLE where statement_id='core_sql' order by plan_id desc,ID");
-		$result=\oci_execute($stmt,$this->execute_mode);
-		$data=array();
-		\oci_fetch_all($stmt,$data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_ASSOC+\OCI_RETURN_NULLS);
-		\oci_free_statement($stmt);
-		return $data;
-	}
-	function execute_assoc_1($sql, $bind = array()){
-		return $this->execute($sql, $bind,'ea1');
-	}
-	function query($sql,$bind){
-		if (\c\core::$debug){
-			\c\core::$data['stat']['db_queryes']++;
-			\c\debug::group('Oracle query');
-			if (\ltrim($sql)!=$sql){
-				\c\debug::trace('clear whitespaces at begin of query for correct work. Autocorrect in debug mode',\c\error::ERROR);
-				$sql=\ltrim($sql);
-			}
-			\c\debug::trace('SQL:'.$sql,\false);
-			if ($bind){
-				\c\debug::dir(array('BIND:'=>$bind));
-			}else{
-				\c\debug::trace('BIND: None',\false);
-			}
-			$start=\microtime(\true);
-		}
-		if(\is_array($bind)) {
 			$bind2=array();
 			foreach($bind as $key=>$value){
 				if ($value instanceof \c\db){
@@ -414,22 +281,155 @@ class db_oracle {
 				\c\debug::groupEnd();
 				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
 			}
-			if (empty(\c\core::$data['db_exception']))return \false;
+			if (empty(\c\core::$data['db_exception']))return false;
 			throw new \Exception('SQL parsing error');
 		}
-		if(\is_array($bind)) {
-			foreach($bind as $key => &$value){
+		if(\is_array($bind) && \count($bind)) {
+			foreach($bind as $key=>&$value) {
+				\oci_bind_by_name($stmt,":".$key, $value,-1);
+			}
+		}
+		$result=\oci_execute($stmt);
+		if (!$result){
+			$error=\oci_error($this->connect);
+			if (\c\core::$debug){
+				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
+				\c\debug::groupEnd();
+				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
+			}
+			if (empty(\c\core::$data['db_exception']))return false;
+			throw new \Exception('SQL execute error');
+		}
+		
+		$subsql=\strtolower(\substr($sql,0,5));
+		$isResult=$subsql == 'selec' || $subsql=='with ';
+		if($isResult){
+			$data=array();
+			if ($assoc){
+				\oci_fetch_all($stmt,$data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_ASSOC+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
+				//while ($row = oci_fetch_array($stmt,OCI_ASSOC+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$data[] = $row;
+			}else{
+				\oci_fetch_all($stmt,$data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_BOTH+\OCI_RETURN_LOBS+\OCI_RETURN_NULLS);
+				//while ($row = oci_fetch_array($stmt,OCI_BOTH+OCI_RETURN_LOBS+OCI_RETURN_NULLS))$data[] = $row;
+			}
+		}else{
+			$data=true;
+		}
+		if (\c\core::$debug){
+			if ($isResult){
+				if ($data){
+					\c\debug::group('Query result. Count: '.\count($data),\c\error::INFO,\count($data)>10);
+					\c\debug::table(\array_slice($data,0,30));
+					if (sizeof($data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
+					\c\debug::groupEnd();
+				}else{
+					\c\debug::trace('No results found',\c\error::WARNING);
+				}
+			}else{
+				\c\debug::trace('Affected '.$this->rows().' rows',false);
+			}
+			\c\debug::groupEnd();
+		}
+//		oci_free_statement($stmt);
+		return $data;
+	}
+
+	function execute_assoc($sql,$bind=array()){
+		return $this->execute($sql,$bind,'ea');
+	}
+	function ea1($sql, $bind=array()){
+		return $this->execute_assoc_1($sql,$bind);
+	}
+	
+	function db_limit($sql, $from=0, $count=0){
+		//if (!$from)return 'select * from ('.$sql.') WHERE rownum < '.((int)$count+1);
+                if (isset($this->data['version']) && $this->data['version']>11){
+                    return $sql.($from?' OFFSET '.(int)$from.' ROWS':'').($count?' FETCH NEXT '.(int)$count.' ROWS ONLY':'');
+                }
+		$from++;
+		return 'select * from (SELECT rownum rnum, aa.* FROM ('.$sql.') aa) WHERE rnum >= '.(int)$from.' AND rnum < '.((int)($from+$count));
+	}
+
+	function rows(){
+		if ($this->m_result)return \oci_num_rows($this->m_result);
+		return 0;
+	}
+
+	function insertId($seq=false){
+		if(!$seq) return 0;
+		$sql='SELECT '.$seq.'.currval last FROM dual';
+		$rs=$this->execute($sql,$this->execute_mode);
+		return isset($rs[0]['LAST'])?$rs[0]['LAST']:0;
+	}
+	function explain($sql){
+		$stmt=\oci_parse($this->connect,"delete from plan_table where statement_id='core_sql'");
+		if(!$stmt)return false;
+		\oci_execute($stmt,$this->execute_mode);
+
+		$stmt=\oci_parse($this->connect,"explain plan set statement_id='core_sql' for ".$sql);
+		if(!$stmt)return false;
+		@\oci_execute($stmt,$this->execute_mode);
+
+		$stmt=\oci_parse($this->connect,"select lpad(' ',depth)||operation operation,options,case when object_owner is null then '' else object_owner||'.' end||object_name object,filter_predicates||access_predicates predicates,cost from PLAN_TABLE where statement_id='core_sql' order by plan_id desc,ID");
+		$result=\oci_execute($stmt,$this->execute_mode);
+		$data=array();
+		\oci_fetch_all($stmt,$data,0,-1,\OCI_FETCHSTATEMENT_BY_ROW+\OCI_ASSOC+\OCI_RETURN_NULLS);
+		\oci_free_statement($stmt);
+		return $data;
+	}
+	function execute_assoc_1($sql,$bind=array()){
+		return $this->execute($sql,$bind,'ea1');
+	}
+	function query($sql,$bind){
+		if (\c\core::$debug){
+			\c\core::$data['stat']['db_queryes']++;
+			\c\debug::group('Oracle query');
+			if (\ltrim($sql)!=$sql){
+				\c\debug::trace('clear whitespaces at begin of query for correct work. Autocorrect in debug mode',\c\error::ERROR);
+				$sql=\ltrim($sql);
+			}
+			\c\debug::trace('SQL:'.$sql,false);
+			if ($bind){
+				\c\debug::dir(array('BIND:'=>$bind));
+			}else{
+				\c\debug::trace('BIND: None',false);
+			}
+			$start=\microtime(true);
+		}
+		if(\is_array($bind)){
+			$bind2=array();
+			foreach($bind as $key=>$value){
+				if ($value instanceof \c\db){
+					$bind2[':'.$key]=$value;
+					unset($bind[$key]);
+				}
+				$sql=\strtr($sql,$bind2);
+			}
+		}
+		$stmt=\oci_parse($this->connect,$sql);
+		if(!$stmt){
+			$error=\oci_error($this->connect);
+			if (\c\core::$debug){
+				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
+				\c\debug::groupEnd();
+				\c\debug::trace('Oracle parse error: '.$error['code'].' - '.$error['message'].' on '.$error['offset'],\c\error::ERROR);
+			}
+			if (empty(\c\core::$data['db_exception']))return false;
+			throw new \Exception('SQL parsing error');
+		}
+		if(\is_array($bind)){
+			foreach($bind as $key=>&$value){
 				\oci_bind_by_name($stmt,':'.$key, $value,-1);
 			}
 		}
 		$result=\oci_execute($stmt,$this->execute_mode);
 		if (\c\core::$debug){
-			\c\debug::consoleLog('Query get '.\round((\microtime(\true)-$start)*1000,2).' ms');
+			\c\debug::consoleLog('Query get '.\round((\microtime(true)-$start)*1000,2).' ms');
 			\c\debug::groupEnd();
 		}
 		if (!$result){
 			\oci_free_statement($stmt);
-			return \false;
+			return false;
 		}
 		return $stmt;
 	}
@@ -443,8 +443,8 @@ class db_oracle {
 		return 'TO_CHAR('.$value.",'".\strtr($format,self::$date_formats)."')";
 	}
 
-	function date_to_db($value,$format=\null){
-		if ($value===\null)return 'SYSDATE';
+	function date_to_db($value,$format=null){
+		if ($value===null)return 'SYSDATE';
 		if ($format)return 'TO_DATE('.$value.",'".\strtr($format,self::$date_formats)."')";
 		if (!\is_numeric($value))$value=\strtotime($value);
 		return "TO_DATE('".\date('Y-m-d H:i:s',$value)."','YYYY-MM-DD HH24:MI:SS')";

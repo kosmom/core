@@ -34,7 +34,7 @@ $filedata=c\xlsx::get($_FILES['upload']['tmp_name']);
  * @author Kosmom <Kosmom.ru>
  */
 class xlsx{
-	const DEFAULT_FORMATS=array(0=>'text',9=>'percent',10=>'percent', 14=>'date',15=>'date',16=>'date',17=>'date',18=>'date',19=>'date',20=>'date',21=>'date',22=>'date');
+	const DEFAULT_FORMATS=array(0=>'text',9=>'percent',10=>'percent',14=>'date',15=>'date',16=>'date',17=>'date',18=>'date',19=>'date',20=>'date',21=>'date',22=>'date');
 	private static $unic=array();
 	private static $colnumber=array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ','BA','BB','BC','BD','BE','BF','BG','BH','BI','BJ','BK','BL','BM','BN','BO','BP','BQ','BR','BS','BT','BU');
 	static $outbuffer='';
@@ -55,15 +55,15 @@ class xlsx{
 	}
 
 	private static function writestring($rownum,$row,$callback=array()){
-		self::$outbuffer.='<row r="'.($rownum + 1).'">';
+		self::$outbuffer.='<row r="'.($rownum+1).'">';
 		foreach(self::$columns as $number=> $column){
 			if (isset($callback[$column])){
 				$row[$column]=$callback[$column]($row,$column);
 			}elseif (isset(tables::$header[$column]['values'])){
 				if (isset(tables::$header[$column]['values'][$row[$column]]))$row[$column]=tables::$header[$column]['values'][$row[$column]];
 			}
-			if (!isset($row[$column])) continue;
-			if ($row[$column] === '') continue;
+			if (!isset($row[$column]))continue;
+			if ($row[$column]==='')continue;
 
 			if ($row[$column] instanceof \DateTime){
 				self::$outbuffer.='<c r="'.self::$colnumber[$number].($rownum + 1).'" t="n" s="1"><v>'.(($row[$column]->getTimestamp()+10800)/86400+25569).'</v></c>';
@@ -107,7 +107,7 @@ class xlsx{
 	static function writeStrings(){
 		$buffer='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 	<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="'.self::$count.'" uniqueCount="'.self::$unicCount.'">';
-		foreach(self::$unic as $key=> $v){
+		foreach(self::$unic as $key=>$v){
 		   $buffer.='<si><t>'.input::htmlspecialchars($key).'</t></si>';
 		}
 		return $buffer.'</sst>';
@@ -117,25 +117,25 @@ class xlsx{
 	 * Generate xlsx file for output with headers from sample.xlsx
 	 * @param string $filename generated filename
 	 */
-	static function generate($filename='',$out=\true){
+	static function generate($filename='',$out=true){
 		return self::generateXlsx('',$filename,$out);
 	}
 
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function generate_xlsx($source='',$filename='',$out=\true){
+	static function generate_xlsx($source='',$filename='',$out=true){
 		return self::generateXlsx($source,$filename,$out);
 	}
-	static function generateXlsx($source='',$filename='',$out=\true){
+	static function generateXlsx($source='',$filename='',$out=true){
 		$tempresult=\ini_get('upload_tmp_dir').(\ini_get('upload_tmp_dir')==''?'':'/').'temp.xlsx';
-		if (empty(self::$outbuffer)) throw new \Exception('Before generate xlsx need prepare data');
+		if (empty(self::$outbuffer))throw new \Exception('Before generate xlsx need prepare data');
 		if (empty($source))$source=__DIR__.'/sample.xlsx';
-		if (!\file_exists($source)) throw new \Exception('Source sample file not found');
+		if (!\file_exists($source))throw new \Exception('Source sample file not found');
 		if (\file_exists($tempresult))\unlink($tempresult);
 		\copy($source,$tempresult);
 		$zip=new \ZipArchive();
-		if (!$zip->open($tempresult)) throw new \Exception('Source sample file cannot be open');
+		if (!$zip->open($tempresult))throw new \Exception('Source sample file cannot be open');
 		$zip->deleteName('xl/worksheets/sheet1.xml');
 		$zip->deleteName('xl/sharedStrings.xml');
 		$zip->addFromString('xl/worksheets/sheet1.xml',\iconv(core::$charset,'UTF-8',self::$outbuffer));
@@ -145,16 +145,16 @@ class xlsx{
 	return $tempresult;
 	}
 
-	static function generateXlsxByTemplate($source,$data,$filename='',$out=\true){
+	static function generateXlsxByTemplate($source,$data,$filename='',$out=true){
 		$tempresult=\ini_get('upload_tmp_dir').(\ini_get('upload_tmp_dir')==''?'':'/').'temp.xlsx';
 		if (\file_exists($tempresult))\unlink($tempresult);
-		if (!\file_exists($source)) throw new \Exception('Source sample file not found');
+		if (!\file_exists($source))throw new \Exception('Source sample file not found');
 		\copy($source,$tempresult);
 		$zip=self::checkFile($tempresult);
 		$file=$zip->getFromName('xl/sharedStrings.xml');
 		$data=datawork::flatten($data);
 		$file=\preg_replace_callback('/\$\{(.*)\}/sU',function($matches) use ($data){
-			return input::iconv($data[$matches[1]],\true);
+			return input::iconv($data[$matches[1]],true);
 		},$file);
 		$zip->deleteName('xl/sharedStrings.xml');
 		$zip->addFromString('xl/sharedStrings.xml',$file);
@@ -165,11 +165,11 @@ class xlsx{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function writesheet_from_table($input=array(),$tableElement=\null){
+	static function writesheet_from_table($input=array(),$tableElement=null){
 		return self::writesheetFromTable($input,$tableElement);
 	}
-	static function writesheetFromTable($input=array(),$tableElement=\null){
-		if ($tableElement===\null)$tableElement=tables::getTableObject();
+	static function writesheetFromTable($input=array(),$tableElement=null){
+		if ($tableElement===null)$tableElement=tables::getTableObject();
 		if (!isset($input['show_header']))$input['show_header']=$tableElement->show_header;
 		if (!isset($input['fill']))$input['fill']=$tableElement->fill;
 		if (!isset($input['header'])){
@@ -181,7 +181,7 @@ class xlsx{
 						$input['fill'][$key]=$val['fill'];
 					}elseif (isset($val['values'])){
 						$input['fill'][$key]=function($row,$column) use ($val){
-							return isset($val['values'][$row[$column]]) ? $val['values'][$row[$column]] : $row[$column];
+							return isset($val['values'][$row[$column]])?$val['values'][$row[$column]]:$row[$column];
 						};
 					}
 				}
@@ -193,9 +193,9 @@ class xlsx{
 		self::$header=array();
 	}
 	static function display($source,$filename=''){
-		if (empty($filename)) $filename=$source;
-		if (!\file_exists($source)) throw new \Exception('Source sample file not found');
-		\header("Last-Modified: ".\gmdate("D,d M YH:i:s")." GMT");
+		if (empty($filename))$filename=$source;
+		if (!\file_exists($source))throw new \Exception('Source sample file not found');
+		\header("Last-Modified: ".\gmdate("D,d M Y H:i:s")." GMT");
 		\header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
 		\header("Pragma: no-cache");
 		\header("Content-Type: application/force-download");
@@ -206,7 +206,7 @@ class xlsx{
 		while (@\ob_end_flush());
 		\readfile($source);
 	//header("Content-Length: ".strlen($source));
-		die();
+		die;
 	}
 	static function getPages($source){
 	if (isset(self::$xlsxPages[$source]))return self::$xlsxPages[$source];
@@ -227,15 +227,15 @@ class xlsx{
 			}else{
 				$pages[$key+1]['name']=\iconv('UTF-8',core::$charset,(string)$attrs['name']);
 			}
-			if ($key==$activeTab)$pages[$key+1]['active']=\true;
+			if ($key==$activeTab)$pages[$key+1]['active']=true;
 			$key++;
 		}
 		self::$xlsxPages[$source]=$pages;
 		return $pages;
 	}
 	private static function checkFile($source){
-		$zip = new \ZipArchive;
-		if ($zip->open($source) !== \true)throw new \Exception('Wrong file extension. You may set only XLSX files');
+		$zip=new \ZipArchive;
+		if ($zip->open($source)!==true)throw new \Exception('Wrong file extension. You may set only XLSX files');
 		return $zip;
 	}
 	private static function getXLSX($source,$sheet=1){
@@ -251,9 +251,9 @@ class xlsx{
 				}
 			}else{
 				if (core::$charset==core::UTF8){
-					foreach($xml['si'] as $val)self::$sst[]=\str_replace('_x000D_', "\n",(string)$val->t);
+					foreach($xml['si'] as $val)self::$sst[]=\str_replace('_x000D_',"\n",(string)$val->t);
 				}else{
-					foreach($xml['si'] as $val)self::$sst[]=\str_replace('_x000D_', "\n", \iconv('UTF-8',core::$charset,(string)$val->t));
+					foreach($xml['si'] as $val)self::$sst[]=\str_replace('_x000D_',"\n",\iconv('UTF-8',core::$charset,(string)$val->t));
 				}
 			}
 		}
@@ -275,7 +275,7 @@ class xlsx{
 				self::$formats[$format]='text';
 			}elseif ($formatCode=='0'){
 				self::$formats[$format]='number';
-			}elseif (\substr_count($formatCode,'#')>0 or \substr_count($formatCode,'$')>0){
+			}elseif (\substr_count($formatCode,'#')>0 || \substr_count($formatCode,'$')>0){
 				self::$formats[$format]='number';
 			}elseif (\substr($formatCode,-1)=='%'){
 				self::$formats[$format]='percent';
@@ -292,7 +292,7 @@ class xlsx{
 		//print_r(self::$formats);
 		//print_r($styles);
 		$data=array();
-		if (\is_null($sheet)){
+		if ($sheet===null){
 			$sheets = self::getPages($source);
 			foreach ($sheets as $key=>$i){
 				$data[$key]=self::readSheet($key,$zip,$styles);
@@ -318,7 +318,7 @@ class xlsx{
 		foreach($xml->sheetData->row as $row){
 			$currow=array();
 			$lastpos=-1;
-			$is_add=\false;
+			$is_add=false;
 			foreach($row->c as $c){
 				$value=(string)$c->v;
 				$attrs=$c->attributes();
@@ -327,26 +327,27 @@ class xlsx{
 
 				// fill missed cells
 				if ($lastpos+1!=$pos){
-					for ($i=$lastpos+1;$i<$pos;$i++)$currow[$i]=\null;
+					for ($i=$lastpos+1;$i<$pos;$i++)$currow[$i]=null;
 				}
 
-				if ($attrs['t'] == 's'){
+				if ($attrs['t']=='s'){
 					$currow[$pos]=self::$sst[$value];
 				}else{
-					$par=\explode('E',$value); if (isset($par[1]))$value=\floatval($par[0])*\pow(10,\intval($par[1]));
+					$par=\explode('E',$value);
+                                        if (isset($par[1]))$value=(float)$par[0]*(10**(int)$par[1]);
 					switch (@self::$formats[$styles[(int)$attrs['s']]]){
 						case 'date': 
 						    if ($value==''){
 							$currow[$pos]=null;
 						    }else{
-							$d = \floor($value); $t = $value - $d; $currow[$pos]=$value==''?'': \date('d.m.Y H:i:s', ($d>0?($d-25569)*86400:0)+\round($t*86400)-10800); break;
+							$d=\floor($value);$t=$value-$d;$currow[$pos]=$value==''?'':\date('d.m.Y H:i:s',($d>0?($d-25569)*86400:0)+\round($t*86400)-10800);break;
 						    }
 						case 'percent': if ($value=='')$currow[$pos]=null; else $currow[$pos]=\floatval($value)*100;break;
 						default: $currow[$pos]=$value;
 					}
 				}
 				$lastpos=$pos;
-				if ($currow[$pos]!='')$is_add=\true;
+				if ($currow[$pos]!='')$is_add=true;
 			}
 			if ($is_add)$data[]=$currow;
 		}
@@ -385,9 +386,9 @@ class xlsx{
 		return $data;
 	}
 	static function get($source,$page=1){
-		if (!\file_exists($source))  throw new \Exception('file not exists');
-		$fileHandle = \fopen($source, "r");
-		$string = \fgets($fileHandle, 4);
+		if (!\file_exists($source))throw new \Exception('file not exists');
+		$fileHandle=\fopen($source,"r");
+		$string=\fgets($fileHandle,4);
 		\fclose($fileHandle);
 		if (\ord($string[0])==208 && \ord($string[1])==207) throw new \Exception('Possible file has XLS extension. Convert it to XLSX or CSV extension'); //РП
 		if (\ord($string[0])==80 && \ord($string[1])==75){ // PK

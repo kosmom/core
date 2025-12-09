@@ -17,9 +17,9 @@ class db_pgsql {
 	private $num_rows;
 	private $affected_rows;
 	var $connect;
-	var $m_result=\false; // have last query result
-	var $error_resume=\false;
-	private $result_array=array('sele'=>\true,'desc'=>\true,'show'=>\true);
+	var $m_result=false; // have last query result
+	var $error_resume=false;
+	private $result_array=array('sele'=>true,'desc'=>true,'show'=>true);
 
 	function __construct($data,$connectionName=''){
 		$this->data=$data;
@@ -58,10 +58,10 @@ class db_pgsql {
 		$this->execute('rollback');
 	}
 	function bind($sql,$bind=array()){
-		if (\sizeof($bind)==0 || !\is_array($bind))return $sql;
+		if (\count($bind)==0 || !\is_array($bind))return $sql;
 		$bind2=array();
 		foreach ($bind as $key=>$value){
-			$bind2[':'.$key]=($value===\c\db::NULL || $value===\null?'NULL': ($value instanceof \c\db?$value:"'".\pg_escape_string($this->connect,$value)."'"));
+			$bind2[':'.$key]=($value===\c\db::NULL || $value===null?'NULL': ($value instanceof \c\db?$value:"'".\pg_escape_string($this->connect,$value)."'"));
 		}
 		return \strtr($sql,$bind2);
 	}
@@ -76,21 +76,20 @@ class db_pgsql {
 				\c\debug::trace('clear whitespaces at begin of query for correct work. Autocorrect in debug mode',\c\error::ERROR);
 				$sql=\ltrim($sql);
 			}
-			\c\debug::trace('Connection: '.$this->cn,\false);
-			\c\debug::trace('SQL: '.$sql,\false);
+			\c\debug::trace('Connection: '.$this->cn,false);
+			\c\debug::trace('SQL: '.$sql,false);
 			if ($bind){
 				\c\debug::dir(array('BIND:'=>$bind));
 			}else{
-				\c\debug::trace('BIND: None',\false);
+				\c\debug::trace('BIND: None',false);
 			}
-			$start=\microtime(\true);
+			$start=\microtime(true);
 		}
 		$sql=$this->bind($sql,$bind);
-		//echo $sql;
 		@$result=pg_query($this->connect,$sql);
 		if (\c\core::$debug){
-			\c\debug::consoleLog('Query execute for '.\round((\microtime(\true)-$start)*1000,2).' ms');
-			$start=\microtime(\true);
+			\c\debug::consoleLog('Query execute for '.\round((\microtime(true)-$start)*1000,2).' ms');
+			$start=\microtime(true);
 		}
 		if(!$result){
 			if (\c\core::$debug){
@@ -98,11 +97,11 @@ class db_pgsql {
 				\c\debug::groupEnd();
 				\c\debug::trace('PgSQL error: '.\pg_errormessage($this->connect),\c\error::ERROR);
 			}
-			if (empty(\c\core::$data['db_exception']))return \false;
+			if (empty(\c\core::$data['db_exception']))return false;
 			throw new \Exception('SQL execute error');
 		}
 		$subsql=\strtolower(\substr($sql,0,4));
-		$data = array();
+		$data=array();
 		if (isset($this->result_array[$subsql])){
 			switch ($mode){
 				case 'ea':
@@ -112,7 +111,7 @@ class db_pgsql {
 					$data=\pg_fetch_assoc($result,0);
 					break;
 			}
-			if (\c\core::$debug)\c\debug::trace('Result fetch get '.\round((\microtime(\true)-$start)*1000,2).' ms');
+			if (\c\core::$debug)\c\debug::trace('Result fetch get '.\round((\microtime(true)-$start)*1000,2).' ms');
 		}
 		if (\c\core::$debug){
 			if (!isset($this->result_array[$subsql]) && $mode!='e')\c\debug::trace('ea function used without result. Better use e function',\c\error::WARNING);
@@ -123,16 +122,16 @@ class db_pgsql {
 						\c\debug::group('Query result');
 						\c\debug::dir($data);
 					}else{
-						\c\debug::group('Query result. Count: '.\sizeof($data),\c\error::INFO,\sizeof($data)>10);
+						\c\debug::group('Query result. Count: '.\count($data),\c\error::INFO,\count($data)>10);
 						\c\debug::table(\array_slice($data,0,30));
-						if (\sizeof($data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
+						if (\count($data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
 					}
 					\c\debug::groupEnd();
 				}else{
 					\c\debug::trace('No results found',\c\error::WARNING);
 				}
 			}else{
-				\c\debug::trace('Affected '.$this->rows().' rows',\false);
+				\c\debug::trace('Affected '.$this->rows().' rows',false);
 			}
 			// explain
 			if (!@\c\core::$data['db_not_explain']){
@@ -153,18 +152,18 @@ class db_pgsql {
 	function ea1($sql,$bind=array()){
 		return $this->execute_assoc($sql,$bind,'ea1');
 	}
-	function db_limit($sql, $from=0, $count=0){
-		return $sql.' LIMIT '.\intval($count).' OFFSET '.\intval($from);
+	function db_limit($sql,$from=0,$count=0){
+		return $sql." LIMIT ".(int)$count." OFFSET ".(int)$from;
 	}
 	function getLenResult(){
 		if (\c\core::$debug && !@\c\core::$data['db_not_explain'])return $this->num_rows;
 		if ($this->m_result)return \pg_num_rows($this->m_result);
 		return 0;
 	}
-	function insertId($seq=\null){
+	function insertId($seq=null){
 		if ($seq){
 			$sql='SELECT last_value FROM "'.$seq.'"';
-			$rs = $this->ea1($sql);
+			$rs=$this->ea1($sql);
 			return (isset($rs['last_value'])?$rs['last_value']:0);
 		}
 		if (\c\core::$debug && !@\c\core::$data['db_not_explain'])return $this->insert_id;
@@ -177,7 +176,7 @@ class db_pgsql {
 	function explain($sql,$bind=array()){
 		$sql='explain '.$this->bind($sql,$bind);
 		$result=\pg_query($this->connect,$sql);
-		if(!$result)return \false;
+		if(!$result)return false;
 		$data=\pg_fetch_all($result);
 		\pg_free_result($result);
 		return $data;
@@ -195,8 +194,8 @@ class db_pgsql {
 		$format=\strtr($format,self::$date_formats);
 		return "TO_CHAR(".$value.",'".$format."')";
 	}
-	function date_to_db($value,$format=\null){
-		if ($value===\null)return 'now()';
+	function date_to_db($value,$format=null){
+		if ($value===null)return 'now()';
 		if ($format)return "to_timestamp(".$value.",'".\strtr($format,self::$date_formats)."')";
 		if (!\is_numeric($value))$value=\strtotime($value);
 		return "to_timestamp('".\date('Y-m-d H:i:s',$value)."','YYYY-MM-DD HH24:MI:SS')";

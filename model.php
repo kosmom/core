@@ -8,9 +8,9 @@ namespace c;
 class model implements \Iterator{
 	var $connection;
 	var $connectionAlter;
-	var $readonly=\false;
-	var $sequence=\true;
-	var $expression=\false;
+	var $readonly=false;
+	var $sequence=true;
+	var $expression=false;
 	var $primaryField; // primary key PK (or can be set in fields var)
 	var $fields=array();
 
@@ -28,7 +28,7 @@ class model implements \Iterator{
 	var $whereHasMode=false;
 
 	private function nextConjunction(){
-		$return = $this->nextConjunction;
+		$return=$this->nextConjunction;
 		$this->nextConjunction='AND';
 		return $return;
 	}
@@ -45,7 +45,7 @@ class model implements \Iterator{
 		return \md5(\json_encode(array($this->queryWhere,$this->queryBind,$aggregate)));
 	}
 	
-	function withCache($seconds=\null){
+	function withCache($seconds=null){
 		$this->cacheTimeout=$seconds;
 		return $this;
 	}
@@ -84,13 +84,13 @@ class model implements \Iterator{
 	}
 	function on_after_create(){
 	}
-	function on_before_update($base=\null){
+	function on_before_update($base=null){
 	}
-	function on_after_update($base=\null){
+	function on_after_update($base=null){
 	}
-	function on_before_save($base=\null){
+	function on_before_save($base=null){
 	}
-	function on_after_save($base=\null){
+	function on_after_save($base=null){
 	}
 	function on_before_delete(){
 	}
@@ -109,12 +109,12 @@ class model implements \Iterator{
 //	}
 
 	function __get($name){
-		if ($this->pk_value && $name==$this->getPrimaryField())return $this->calculateValue($this->getPrimaryField(), $this->pk_value,$this);
+		if ($this->pk_value && $name==$this->getPrimaryField())return $this->calculateValue($this->getPrimaryField(),$this->pk_value,$this);
 		//try get data from storage
 		if (!$this->pk_value && isset($this->storage[$name]))return $this->storage[$name];
 		// if storage has data - get storage
 		// try get data from request
-		if (!$this->pk_value)return \null;
+		if (!$this->pk_value)return null;
 		try{
 			return model::getDataOrFail($this,$this->pk_value,$name);
 		} catch (\Exception $exc) {
@@ -122,8 +122,8 @@ class model implements \Iterator{
 			return model::getData($this,$this->pk_value,$name);
 		}
 	}
-	private function formData($exception=\true){
-		if (model::is_set($this,$this->pk_value))return \true;
+	private function formData($exception=true){
+		if (model::is_set($this,$this->pk_value))return true;
 		// calculate data from pk
 		$this->queryOrders=array();
 		$this->limitCount=0;
@@ -138,12 +138,12 @@ class model implements \Iterator{
 				if ($exception){
 					throw new \Exception('not found');
 				}else{
-					return \false;
+					return false;
 				}
 			}
 			model::setData($this,$this->pk_value,$rs);
 		}
-		return \true;
+		return true;
 	}
 	function __set($field,$value){
 		$val=$value;
@@ -171,10 +171,9 @@ class model implements \Iterator{
 		if ($this->connectionAlter)return $this->connectionAlter;
 		return $this->getConnections();
 	}
-	function calculateValue($field,$value, $values=array()){
+	function calculateValue($field,$value,$values=array()){
 	//if (is_null($value))throw new \Exception('no data in '.$field);
-		if (\is_null($value))return \null;
-		if (@!$this->fields[$field]['get'])return $value;
+		if ($value===null || @!$this->fields[$field]['get'])return $value;
 		if (@$this->fields[$field]['getThis'])return \call_user_func($this->fields[$field]['get'],$value,$values);
 		return \call_user_func($this->fields[$field]['get'],$value);
 	}
@@ -185,8 +184,8 @@ class model implements \Iterator{
 	* @throws \Exception
 	*/
 	function fillOrFail($array){
-		if (!\is_array($array)) throw new \Exception('Model fill no array data');
-		foreach($array as $key=> $value)$this->__set($key,$value);
+		if (!\is_array($array))throw new \Exception('Model fill no array data');
+		foreach($array as $key=>$value)$this->__set($key,$value);
 		return $this;
 	}
 	/**
@@ -212,7 +211,7 @@ class model implements \Iterator{
 		if (isset($this->tableName))return $this->tableName;
 		if (isset($this->table))return $this->table;
 		$class=\get_called_class();
-		return $class==='c\\model'?\false:$class;
+		return $class==='c\\model'?false:$class;
 
 	}
 	function getSchemeName(){
@@ -233,12 +232,12 @@ class model implements \Iterator{
 		}
 		return $this->primaryField='id';
 	}
-	function saveOrFail($exception=\null){
+	function saveOrFail($exception=null){
 		try {
 			if (core::$data['db_exception'])return $this->save();
-			core::$data['db_exception']=\true;
+			core::$data['db_exception']=true;
 			$rs=$this->save();
-			core::$data['db_exception']=\false;
+			core::$data['db_exception']=false;
 			return $rs;
 		} catch (\Exception $exc) {
 			if ($exception){
@@ -279,9 +278,9 @@ class model implements \Iterator{
 		}
 		$errors=array();
 		if ($result)$this->pk_value=dbwork::setData($this->getTableName(),$result,$this->sequence,$this->getConnectionsAlter(),$errors,$this->getSchemeName());
-	    if (core::$data['db_exception'] && $errors)throw new \Exception($errors[0]);
+		if (core::$data['db_exception'] && $errors)throw new \Exception($errors[0]);
 		
-		$this->storage=\null;
+		$this->storage=null;
 		if (!$this->isRowMode)$this->find($this->pk_value);
 		if ($isCreate){
 			$this->on_after_create();
@@ -312,7 +311,7 @@ class model implements \Iterator{
 	 * @return static
 	 * @throws \Exception
 	 */
-	static function orderStatic($field,$order='',$prior=999,$func=\false,$expression=\false){
+	static function orderStatic($field,$order='',$prior=999,$func=false,$expression=false){
 		return self::toObject()->order($field,$order,$prior,$func,$expression);
 	}
 	/**
@@ -325,7 +324,7 @@ class model implements \Iterator{
 	 * @return static
 	 * @throws \Exception
 	 */
-	function order($field,$order='',$prior=999,$func=\false,$expression=\false){
+	function order($field,$order='',$prior=999,$func=false,$expression=false){
 		if (!isset($this))return self::toObject()->order($field,$order,$prior,$func,$expression);
 		if (!\in_array($order,array('','asc','desc')))throw new \Exception('sort order status wrong');
 		if ($order=='asc')$order='';
@@ -333,7 +332,7 @@ class model implements \Iterator{
 		$this->queryOrders[$prior][]=array('field'=>$field,'order'=>$order,'func'=>$func,'expression'=>$expression);
 		return $this;
 	}
-	function orderBy($field,$order='',$prior=999,$func=\false,$expression=\false){
+	function orderBy($field,$order='',$prior=999,$func=false,$expression=false){
 		if (!isset($this))return self::toObject()->order($field,$order,$prior,$func,$expression);
 		return $this->order($field,$order,$prior,$func,$expression);
 	}
@@ -361,7 +360,7 @@ class model implements \Iterator{
 		if ($this->isRowMode){
 			$this->on_before_delete();
 			$sql='DELETE from '.$this->getScemeWithTable().$this->getWhereSqlPart();
-			if ($this->limitCount || $this->limitStart) $sql = db::limit($sql, $this->limitStart, $this->limitCount, $this->getConnections());
+			if ($this->limitCount || $this->limitStart)$sql=db::limit($sql,$this->limitStart,$this->limitCount,$this->getConnections());
 			$rs=db::e($sql,$this->queryBind,$this->getConnections());
 			$this->on_after_delete();
 		}else{ //model mode
@@ -371,7 +370,7 @@ class model implements \Iterator{
 			}
 
 			$sql='DELETE from '.$this->getScemeWithTable().$this->getWhereSqlPart();
-			if ($this->limitCount || $this->limitStart) $sql = db::limit($sql, $this->limitStart, $this->limitCount, $this->getConnections());
+			if ($this->limitCount || $this->limitStart)$sql=db::limit($sql,$this->limitStart,$this->limitCount,$this->getConnections());
 			$rs=db::e($sql,$this->queryBind,$this->getConnections());
 
 			foreach ($datas as $data){
@@ -400,7 +399,7 @@ class model implements \Iterator{
 	* @param string|array $params key-value or key string
 	* @param any $value value is params is string
 	*/
-	function update($params,$value=\null){
+	function update($params,$value=null){
 		if (\is_string($params))$params=array($params=>$value);
 		if (!isset($this))return self::toObject()->update($params);
 		$set=array();
@@ -414,7 +413,7 @@ class model implements \Iterator{
 	}
 	private function sqlExpression($where){
 		if (isset($where['field']) && \is_callable($where['field']) && !\is_string($where['field'])){
-			$model = new $this;
+			$model=new $this;
 			$model->isSubquery=true;
 			//$model->tableAlias=$this->tableAlias;
 			//$model->queryBind=$this->queryBind;
@@ -424,7 +423,7 @@ class model implements \Iterator{
 			$sql=$model->getSql();
 			return $sql?'('.$sql.')':'1';
 		}
-		if (@$where['expression'] && $where['expression']!==\true)return $where['expression'];
+		if (@$where['expression'] && $where['expression']!==true)return $where['expression'];
 		return ($where['field'] instanceof db?$where['field']:db::wrapper($where['field'],$this->getConnections())).' '.$where['prop'].' '.$where['value'];
 	}
 	/**
@@ -536,7 +535,7 @@ class model implements \Iterator{
 	 * @param any $value
 	 * @return static
 	 */
-	static function whereStatic($field,$prop=\null,$value=\null){
+	static function whereStatic($field,$prop=null,$value=null){
 		if (!isset($this))return self::toObject()->where($field,$prop,$value);
 		$this->where($field,$prop,$value);
 		return $this;
@@ -548,13 +547,13 @@ class model implements \Iterator{
 	 * @param any $value
 	 * @return static
 	 */
-	function where($field,$prop=\null,$value=\null){
+	function where($field,$prop=null,$value=null){
 		if (!isset($this))return self::toObject()->where($field,$prop,$value);
-		if ($value===\null){
+		if ($value===null){
 			if (\is_array($prop)){
 				$value=$prop;
 				$prop='in';
-			}elseif ($prop===\null && \is_array($field)){
+			}elseif ($prop===null && \is_array($field)){
 				foreach ($field as $key=>$item){
 					$this->whereCondition($key,'=',$item);
 				}
@@ -577,9 +576,9 @@ class model implements \Iterator{
 	/**
 	 * @deprecated since version 3.5 use where function
 	 */
-	function is($field,$value=\null){
+	function is($field,$value=null){
 		if (!isset($this))return self::toObject()->is($field,$value);
-		if ($value===\null){
+		if ($value===null){
 			$this->whereCondition($field,'is not null','');
 		}else{
 			$this->whereCondition($field,'=',$value);
@@ -598,13 +597,13 @@ class model implements \Iterator{
 	static function whereNotNullStatic($field){
 		return self::toObject()->where($field,'is not null');
 	}
-	function whereColumn($field,$prop=\null,$value=\null){
+	function whereColumn($field,$prop=null,$value=null){
 		if (!isset($this))return self::toObject()->whereColumn($field,$prop,$value);
 		
-		if ($value===\null){
-			if ($prop===\null && \is_array($field)){
+		if ($value===null){
+			if ($prop===null && \is_array($field)){
 				foreach ($field as $key=>$item){
-					$this->whereCondition($key,'=',$item,\true);
+					$this->whereCondition($key,'=',$item,true);
 				}
 				return $this;
 			}else{
@@ -612,10 +611,10 @@ class model implements \Iterator{
 				$prop='=';
 			}
 		}
-		$this->whereCondition($field,$prop,$value,\true);
+		$this->whereCondition($field,$prop,$value,true);
 		return $this;
 	}
-	function whereAll($fields,$prop=\null,$value=\null){
+	function whereAll($fields,$prop=null,$value=null){
 		return $this->where(function($query) use ($fields,$prop,$value){
 			foreach ($fields as $field){
 				$query->where($field,$prop,$value);
@@ -623,7 +622,7 @@ class model implements \Iterator{
 			return $query;
 		});
 	}
-	function whereAny($fields,$prop=\null,$value=\null){
+	function whereAny($fields,$prop=null,$value=null){
 		return $this->where(function($query) use ($fields,$prop,$value){
 			foreach ($fields as $field){
 				$query->where($field,$prop,$value)->or();
@@ -631,13 +630,13 @@ class model implements \Iterator{
 			return $query;
 		});
 	}
-	function firstOrCreate($param = array()){
+	function firstOrCreate($param=array()){
 		if (!isset($this))return self::toObject()->firstOrCreate($param);
 		$first=$this->first();
 		if (!$first)return $this->create($param);
 		return $first;
 	}
-	function create($param = array()){
+	function create($param=array()){
 		if (!isset($this))return self::toObject()->create($param);
 		$new=$this->toObject();
 		foreach ($this->queryWhere as $where){
@@ -656,11 +655,11 @@ class model implements \Iterator{
 		$this->whereCondition($field,'<',$valueTo);
 		return $this;
 	}
-	private function whereCondition($field,$prop,$value,$expression=\false){
-		if (\is_object($value) or \is_numeric($value))$value=(string)$value;
+	private function whereCondition($field,$prop,$value,$expression=false){
+		if (\is_object($value) || \is_numeric($value))$value=(string)$value;
 		if ($prop=='=<')$prop='<=';
 		if ($prop=='=>')$prop='>=';
-		if ($prop=='in' && \sizeof($value)==1){
+		if ($prop=='in' && \count($value)==1){
 			$prop='=';
 			$value=\current($value);
 		}
@@ -689,7 +688,7 @@ class model implements \Iterator{
 				break;
 			default:
 				if ($expression){
-					$result['expression']=\true;
+					$result['expression']=true;
 				}else{
 					$bindField=$this->bindFind($field,$value);
 					$this->queryBind[$bindField]=$value;
@@ -701,7 +700,7 @@ class model implements \Iterator{
 		$result['prop']=$prop;
 		$result['field']=$field_val;
 		$result['value']=$value;
-		if ($field_val!=$field)$result['expression']=\true;
+		if ($field_val!=$field)$result['expression']=true;
 		$result['conjunction']=$this->nextConjunction();
 		$this->queryWhere[]=$result;
 	}
@@ -730,7 +729,7 @@ class model implements \Iterator{
 	 * Get first element of query
 	 * @return static
 	 */
-	function firstOrFail($exception=\null){
+	function firstOrFail($exception=null){
 		if (!isset($this))return self::toObject()->firstOrFail($exception);
 		$first=$this->first();
 		if (!$first){
@@ -818,7 +817,7 @@ class model implements \Iterator{
 
 		}else{
 			//get data for cache
-			$rs=db::ea($this->getSql(),$this->queryBind,$this->getConnections(), $this->cacheTimeout);
+			$rs=db::ea($this->getSql(),$this->queryBind,$this->getConnections(),$this->cacheTimeout);
 			foreach ($rs as $row){
 				model::setData($this,$row[$pk],$row);
 			}
@@ -878,9 +877,9 @@ class model implements \Iterator{
 		return ($this->isSubquery?'':' WHERE ').\implode('', $wheres);
 	}
 	
-	function count($distinctField=\null){
+	function count($distinctField=null){
 		if (!isset($this))return self::toObject()->count($distinctField);
-		return (int)$this->aggregate('count('.($distinctField===\null?'*':db::wrapper($distinctField,$this->getConnections())).')');
+		return (int)$this->aggregate('count('.($distinctField===null?'*':db::wrapper($distinctField,$this->getConnections())).')');
 	}
 	function max($field){
 		if (!isset($this))return self::toObject()->max($field);
@@ -903,7 +902,7 @@ class model implements \Iterator{
 		$hash=$this->calculateAggregateCache($aggregateSql);
 		if (isset(model::$cache[\get_called_class()][$hash]))return model::$cache[\get_called_class()][$hash];
 		if (\is_array($aggregateSql)){
-			foreach ($aggregateSql as $key => $val){
+			foreach ($aggregateSql as $key=>$val){
 				$sqlString[]=$val.' '.$key;
 			}
 			if ($groupFields){
@@ -930,19 +929,19 @@ class model implements \Iterator{
 			$this->queryBind=$tempBind;
 			foreach ($collection_elements as $row){
 				$this->queryBind[$field]=$row;
-				model::$cache[\get_called_class()][$this->calculateAggregateCache($aggregateSql)]=isset($rs[$row])?$rs[$row]:\false;
+				model::$cache[\get_called_class()][$this->calculateAggregateCache($aggregateSql)]=isset($rs[$row])?$rs[$row]:false;
 			}
 			return model::$cache[\get_called_class()][$hash];
 		}
 		$sql='SELECT '.$aggregateSql.' from '.$this->getScemeWithTable().' '.$this->tableAlias.$this->getWhereSqlPart();
-		return model::$cache[\get_called_class()][$hash]=db::ea11($sql,$this->queryBind,$this->getConnections(), $this->cacheTimeout);
+		return model::$cache[\get_called_class()][$hash]=db::ea11($sql,$this->queryBind,$this->getConnections(),$this->cacheTimeout);
 	}
 	function globalScope(){
 	}
 
-	function __construct($pkValue=\null,$fromCollection=\null) {
-		if ($fromCollection!==\null)$this->collectionSource=$fromCollection;
-		if ($pkValue!==\null)$this->find($pkValue);
+	function __construct($pkValue=null,$fromCollection=null) {
+		if ($fromCollection!==null)$this->collectionSource=$fromCollection;
+		if ($pkValue!==null)$this->find($pkValue);
 	}
 	private function getScemeWithTable(){
 		if ($this->expression)return '('.$this->tableName.')';
@@ -1027,20 +1026,20 @@ class model implements \Iterator{
 		$name->fill($source);
 		return $name;
 	}
-	function relationMorphToMany($model,$entity_id_field,$entity_type_field=\null){
+	function relationMorphToMany($model,$entity_id_field,$entity_type_field=null){
 		return $this->relation($model,$entity_id_field)->where($entity_type_field,'=',\get_called_class());
 	}
-	function relationMorphToOne($model,$entity_id_field,$entity_type_field=\null){
+	function relationMorphToOne($model,$entity_id_field,$entity_type_field=null){
 		return $this->relationToOne($model,$entity_id_field)->where($entity_type_field,'=',\get_called_class());
 	}
-	function relationInner($model,$foreign_key=\null,$local_key=\null){
-		return $this->relation($model,$foreign_key,$local_key,\true);
+	function relationInner($model,$foreign_key=null,$local_key=null){
+		return $this->relation($model,$foreign_key,$local_key,true);
 	}
-	function relation($model,$foreign_key=\null,$local_key=\null,$is_inner=\false,$to_one=\false){
+	function relation($model,$foreign_key=null,$local_key=null,$is_inner=false,$to_one=false){
 // уххх
-		if ($local_key===\null)$local_key=$this->getPrimaryField();
+		if ($local_key===null)$local_key=$this->getPrimaryField();
 		
-		$baseCollection=\null;
+		$baseCollection=null;
 		if (!$this->whereHasMode && $this->collectionSource){
 			$generator=new $this->collectionSource->generator;
 			if ($generator->getPrimaryField()==$local_key){
@@ -1053,8 +1052,8 @@ class model implements \Iterator{
 				}
 			}
 		}
-		$obj=new $model(\null, $baseCollection);
-		if ($foreign_key===\null)$foreign_key=$obj->getPrimaryField();
+		$obj=new $model(null, $baseCollection);
+		if ($foreign_key===null)$foreign_key=$obj->getPrimaryField();
 		if ($this->whereHasMode){
 			$obj->select('1');
 			$obj->bindCounter=$this->bindCounter;
@@ -1079,12 +1078,12 @@ class model implements \Iterator{
 	 * @param string $localKey key self model
 	 * @return model
 	 */
-	function relationToOne($model,$foreignKey=\null,$localKey=\null){
-		return $this->relation($model,$foreignKey,$localKey,\false,\true);
+	function relationToOne($model,$foreignKey=null,$localKey=null){
+		return $this->relation($model,$foreignKey,$localKey,false,true);
 	}
-	function lister($onPage=10,$page=\null){
+	function lister($onPage=10,$page=null){
 		if (!isset($this))return self::toObject()->lister($onPage,$page);
-		if (\is_null($page))$page=(int)$_GET['page'];
+		if ($page===null)$page=(int)$_GET['page'];
 		$limitCount=$this->limitCount;
 		$limitStart=$this->limitStart;
 		$this->limitCount=0;
@@ -1094,16 +1093,16 @@ class model implements \Iterator{
 		$this->limitStart=$limitStart;
 		return array('count'=>$cnt,
 			'count_on_page'=>$onPage,
-			'pages'=>($onPage?\ceil($cnt / $onPage):1),
+			'pages'=>($onPage?\ceil($cnt/$onPage):1),
 			'cur_page'=>$page,
-			);
+		);
 	}
 
 	/**
 	 *
 	 * @return models_object
 	 */
-	function toQueryBuilder($alias=\false){
+	function toQueryBuilder($alias=false){
 		if (!isset($this))return self::toObject()->toQueryBuilder($alias);
 		return models::builder(\get_called_class(),$alias);
 	}
@@ -1137,7 +1136,7 @@ class model implements \Iterator{
 	 * @param \Exception,null $exception throwable not found exception
 	 * @return model
 	 */
-	static function findOrFailStatic($pk_value,$exception=\null){
+	static function findOrFailStatic($pk_value,$exception=null){
 		return self::toObject()->findOrFail($pk_value,$exception);
 	}
 	/**
@@ -1146,12 +1145,11 @@ class model implements \Iterator{
 	 * @param \Exception,null $exception throwable not found exception
 	 * @return model
 	 */
-	function findOrFail($pk_value,$exception=\null){
+	function findOrFail($pk_value,$exception=null){
 		if (!isset($this))return self::toObject()->findOrFail($pk_value,$exception);
-		
 		$this->find($pk_value);
-		if (!$this->formData(\false)){
-			if ($exception instanceof \Exception) throw $exception;
+		if (!$this->formData(false)){
+			if ($exception instanceof \Exception)throw $exception;
 			throw new \Exception('not found');
 		}
 		return $this;
@@ -1182,11 +1180,11 @@ class model implements \Iterator{
 	
 	function each($callback){
 		foreach ($this->get() as $item){
-			if ($callback($item)===\false)break;
+			if ($callback($item)===false)break;
 		}
 	}
 	
-	function when($condition, $ifCallback, $elseCallback=\null){
+	function when($condition, $ifCallback, $elseCallback=null){
 		if ($condition){
 			$ifCallback($this);
 		} elseif (\is_callable($elseCallback)){
@@ -1210,7 +1208,7 @@ class model implements \Iterator{
 
 	function select($fields,$alias=null){
 		if (\is_array($fields)){
-			foreach ($fields as $alias => $field){
+			foreach ($fields as $alias=>$field){
 				$this->selectFields[\is_numeric($alias)?$field:$alias]=$field;
 			}
 		}else{
@@ -1254,32 +1252,32 @@ class model implements \Iterator{
 		return (isset(self::$base[$modelName][$pk]));
 	}
 	
-	static function getRawData($model,$pk,$field=\null){
+	static function getRawData($model,$pk,$field=null){
 		$modelName=\is_object($model)?\get_class($model):$model;
-		if ($field===\null)return self::$base[$modelName][$pk];
+		if ($field===null)return self::$base[$modelName][$pk];
 		return self::$base[$modelName][$pk][$field];
 	}
-	static function getData($model,$pk,$field=\null){
+	static function getData($model,$pk,$field=null){
 		$modelName=\is_object($model)?\get_class($model):$model;
-		if ($field===\null){
+		if ($field===null){
 			// fast way
 			if (empty($model->fields)) {
 				if (!isset(self::$durty[$modelName][$pk]))return self::$durty[$modelName][$pk]=self::$base[$modelName][$pk];
-		        return \array_merge(self::$base[$modelName][$pk],self::$durty[$modelName][$pk]);
+				return \array_merge(self::$base[$modelName][$pk],self::$durty[$modelName][$pk]);
 			}
 			$out=array();
 			foreach (self::$base[$modelName][$pk] as $field=>$value)$out[$field]=self::getData($modelName,$pk,$field);
 			return $out;
 		}
 		if (isset(self::$durty[$modelName][$pk][$field])) return self::$durty[$modelName][$pk][$field];
-		if (isset(self::$durty[$modelName][$pk]) && \array_key_exists($field, self::$durty[$modelName][$pk])) return self::$durty[$modelName][$pk][$field];
+		if (isset(self::$durty[$modelName][$pk]) && \array_key_exists($field, self::$durty[$modelName][$pk]))return self::$durty[$modelName][$pk][$field];
 		if (@$model->fields[$field]['get']) return self::$durty[$modelName][$pk][$field]=$model->calculateValue($field,self::$base[$modelName][$pk][$field],self::$base[$modelName][$pk]);
 		return @self::$durty[$modelName][$pk][$field]=self::$base[$modelName][$pk][$field];
 	}
 	static function getDataOrFail($model,$pk,$field){
 		$modelName=\is_object($model)?\get_class($model):$model;
-		if (isset(self::$durty[$modelName][$pk][$field])) return self::$durty[$modelName][$pk][$field];
-		if (isset(self::$durty[$modelName][$pk]) && \array_key_exists($field, self::$durty[$modelName][$pk])) return self::$durty[$modelName][$pk][$field];
+		if (isset(self::$durty[$modelName][$pk][$field]))return self::$durty[$modelName][$pk][$field];
+		if (isset(self::$durty[$modelName][$pk]) && \array_key_exists($field, self::$durty[$modelName][$pk]))return self::$durty[$modelName][$pk][$field];
 		if (isset(self::$base[$modelName][$pk][$field])){
 			if (@$model->fields[$field]['get']){
 				return self::$durty[$modelName][$pk][$field]=$model->calculateValue($field,self::$base[$modelName][$pk][$field],self::$base[$modelName][$pk]);

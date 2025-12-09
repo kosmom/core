@@ -17,9 +17,9 @@ class db_mysql {
 	private $num_rows;
 	private $affected_rows;
 	var $connect;
-	var $m_result=\false; // have last query result
-	var $error_resume=\false;
-	private $result_array=array('sele'=>\true,'desc'=>\true,'show'=>\true);
+	var $m_result=false; // have last query result
+	var $error_resume=false;
+	private $result_array=array('sele'=>true,'desc'=>true,'show'=>true);
 
 	function __construct($data,$connectionName=''){
 		$this->data=$data;
@@ -45,7 +45,7 @@ class db_mysql {
 			$stat=\explode('  ',\mysqli_stat($this->connect));
 			$out=array();
 			foreach ($stat as $item){
-				$out[\substr($item,0,\strpos($item,':') )]=\substr($item,\strpos($item,':')+2 );
+				$out[\substr($item,0,\strpos($item,':'))]=\substr($item,\strpos($item,':')+2);
 			}
 			\c\debug::dir($out);
 			\c\debug::groupEnd();
@@ -65,14 +65,14 @@ class db_mysql {
 		\mysqli_rollback($this->connect);
 	}
 	function bind($sql,$bind=array()){
-		if (\sizeof($bind)==0 || !\is_array($bind))return $sql;
+		if (\count($bind)==0 || !\is_array($bind))return $sql;
 		$bind2=array();
 		foreach ($bind as $key=>$value){
-			$bind2[':'.$key]=($value===\c\db::NULL || $value===\null?'NULL': ($value instanceof \c\db?$value:"'".\mysqli_real_escape_string($this->connect,$value)."'"));
+			$bind2[':'.$key]=($value===\c\db::NULL || $value===null?'NULL':($value instanceof \c\db?$value:"'".\mysqli_real_escape_string($this->connect,$value)."'"));
 		}
 		return \strtr($sql,$bind2);
 	}
-	function execute($sql, $bind=array()){
+	function execute($sql,$bind=array()){
 		return $this->execute_assoc($sql,$bind,'e');
 	}
 	function execute_assoc($sql,$bind=array(),$mode='ea'){
@@ -83,14 +83,14 @@ class db_mysql {
 				\c\debug::trace('clear whitespaces at begin of query for correct work. Autocorrect in debug mode',\c\error::ERROR);
 				$sql=\ltrim($sql);
 			}
-			\c\debug::trace('Connection: '.$this->cn,\false);
-			\c\debug::trace('SQL: '.$sql,\false);
+			\c\debug::trace('Connection: '.$this->cn,false);
+			\c\debug::trace('SQL: '.$sql,false);
 			if ($bind){
 				\c\debug::dir(array('BIND:'=>$bind));
 			}else{
-				\c\debug::trace('BIND: None',\false);
+				\c\debug::trace('BIND: None',false);
 			}
-			$start=\microtime(\true);
+			$start=\microtime(true);
 		}
 		$sql=$this->bind($sql,$bind);
 		//echo $sql;
@@ -101,8 +101,8 @@ class db_mysql {
 			$result=\mysqli_query($this->connect,$sql);
 		}
 		if (\c\core::$debug){
-			\c\debug::consoleLog('Query execute for '.\round((\microtime(\true)-$start)*1000,2).' ms');
-			$start=\microtime(\true);
+			\c\debug::consoleLog('Query execute for '.\round((\microtime(true)-$start)*1000,2).' ms');
+			$start=\microtime(true);
 		}
 		if(!$result){
 			if (\c\core::$debug){
@@ -110,7 +110,7 @@ class db_mysql {
 				\c\debug::groupEnd();
 				\c\debug::trace('MySQL error: '.\mysqli_error($this->connect),\c\error::ERROR);
 			}
-			if (empty(\c\core::$data['db_exception']))return \false;
+			if (empty(\c\core::$data['db_exception']))return false;
 			throw new \Exception('SQL execute error: '.\mysqli_error($this->connect));
 		}
 		$subsql=\strtolower(\substr($sql,0,4));
@@ -137,7 +137,7 @@ class db_mysql {
 					$data=\mysqli_fetch_assoc($result);
 					break;
 			}
-			if (\c\core::$debug)\c\debug::trace('Result fetch get '.\round((\microtime(\true)-$start)*1000,2).' ms');
+			if (\c\core::$debug)\c\debug::trace('Result fetch get '.\round((\microtime(true)-$start)*1000,2).' ms');
 		}
 		if (\c\core::$debug){
 			if (!isset($this->result_array[$subsql]) && $mode!='e')\c\debug::trace('ea function used without result. Better use e function',\c\error::WARNING);
@@ -148,16 +148,16 @@ class db_mysql {
 						\c\debug::group('Query result');
 						\c\debug::dir($data);
 					}else{
-						\c\debug::group('Query result. Count: '.\sizeof($data),\c\error::INFO,\sizeof($data)>10);
+						\c\debug::group('Query result. Count: '.\count($data),\c\error::INFO,\count($data)>10);
 						\c\debug::table(\array_slice($data,0,30));
-						if (\sizeof($data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
+						if (\count($data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
 					}
 					\c\debug::groupEnd();
 				}else{
 					\c\debug::trace('No results found',\c\error::WARNING);
 				}
 			}else{
-				\c\debug::trace('Affected '.\mysqli_affected_rows($this->connect).' rows', \false);
+				\c\debug::trace('Affected '.\mysqli_affected_rows($this->connect).' rows', false);
 			}
 			// explain
 			if (!@\c\core::$data['db_not_explain'] && \substr($sql,0,5)!='show '){
@@ -180,8 +180,8 @@ class db_mysql {
 	function ea1($sql,$bind=array()){
 		return $this->execute_assoc($sql,$bind,'ea1');
 	}
-	function db_limit($sql, $from=0, $count=0){
-		$count=\intval($count);
+	function db_limit($sql,$from=0,$count=0){
+		$count=(int)($count);
 		return $sql.' LIMIT '.\intval($from).($count?', '.$count:'');
 	}
 	function getLenResult(){
@@ -200,7 +200,7 @@ class db_mysql {
 	function explain($sql,$bind=array()){
 		$sql='explain '.$this->bind($sql,$bind);
 		$result = \mysqli_query($this->connect,$sql,\MYSQLI_USE_RESULT);
-		if(!$result)return \false;
+		if(!$result)return false;
 		if (\function_exists('mysqli_fetch_all')){
 			$data=\mysqli_fetch_all($result,\MYSQLI_ASSOC);
 		}else{
@@ -223,8 +223,8 @@ class db_mysql {
 		$format=\strtr($format,self::$date_formats);
 		return "date_format(".$value.",'".$format."')";
 	}
-	function date_to_db($value,$format=\null){
-		if ($value===\null)return 'now()';
+	function date_to_db($value,$format=null){
+		if ($value===null)return 'now()';
 		if ($format)return "STR_TO_DATE(".$value.",'".\strtr($format,self::$date_formats)."')";
 		if (!\is_numeric($value))$value=\strtotime($value);
 		return "STR_TO_DATE('".\date('Y-m-d H:i:s',$value)."','%Y-%m-%d %H:%i:%s')";

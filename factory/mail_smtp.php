@@ -11,7 +11,7 @@ class mail_smtp{
 	var $ErrorInfo='unknown error';
 	private $body='';
 	var $Subject;
-	var $auth=\true;
+	var $auth=true;
 	function MsgHTML($text){
 		$this->body=$text;
 	}
@@ -43,7 +43,7 @@ class mail_smtp{
 	}
 
 	function Send(){
-		$smtp_conn = \fsockopen($this->Host,$this->port,$errno,$errstr,$this->timeout);
+		$smtp_conn=\fsockopen($this->Host,$this->port,$errno,$errstr,$this->timeout);
 		if (!$smtp_conn)throw new \Exception('Error connection to SMTP server: '.$errno.': '.$errstr);
 		$this->getData($smtp_conn);
 		\fputs($smtp_conn,"EHLO ".$this->UserName."\r\n");
@@ -52,18 +52,18 @@ class mail_smtp{
 		if ($this->auth && $this->Password){
 			\fputs($smtp_conn,"AUTH LOGIN\r\n");
 			$code=\substr($this->getData($smtp_conn),0,3);
-			if($code != 334)throw new \Exception('Error Auth');
+			if($code!=334)throw new \Exception('Error Auth');
 
 			\fputs($smtp_conn,\base64_encode($this->UserName)."\r\n");
 			$code=\substr($this->getData($smtp_conn),0,3);
-			if($code != 334)throw new \Exception('Error Login');
+			if($code!=334)throw new \Exception('Error Login');
 
 			\fputs($smtp_conn,\base64_encode($this->Password)."\r\n");
 			$code=\substr($this->getData($smtp_conn),0,3);
-			if($code != 235)throw new \Exception('Error Password');
+			if($code!=235)throw new \Exception('Error Password');
 		}
 		$header="Date: ".\date("D, j M Y G:i:s")." +0300\r\n";
-$header.="From: =?UTF-8?B?".\base64_encode(\c\input::iconv($this->UserName,\true))."?= <".$this->From.">\r\n";
+                $header.="From: =?UTF-8?B?".\base64_encode(\c\input::iconv($this->UserName,true))."?= <".$this->From.">\r\n";
 $header.="X-Mailer: PHP Core mail\r\n";
 if ($this->replylist)$header.="Reply-To: ".\implode(',',$this->replylist)."\r\n";
 $header.="X-Priority: 3 (Normal)\r\n";
@@ -87,7 +87,7 @@ foreach ($this->filelist as $filename=>$content){
 Content-Type: '.$type.'; name="=?UTF-8?Q?'.\str_replace("+","_",\str_replace("%","=",\urlencode($filename))).'?="
 Content-transfer-encoding: base64'.($content['cid']?'
 Content-ID: <'.$content['cid'].'>':'').'
-Content-Disposition: '.($content['cid'] && \substr($type,0,5)=='image'?'inline':'attachment').'; filename*="'.\str_replace("+"," ",\urlencode(\c\input::iconv($filename,\true))).'"
+Content-Disposition: '.($content['cid'] && \substr($type,0,5)=='image'?'inline':'attachment').'; filename*="'.\str_replace("+"," ",\urlencode(\c\input::iconv($filename,true))).'"
 
 '.\chunk_split(\base64_encode($content['name'])).'
 ';
@@ -103,22 +103,22 @@ $this->body.='--'.$this->separator.'--
 $size_msg=\strlen($header."\r\n".$this->body);
 
 \fputs($smtp_conn,"MAIL FROM:<".$this->From."> SIZE=".$size_msg."\r\n");
-$code = \substr($this->getData($smtp_conn),0,3);
-if($code != 250)throw new \Exception('Error MAIL FROM');
+$code=\substr($this->getData($smtp_conn),0,3);
+if($code!=250)throw new \Exception('Error MAIL FROM');
 
-			foreach($this->addresslist as $mail){
+	foreach($this->addresslist as $mail){
 \fputs($smtp_conn,"RCPT TO:".$mail."\r\n");
-$code = \substr($this->getData($smtp_conn),0,3);
-if($code != 250 && $code != 251)throw new \Exception('Error MAIL RCPT TO');
-			}
+$code=\substr($this->getData($smtp_conn),0,3);
+if($code!=250 && $code!=251)throw new \Exception('Error MAIL RCPT TO');
+	}
 
 \fputs($smtp_conn,"DATA\r\n");
-$code = \substr($this->getData($smtp_conn),0,3);
-if($code != 354)throw new \Exception('Error DATA '.$code);
+$code=\substr($this->getData($smtp_conn),0,3);
+if($code!=354)throw new \Exception('Error DATA '.$code);
 
 \fputs($smtp_conn,$header."\r\n".$this->body."\r\n.\r\n");
-$code = \substr($this->getData($smtp_conn),0,3);
-if($code != 250)throw new \Exception('Error DATA2 '.$code);
+$code=\substr($this->getData($smtp_conn),0,3);
+if($code!=250)throw new \Exception('Error DATA2 '.$code);
 
 \fputs($smtp_conn,"QUIT\r\n");
 
@@ -128,9 +128,9 @@ if($code != 250)throw new \Exception('Error DATA2 '.$code);
 
 	private function getData($smtp_conn){
 		$data="";
-		while($str = \fgets($smtp_conn,515)){
-			$data .= $str;
-			if(\substr($str,3,1) == " ") break;
+		while($str=\fgets($smtp_conn,515)){
+			$data.=$str;
+			if(\substr($str,3,1)==" ")break;
 		}
 		return $data;
 	}

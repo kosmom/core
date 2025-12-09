@@ -5,31 +5,31 @@ class str{
 	private $val;
 	private $charset;
 
-	public function __toString () {
+	public function __toString(){
 		return $this->val;
 	}
 	public function val(){
 		return $this->val;
 	}
-	public function __construct($value,$charset=\null) {
+	public function __construct($value,$charset=null){
 		$this->val=(string)$value;
 		$this->charset=$charset?$charset:core::$charset;
 	}
-	static function make($string,$charset=\null){
+	static function make($string,$charset=null){
 		return new str($string,$charset);
 	}
 
-	function substr($start, $length = \null) {
-		$this->val=\mb_substr($this->val, $start, $length, $this->charset);
+	function substr($start,$length=null){
+		$this->val=\mb_substr($this->val,$start,$length,$this->charset);
 		return $this;
 	}
 	/**
 	 * Equivelent of Javascript's String.substring
 	 * @link http://www.w3schools.com/jsref/jsref_substring.asp
 	 */
-	function substring ($string, $start, $end=\null) {
-		if(empty($end))return $this->substr($string, $start);
-		return $this->substr($string, $end - $start);
+	function substring($string,$start,$end=null){
+		if(empty($end))return $this->substr($string,$start);
+		return $this->substr($string,$end-$start);
 	}
 	function charAt($point){
 		return \substr($this->val,$point,1);
@@ -47,10 +47,10 @@ class str{
 		return $this;
 	}
 	function pos($needle,$offset=0){
-		return \mb_strpos($this->val, $needle, $offset, $this->charset);
+		return \mb_strpos($this->val,$needle,$offset,$this->charset);
 	}
 	function ipos($needle,$offset=0){
-		return \mb_stripos($this->val, $needle, $offset, $this->charset);
+		return \mb_stripos($this->val,$needle,$offset,$this->charset);
 	}
 	function indexOf($needle,$offset=0){
 		return $this->pos($needle,$offset);
@@ -60,8 +60,8 @@ class str{
 		return $this;
 	}
 
-	function strtr($from,$to=\null){
-		if ($to===\null){
+	function strtr($from,$to=null){
+		if ($to===null){
 			$this->val=\strtr($this->val,$from);
 		}else{
 			$this->val=\strtr($this->val,$from,$to);
@@ -70,20 +70,20 @@ class str{
 	}
 	
 	function length(){
-		return \mb_strlen($this->val, $this->charset);
+		return \mb_strlen($this->val,$this->charset);
 	}
 	function len(){
 		return $this->length();
 	}
 	function strtolower(){
-		$this->val= \mb_strtolower($this->val, $this->charset);
+		$this->val= \mb_strtolower($this->val,$this->charset);
 		return $this;
 	}
 	function lower(){
 		return $this->strtolower();
 	}
 	function strtoupper(){
-		$this->val= \mb_strtoupper($this->val, $this->charset);
+		$this->val= \mb_strtoupper($this->val,$this->charset);
 		return $this;
 	}
 	function ucfirst(){
@@ -91,19 +91,19 @@ class str{
 		return $this;
 	}
 	function ucwords($delimeters=' \t\r\n\f\v'){
-		$this->val= \ucwords($this->val,$delimeters);
+		$this->val=\ucwords($this->val,$delimeters);
 		return $this;
 	}
 	function upper(){
 		return $this->strtoupper();
 	}
-	function match ($regex) {
+	function match($regex){
 		$matches=array();
-		\preg_match_all($regex, $this->val, $matches, \PREG_PATTERN_ORDER);
+		\preg_match_all($regex,$this->val,$matches,\PREG_PATTERN_ORDER);
 		return $matches[0];
 	}
 	function explode($delimeter){
-		return \explode($delimeter, $this->val);
+		return \explode($delimeter,$this->val);
 	}
 	function split($delimeter){
 		return $this->explode($delimeter);
@@ -120,7 +120,7 @@ class str{
 		$this->val=\urldecode($this->val);
 		return $this;
 	}
-	function strip_tags($alowabas_tags=\null){
+	function strip_tags($alowabas_tags=null){
 		$this->val=\strip_tags($this->val,$alowabas_tags);
 		return $this;
 	}
@@ -157,22 +157,22 @@ class str{
 	}
 	function similar_text($phrase){
 		$percent=0;
-		\similar_text($this->val, $phrase, $percent);
+		\similar_text($this->val,$phrase,$percent);
 		return $percent;
 	}
 	function pad($length,$pad_string,$pad_type=\STR_PAD_RIGHT){
-		$this->val=\str_pad($this->val, $length, $pad_string, $pad_type);
+		$this->val=\str_pad($this->val,$length,$pad_string,$pad_type);
 		return $this;
 	}
 	function str_pad($length,$pad_string,$pad_type=\STR_PAD_RIGHT){
 		return $this->pad($length,$pad_string,$pad_type);
 	}
 	function repeat($multiplier){
-		$this->val=\str_repeat($this->val, $multiplier);
+		$this->val=\str_repeat($this->val,$multiplier);
 		return $this;
 	}
-	function wordwrap($width=75,$break='\n',$cut=\false){
-		$this->val=\wordwrap($this->val, $width, $break, $cut);
+	function wordwrap($width=75,$break='\n',$cut=false){
+		$this->val=\wordwrap($this->val,$width,$break,$cut);
 		return $this;
 	}
 	function translit(){
@@ -180,7 +180,7 @@ class str{
 		return $this;
 	}
 	function t($vars=array()){
-		$this->val=translate::t($this->val, $vars);
+		$this->val=translate::t($this->val,$vars);
 		return $this;
 	}
 	function iconv(){
@@ -191,14 +191,14 @@ class str{
 		$this->val=input::iconv($this->val);
 		return $this;
 	}
-	function toPic($autorotate=\true){
-		return new pic($this->val, $autorotate);
+	function toPic($autorotate=true){
+		return new pic($this->val,$autorotate);
 	}
-	function totime($now=\null){
+	function totime($now=null){
 		if (!$now)$now=time();
 		return \strtotime($this->val,$now);
 	}
-	function strtotime($now=\null){
+	function strtotime($now=null){
 		return $this->totime($now);
 	}
 
@@ -223,23 +223,23 @@ class str{
 		return $this;
 	}
 	function jsonDecode(){
-		$this->val=input::json_decode($this->val, $this->charset);
+		$this->val=input::json_decode($this->val,$this->charset);
 		return $this;
 	}
-	function dd($exit=\true){
+	function dd($exit=true){
 		debug::z($this->val,$exit);
 	}
 	function log($filename){
-		error::log($filename, $this->val);
+		error::log($filename,$this->val);
 	}
 	function call($callback){
 		$this->val=$callback($this->val);
 		return $this;
 	}
 	function validate($validators){
-		return input::validate($this->val, $validators);
+		return input::validate($this->val,$validators);
 	}
-	function bb($isHtml=\false){
+	function bb($isHtml=false){
 		$this->val=input::bb($this->val,$isHtml);
 		return $this;
 	}

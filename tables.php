@@ -13,22 +13,22 @@ class tables{
 	static $groupFooter;
 	static $attributes=array();
 	static $classes=array('table');
-	static $row_attributes=\false;
-	static $cell_attributes=\false;
+	static $row_attributes=false;
+	static $cell_attributes=false;
 	static $header_render_callback;
 	/**
 	 * Set table responsives
 	 * @param string $responsive_border xxs, xs, sm, md
 	 */
-	static $responsive=\false;
-	static $sticky=\false; // sticky or not header
-	static $show_header=\true; // false \true or 'join'
-	static $draw_if_empty=\false; // \false true
+	static $responsive=false;
+	static $sticky=false; // sticky or not header
+	static $show_header=true; // false true or 'join'
+	static $draw_if_empty=false; // false true
 
 	static function addClass($class){
-		if (is_string(self::$classes)){
+		if (\is_string(self::$classes)){
 			self::$classes.=' '.$class;
-		}elseif (is_array(self::$classes)){
+		}elseif (\is_array(self::$classes)){
 			self::$classes[]=$class;
 		}
 	}
@@ -42,17 +42,17 @@ class tables{
 		return $field;
 	}
 
-	static function order($default_sort=\null){
+	static function order($default_sort=null){
 		if (isset($_GET['sort'])){
 			$order=$_GET['order'];
 			if ($order=='desc')return 'desc';
 			return '';
 		}
-		if ($default_sort===\null)return '';
+		if ($default_sort===null)return '';
 		return $default_sort;
 	}
 
-	static function render($input=array(),$emptyCallback=\null){
+	static function render($input=array(),$emptyCallback=null){
 		if (core::$debug)if (empty($input)) debug::trace('Table rendered with empty var inputs',error::WARNING);
 		if (!isset($input['draw_if_empty']))$input['draw_if_empty']=self::$draw_if_empty;
 		if (!isset($input['responsive']))$input['responsive']=self::$responsive;

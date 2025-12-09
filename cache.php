@@ -12,7 +12,7 @@ class cache{
 	
 	static function refresh_page($link){
 		$cachefile=self::getPath().'/'.\md5($link).'.gz';
-		if (\file_exists($cachefile)) \unlink($cachefile);
+		if (\file_exists($cachefile))\unlink($cachefile);
 		if (isset($_SESSION)){
 			$temp=$_SESSION;
 			unset($_SESSION);
@@ -75,23 +75,23 @@ class cache{
 	static function clearPage($link){
 		$cachefile=self::getPath().'/'.\md5($link).'.gz';
 		if (\file_exists($cachefile))\unlink($cachefile);
-		return \true;
+		return true;
 	}
 	static function delete($key){
 		return self::clear($key);
 	}
-	static function clear($key=\null){
+	static function clear($key=null){
 		$path=self::getPath();
-		if ($key===\null){
-			if (!$handle=\opendir($path))return \false;
-			while(\false !== ($file=\readdir($handle))){
-				if ($file == '.' or $file == '..' or (\substr($file,-6) != '.cache' && \substr($file,-3) != '.gz') or \is_dir($file)) continue;
+		if ($key===null){
+			if (!$handle=\opendir($path))return false;
+			while(false !== ($file=\readdir($handle))){
+				if ($file=='.' or $file=='..' or (\substr($file,-6)!='.cache' && \substr($file,-3)!='.gz') or \is_dir($file))continue;
 				\unlink($path.'/'.$file);
 			}
 			\closedir($handle);
-			return \true;
+			return true;
 		}
-		if (\strpos($key,'*')===\false)return \unlink($path.'/'.$key.'.cache');
+		if (\strpos($key,'*')===false)return \unlink($path.'/'.$key.'.cache');
 		foreach (\glob($path.'/'.$key.'.cache') as $file)\unlink($file);
 	}
 	static function check($files){
@@ -101,13 +101,13 @@ class cache{
 			$compare[\md5($key).'.gz']=1;
 		}
 		$files=0;
-		if (!$handle=\opendir(self::getPath()))return \false;
-		while(\false !== ($file=\readdir($handle))){
-			if ($file == '.' or $file == '..' or substr($file,-3) != '.gz' or \is_dir($file) or !$compare[$file])return \false;
+		if (!$handle=\opendir(self::getPath()))return false;
+		while(false !== ($file=\readdir($handle))){
+			if ($file=='.' || $file=='..' || substr($file,-3)!='.gz' || \is_dir($file) || !$compare[$file])return false;
 			$files++;
 		}
 		\closedir($handle);
-		return \sizeof($compare)==$files;
+		return \count($compare)==$files;
 	}
 
 	/**
@@ -118,12 +118,12 @@ class cache{
 	}
 	static function isCleared(){
 		if (!$handle=\opendir(self::getPath()))return ;
-		while(\false !== ($file=\readdir($handle))){
-			if ($file == '.' or $file == '..' or \substr($file,-3) != '.gz' or \is_dir($file)) continue;
-			return \false;
+		while(false!==($file=\readdir($handle))){
+			if ($file=='.' || $file=='..' || \substr($file,-3)!='.gz' || \is_dir($file))continue;
+			return false;
 		}
 		\closedir($handle);
-		return \true;
+		return true;
 	}
 
 	/**
@@ -131,8 +131,8 @@ class cache{
 	 * @param null|int $timeout
 	 * @return int
 	 */
-	static function timeout($timeout=\null){
-		if ($timeout===\null)return self::$cacheTimeout;
+	static function timeout($timeout=null){
+		if ($timeout===null)return self::$cacheTimeout;
 		return self::$cacheTimeout=(int)$timeout;
 	}
 
@@ -141,8 +141,8 @@ class cache{
 	 * @param null|string $path
 	 * @return string
 	 */
-	static function path($path=\null){
-		if ($path===\null)return self::$cachePath;
+	static function path($path=null){
+		if ($path===null)return self::$cachePath;
 		return self::$cachePath=(string)$path;
 	}
 
@@ -156,16 +156,16 @@ class cache{
 	 * @param null|int $timeout
 	 * @return mixed
 	 */
-	static function get($key,$callback=\null,$timeout=\null) {
-		if ($timeout===\null)$timeout=isset(core::$data['cacheTimeout'])?core::$data['cacheTimeout']:self::$cacheTimeout;
+	static function get($key,$callback=null,$timeout=null) {
+		if ($timeout===null)$timeout=isset(core::$data['cacheTimeout'])?core::$data['cacheTimeout']:self::$cacheTimeout;
 		$fullpath=self::getPath().'/'.$key.'.cache';
 		$mtime=@\filemtime($fullpath);
-		if ($mtime===\false or ($timeout>0 && \time() - $mtime > $timeout)){
+		if ($mtime===false || ($timeout>0 && \time()-$mtime>$timeout)){
 			if (!\is_callable($callback))return $callback;
 			$rs=$callback($key);
-			filedata::savedata($fullpath, $rs);
+			filedata::savedata($fullpath,$rs);
 			$mtime=\filemtime($fullpath);
-			\clearstatcache(\false,$fullpath);
+			\clearstatcache(false,$fullpath);
 			return $rs;
 		}
 		return filedata::loaddata($fullpath);
@@ -176,7 +176,7 @@ class cache{
 			return \basename($item,'.cache');
 		});
 	}
-	static function getMultiple($keys,$default=\null,$timeout=\null){
+	static function getMultiple($keys,$default=null,$timeout=null){
 		$out=array();
 		foreach ($keys as $key){
 			$out[$key]=self::get($key,$default,$timeout);
@@ -190,17 +190,17 @@ class cache{
 	}
 	static function setMultiple($values){
 		foreach ($values as $key=>$value){
-			self::set($key, $value);
+			self::set($key,$value);
 		}
 	}
 	static function set($key, $value) {
 		$fullpath=self::getPath().'/'.$key.'.cache';
 		filedata::savedata($fullpath, $value);
 	}
-	static function has($key,$timeout=\null){
-		if ($timeout===\null)$timeout=isset(core::$data['cacheTimeout'])?core::$data['cacheTimeout']:self::$cacheTimeout;
+	static function has($key,$timeout=null){
+		if ($timeout===null)$timeout=isset(core::$data['cacheTimeout'])?core::$data['cacheTimeout']:self::$cacheTimeout;
 		$fullpath=self::getPath().'/'.$key.'.cache';
 		$mtime=@\filemtime($fullpath);
-		return !($mtime===\false or ($timeout>0 && \time() - $mtime > $timeout));
+		return !($mtime===false or ($timeout>0 && \time()-$mtime>$timeout));
 	}
 }

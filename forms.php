@@ -16,7 +16,7 @@ class forms{
 	}
 	
 	private static function createForm($form){
-		if ($form===\null)$form=self::$activeForm;
+		if ($form===null)$form=self::$activeForm;
 		if (!isset(self::$forms[$form]))self::$forms[$form]=new form();
 		return $form;
 	}
@@ -25,58 +25,58 @@ class forms{
 	 * Get form as object
 	 * @return form
 	 */
-	static function getForm($form=\null){
-		if ($form===\null)$form=self::$activeForm;
+	static function getForm($form=null){
+		if ($form===null)$form=self::$activeForm;
 		return self::$forms[$form];
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function is_submit($form=\null){
+	static function is_submit($form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->isSubmit();
 	}
-	static function isSubmit($form=\null){
+	static function isSubmit($form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->isSubmit();
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function render_field($name,$item=\null,$form=\null){
-		return self::renderField($name, $item, $form);
+	static function render_field($name,$item=null,$form=null){
+		return self::renderField($name,$item,$form);
 	}
 
-	static function renderField($name,$item=\null,$form=\null){
+	static function renderField($name,$item=null,$form=null){
 		$form=self::createForm($form);
 		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderField($name,$item);
 	}
-	static function renderFieldsByName($prefix,$form=\null){
+	static function renderFieldsByName($prefix,$form=null){
 		$form=self::createForm($form);
 		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderFieldsByName($prefix);
 	}
-	static function renderFieldsByPosition($min=0,$max=999,$form=\null){
+	static function renderFieldsByPosition($min=0,$max=999,$form=null){
 		$form=self::createForm($form);
 		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderFieldsByPosition($min,$max);
 	}
 
-	static function classes($classes=\null,$form=\null){
+	static function classes($classes=null,$form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->classes($classes);
 	}
-	static function addClass($class,$form=\null){
+	static function addClass($class,$form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->addClass($class);
 	}
 
-	static function attributes($attributes=\null,$form=\null){
+	static function attributes($attributes=null,$form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->attributes($attributes);
 	}
-	static function addAttribute($key,$value,$form=\null){
+	static function addAttribute($key,$value,$form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->addAttribute($key,$value);
 	}
@@ -84,10 +84,10 @@ class forms{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function render_field_label($name,$item=\null,$form=\null){
-		return self::renderFieldLabel($name, $item, $form);
+	static function render_field_label($name,$item=null,$form=null){
+		return self::renderFieldLabel($name,$item,$form);
 	}
-	static function renderFieldLabel($name,$item=\null,$form=\null){
+	static function renderFieldLabel($name,$item=null,$form=null){
 		$form=self::createForm($form);
 		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderFieldLabel($name,$item);
@@ -96,10 +96,10 @@ class forms{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function render_field_field($name,$item=\null,$form=\null){
-		return self::renderFieldField($name, $item, $form);
+	static function render_field_field($name,$item=null,$form=null){
+		return self::renderFieldField($name,$item,$form);
 	}
-	static function renderFieldField($name,$item=\null,$form=\null){
+	static function renderFieldField($name,$item=null,$form=null){
 		$form=self::createForm($form);
 		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderFieldField($name,$item);
@@ -108,10 +108,10 @@ class forms{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function render_field_form_group_begin($name,$item=\null,$form=\null){
-		return self::renderFieldFormGroupBegin($name, $item, $form);
+	static function render_field_form_group_begin($name,$item=null,$form=null){
+		return self::renderFieldFormGroupBegin($name,$item,$form);
 	}
-	static function renderFieldFormGroupBegin($name,$item=\null,$form=\null){
+	static function renderFieldFormGroupBegin($name,$item=null,$form=null){
 		$form=self::createForm($form);
 		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderFieldFormGroupBegin($name,$item);
@@ -119,10 +119,10 @@ class forms{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function render_field_form_group_end($name,$item=\null,$form=\null){
-		return self::renderFieldFormGroupEnd($name, $item, $form);
+	static function render_field_form_group_end($name,$item=null,$form=null){
+		return self::renderFieldFormGroupEnd($name,$item,$form);
 	}
-	static function renderFieldFormGroupEnd($name,$item=\null,$form=\null){
+	static function renderFieldFormGroupEnd($name,$item=null,$form=null){
 		$form=self::createForm($form);
 		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderFieldFormGroupEnd($name,$item);
@@ -131,10 +131,10 @@ class forms{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function render_begin_tag($form=\null){
+	static function render_begin_tag($form=null){
 		return self::renderBeginTag($form);
 	}
-	static function renderBeginTag($form=\null){
+	static function renderBeginTag($form=null){
 		$form=self::createForm($form);
 		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderBeginTag();
@@ -143,11 +143,11 @@ class forms{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function render_end_tag($form=\null){
-		return '</form>'; // for simplicity
+	static function render_end_tag($form=null){
+		return '</form>'; // simplicity
 	}
-	static function renderEndTag($form=\null){
-		return '</form>'; // for simplicity
+	static function renderEndTag($form=null){
+		return '</form>'; // simplicity
 	}
 
 	/**
@@ -170,11 +170,11 @@ class forms{
 	 *								)),
 	 *						);
 	 */
-	static function addField($fieldKey,$fieldParams=\null,$form=\null){
+	static function addField($fieldKey,$fieldParams=null,$form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->addField($fieldKey,$fieldParams);
 	}
-	static function addFieldAs($fieldKey,$asFieldKey,$fieldParams=array(),$form=\null){
+	static function addFieldAs($fieldKey,$asFieldKey,$fieldParams=array(),$form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->addFieldAs($fieldKey,$asFieldKey,$fieldParams);
 	}
@@ -182,13 +182,13 @@ class forms{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function add_field($fieldKey,$fieldParams=\null,$form=\null){
+	static function add_field($fieldKey,$fieldParams=null,$form=null){
 		return self::addField($fieldKey,$fieldParams,$form);
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function add_fields($fields,$form=\null){
+	static function add_fields($fields,$form=null){
 		return self::addFields($fields, $form);
 	}
 	/**
@@ -196,12 +196,12 @@ class forms{
 	 * @param string $form
 	 * @return form
 	 */
-	static function addFields($fields,$form=\null){
+	static function addFields($fields,$form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->addFields($fields);
 	}
 
-	static function ajax($value=\null,$form=\null){
+	static function ajax($value=null,$form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->ajax($value);
 	}
@@ -212,12 +212,12 @@ class forms{
 	 * @param string $form
 	 * @return form
 	 */
-	static function method($method=\null,$form=\null){
+	static function method($method=null,$form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->method($method);
 	}
 
-	static function disabledReturn($false,$form=\null){
+	static function disabledReturn($false,$form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->disabledReturn($false);
 	}
@@ -225,7 +225,7 @@ class forms{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function form_inline($form=\null){
+	static function form_inline($form=null){
 		return self::formInline($form);
 	}
 	/**
@@ -233,15 +233,15 @@ class forms{
 	 * @param string $form
 	 * @return form
 	 */
-	static function formInline($form=\null){
+	static function formInline($form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->formInline();
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function form_horizontal($labelClassesArray,$inputClassesArray=12,$form=\null){
-		return self::formHorizontal($labelClassesArray, $inputClassesArray, $form);
+	static function form_horizontal($labelClassesArray,$inputClassesArray=12,$form=null){
+		return self::formHorizontal($labelClassesArray,$inputClassesArray,$form);
 	}
 	/**
 	 * Set form to horizontal view
@@ -249,7 +249,7 @@ class forms{
 	 * @param array|int $inputClassesArray example: array('sm'=>2,'xs'=>4,'md'=>1,'lg'=>4) or number max cells in row
 	 * @param string $form
 	 */
-	static function formHorizontal($labelClassesArray,$inputClassesArray=12,$form=\null){
+	static function formHorizontal($labelClassesArray,$inputClassesArray=12,$form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->formHorizontal($labelClassesArray,$inputClassesArray);
 	}
@@ -257,7 +257,7 @@ class forms{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function active_form($form=\null){
+	static function active_form($form=null){
 		return self::activeForm($form);
 	}
 	/**
@@ -265,15 +265,15 @@ class forms{
 	 * @param string|null $form
 	 * @return null|string
 	 */
-	static function activeForm($form=\null){
-		if ($form===\null)return self::$activeForm;
+	static function activeForm($form=null){
+		if ($form===null)return self::$activeForm;
 		self::$activeForm=(string)$form;
 	}
 
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function set_data($data=\null,$force=\false,$form=\null){
+	static function set_data($data=null,$force=false,$form=null){
 		return self::setData($data,$force,$form);
 	}
 	/**
@@ -282,30 +282,30 @@ class forms{
 	 * @param string $form
 	 * @return form
 	 */
-	static function setData($data=\null,$force=\false,$form=\null){
+	static function setData($data=null,$force=false,$form=null){
 		$form=self::createForm($form);
-		return self::$forms[$form]->setData($data,\true,$force);
+		return self::$forms[$form]->setData($data,true,$force);
 	}
-	static function setDataForce($data=\null,$form=\null){
+	static function setDataForce($data=null,$form=null){
 		$form=self::createForm($form);
-		return self::$forms[$form]->setDataForce($data,\true);
+		return self::$forms[$form]->setDataForce($data,true);
 	}
-	static function addData($data=\null,$force=\false,$form=\null){
+	static function addData($data=null,$force=false,$form=null){
 		$form=self::createForm($form);
-		return self::$forms[$form]->addData($data,\true,$force);
+		return self::$forms[$form]->addData($data,true,$force);
 	}
-	static function addDataForce($data=\null,$form=\null){
+	static function addDataForce($data=null,$form=null){
 		$form=self::createForm($form);
-		return self::$forms[$form]->addDataForce($data,\true);
+		return self::$forms[$form]->addDataForce($data,true);
 	}
 
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function fill_data($form=\null){
+	static function fill_data($form=null){
 		return self::fillData($form);
 	}
-	static function fillData($form=\null){
+	static function fillData($form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->fillData();
 	}
@@ -313,7 +313,7 @@ class forms{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function get_data($form=\null){
+	static function get_data($form=null){
 		return self::getData($form);
 	}
 	/**
@@ -321,28 +321,28 @@ class forms{
 	 * @param string $form
 	 * @return array
 	 */
-	static function getData($form=\null){
+	static function getData($form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->getData();
 	}
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function is_valid($data=array(),$checkData=\false,$form=\null){
-		return self::isValid($data, $checkData, $form);
+	static function is_valid($data=array(),$checkData=false,$form=null){
+		return self::isValid($data,$checkData,$form);
 	}
 	/**
 	 *  Check form values to valid
 	 */
-	static function isValid($data=array(),$checkData=\false,$form=\null){
+	static function isValid($data=array(),$checkData=false,$form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->isValid($data,$checkData);
 	}
 	/**
 	 *  Check form values to invalid
 	 */
-	static function isInvalid($data=array(),$checkData=\false,$form=\null){
-		if ($form===\null)$form=self::$activeForm;
+	static function isInvalid($data=array(),$checkData=false,$form=null){
+		if ($form===null)$form=self::$activeForm;
 		self::createForm($form);
 		return self::$forms[$form]->isInvalid($data,$checkData);
 	}
@@ -351,18 +351,18 @@ class forms{
 	 * @param string $form form name
 	 * @return string html text
 	 */
-	static function render($form=\null){
+	static function render($form=null){
 		$form=self::createForm($form);
 		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->render();
 	}
-	static function renderOtherFields($form=\null){
+	static function renderOtherFields($form=null){
 		$form=self::createForm($form);
 		self::$forms[$form]->defaultResolver=self::$defaultResolver;
 		return self::$forms[$form]->renderOtherFields();
 	}
 
-	static function addSubmitField($params=array(),$fieldKey=\null,$form=\null){
+	static function addSubmitField($params=array(),$fieldKey=null,$form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->addSubmitField($params,$fieldKey);
 	}
@@ -370,14 +370,14 @@ class forms{
 	/**
 	 * @deprecated since version 3.4
 	 */
-	static function render_as_table($form=\null){
+	static function render_as_table($form=null){
 		return self::renderAsTable($form);
 	}
-	static function renderAsTable($form=\null){
+	static function renderAsTable($form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->renderAsTable();
 	}
-	static function getFormDescription($key='',$form=\null){
+	static function getFormDescription($key='',$form=null){
 		$form=self::createForm($form);
 		return self::$forms[$form]->getFormDescription($key);
 	}

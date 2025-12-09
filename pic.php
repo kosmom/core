@@ -39,10 +39,10 @@ class pic{
 		if ($usage>$limit){
 			error::add(translate::t('Image is too large to be loaded'),error::WARNING);
 			if (core::$debug)debug::groupEnd();
-			return \false;
+			return false;
 		}
 		if (core::$debug)debug::groupEnd();
-		return \true;
+		return true;
 	}
 	/**
 	 * is pic filename or not
@@ -54,20 +54,20 @@ class pic{
 			$prop=\getimagesizefromstring($filename);
 			if (!$prop){
 				if (core::$debug)debug::consoleLog('Filename '.$filename.' not found',error::WARNING);
-				return \false;
+				return false;
 			}
 		}else{
 			$prop=\getimagesize($filename);
 		}
-		if (empty($prop[2]))return \false;
-		if (!\in_array($prop[2],array(18,\IMAGETYPE_JPEG,\IMAGETYPE_GIF,\IMAGETYPE_PNG,\IMAGETYPE_BMP)))return \false;
-		return \true;
+		if (empty($prop[2]))return false;
+		if (!\in_array($prop[2],array(18,\IMAGETYPE_JPEG,\IMAGETYPE_GIF,\IMAGETYPE_PNG,\IMAGETYPE_BMP)))return false;
+		return true;
 	}
 
 	function rotate($angleClockwise,$bgdColor=0){
 		$new=\imagerotate($this->image,-\intval($angleClockwise),$bgdColor);
-		\imagesavealpha($new,\true);
-		\imagealphablending($new,\true);
+		\imagesavealpha($new,true);
+		\imagealphablending($new,true);
 		$this->x=\imagesx($new);
 		$this->y=\imagesy($new);
 		$this->image=$new;
@@ -76,8 +76,8 @@ class pic{
 
 	function flip($direction='xy'){
 		$new=\imagecreatetruecolor($this->x,$this->y);
-		\imagealphablending($new,\false);
-		\imagesavealpha($new,\true);
+		\imagealphablending($new,false);
+		\imagesavealpha($new,true);
 		$dirs=array(
 			'xy'=>3,//IMG_FLIP_BOTH,
 			'y'=>2,//IMG_FLIP_VERTICAL,
@@ -88,7 +88,7 @@ class pic{
 	}
 
 	private function imageflip($image,$mode){
-		if (\function_exists('imageflip'))return imageflip($image,$mode);
+		if (\function_exists('imageflip'))return \imageflip($image,$mode);
 		switch ($mode){
 			case 1:
 		$max_x=\imagesx($image)-1;
@@ -126,7 +126,7 @@ class pic{
 	\imagedestroy($tmp_img);
 	}
 
-	function load($filename,$autorotate=\true){
+	function load($filename,$autorotate=true){
 		return new $this($filename,$autorotate);
 	}
 
@@ -134,7 +134,7 @@ class pic{
 	* Load picture into memory
 	* @param string $filename or $imageAsString
 	*/
-	function __construct($filename,$autorotate=\true){
+	function __construct($filename,$autorotate=true){
 		if ($this->image)\imagedestroy($this->image);
 		if (\gettype($filename)=='object' && \get_class($filename)=='GdImage'){
 		    $this->image=$filename;
@@ -142,14 +142,14 @@ class pic{
 		    $this->y=\imagesy($filename);
 		    return;
 		}elseif (\file_exists($filename)){
-			$fromString=\false;
+			$fromString=false;
 			$prop=\getimagesize($filename);
 		}else{
 			if (\substr($filename, 0,11)=='data:image/'){
 				$matches=array();
 				\preg_match('@data:image/\w+;base64,(.+)@',$filename,$matches);
 				if (empty($matches[1]))throw new \Exception('Image has wrong data',3);
-				$filename= \base64_decode($matches[1]);
+				$filename=\base64_decode($matches[1]);
 			}
 			if (\function_exists('getimagesizefromstring')){
 				$prop=\getimagesizefromstring($filename);
@@ -159,9 +159,9 @@ class pic{
 				\file_put_contents($tempresult,$filename);
 				$prop=\getimagesize($tempresult);
 			}
-			$fromString=\true;
+			$fromString=true;
 		}
-		if (!$prop) throw new \Exception('Image not recognized',3);
+		if (!$prop)throw new \Exception('Image not recognized',3);
 		if (!$this->memoryTest($prop[0],$prop[1]))throw new \Exception('Need more memory',4);
 		$this->x=$prop[0];
 		$this->y=$prop[1];
@@ -211,12 +211,12 @@ class pic{
 	 * @param integer $y height
 	 * @return pic
 	 */
-	function resize($x,$y=\null){
-		if ($y===\null)$y=$x;
+	function resize($x,$y=null){
+		if ($y===null)$y=$x;
 		if (!$this->memoryTest($x,$y))throw new \Exception('Need more memory');
-		$new=\imagecreatetruecolor($x, $y);
-		\imagealphablending($new,\false);
-		\imagesavealpha($new,\true);
+		$new=\imagecreatetruecolor($x,$y);
+		\imagealphablending($new,false);
+		\imagesavealpha($new,true);
 		\imagecopyresampled($new,$this->image,0,0,0,0,$x,$y,$this->x,$this->y);
 		$this->x=$x;
 		$this->y=$y;
@@ -237,7 +237,7 @@ class pic{
 	}
 
 	function smooth($level){
-		\imagefilter($this->image,\IMG_FILTER_SMOOTH, $level);
+		\imagefilter($this->image,\IMG_FILTER_SMOOTH,$level);
 		return $this;
 	}
 
@@ -247,14 +247,14 @@ class pic{
 	 * @param int $y height
 	 * @return pic
 	 */
-	function resizeBox($x,$y=\null){
-		if ($y===\null)$y=$x;
-		if ($x<1 || $y<1)  throw new \Exception('wrong x or y values on resize');
+	function resizeBox($x,$y=null){
+		if ($y===null)$y=$x;
+		if ($x<1 || $y<1)throw new \Exception('wrong x or y values on resize');
 		if (($x>$this->x) && ($y>$this->y))return $this;
 		$reduce=max($this->y/$y,$this->x/$x);
 		if ($reduce==0)return $this;
-		$newX=intval($this->x/$reduce);
-		$newY=intval($this->y/$reduce);
+		$newX=(int)($this->x/$reduce);
+		$newY=(int)($this->y/$reduce);
 		if (!$this->memoryTest($newX,$newY))throw new \Exception('Need more memory');
 		$copy=\imagecreatetruecolor($newX,$newY);
 		\imagecopyresampled($copy,$this->image,0,0,0,0,$newX,$newY,$this->x,$this->y);
@@ -275,9 +275,9 @@ class pic{
 	/**
 	 * Change size with save dimensions for max of values
 	 */
-	function resizeBoxFit($x,$y=\null){
-		if ($y===\null)$y=$x;
-		if ($x<1 || $y<1)  throw new \Exception('wrong x or y values on resize');
+	function resizeBoxFit($x,$y=null){
+		if ($y===null)$y=$x;
+		if ($x<1 || $y<1)throw new \Exception('wrong x or y values on resize');
 		if (($x>$this->x) && ($y>$this->y))return $this;
 		if ($this->x/$x<$this->y/$y){
 			$reduce=$this->y/$x;
@@ -291,7 +291,7 @@ class pic{
 		if ($reduce==0)return $this;
 		if (!$this->memoryTest($x,$y))throw new \Exception('Need more memory');
 		$copy=\imagecreatetruecolor($x,$y);
-		\imagesavealpha($copy,\true);
+		\imagesavealpha($copy,true);
 		$transparent=\imagecolorallocatealpha($copy,255,255,255,127);
 		\imagefill($copy,0,0,$transparent);
 		\imagecopyresampled($copy,$this->image,$width,$height,0,0,$this->x/$reduce,$this->y/$reduce,$this->x,$this->y);
@@ -308,12 +308,12 @@ class pic{
 	 * @param int|null $width width
 	 * @param int|null $height height
 	 */
-	function crop($x,$y,$width=\null,$height=\null){
+	function crop($x,$y,$width=null,$height=null){
 		if (($x>$this->x) && ($y>$this->y))return $this;
-		if ($height===\null)$height=$width?$width:$this->y-$y;
-		if ($width===\null)$width=$this->x-$x;
+		if ($height===null)$height=$width?$width:$this->y-$y;
+		if ($width===null)$width=$this->x-$x;
 		$copy=\imagecreatetruecolor($width,$height);
-		\imagesavealpha($copy,\true);
+		\imagesavealpha($copy,true);
 		$transparent=\imagecolorallocatealpha($copy,255,255,255,127);
 		\imagefill($copy,0,0,$transparent);
 		\imagecopyresampled($copy,$this->image,0,0,$x,$y,$width,$height,$width,$height);
@@ -324,9 +324,9 @@ class pic{
 		return $this;
 	}
 
-	function resizeFit($x,$y=\null){
-		if ($y===\null)$y=$x;
-		if ($x<1 or $y<1)  throw new \Exception('wrong x or y values on resize');
+	function resizeFit($x,$y=null){
+		if ($y===null)$y=$x;
+		if ($x<1 or $y<1)throw new \Exception('wrong x or y values on resize');
 		if ($this->x/$x<$this->y/$y){
 			$reduce=$this->x/$x;
 			$height=$y*.5-$this->y/$reduce*.5;
@@ -338,7 +338,7 @@ class pic{
 		}
 		if ($reduce==0)return $this;
 		if (!$this->memoryTest($x,$y))throw new \Exception('Need more memory');
-		$copy=\imagecreatetruecolor($x, $y);
+		$copy=\imagecreatetruecolor($x,$y);
 		\imagecopyresampled($copy,$this->image,$width,$height,0,0,$this->x/$reduce,$this->y/$reduce,$this->x,$this->y);
 		$this->x=$this->x/$reduce;
 		$this->y=$this->y/$reduce;
@@ -352,11 +352,11 @@ class pic{
 	 * @param int $x width
 	 * @param int $y height
 	 */
-	function cropCenter($x,$y=\null){
-		if ($y===\null)$y=$x;
-		if ($x<1 || $y<1)  throw new \Exception('wrong x or y values on resize');
+	function cropCenter($x,$y=null){
+		if ($y===null)$y=$x;
+		if ($x<1 || $y<1)throw new \Exception('wrong x or y values on resize');
 		$copy=\imagecreatetruecolor($x,$y);
-		\imagesavealpha($copy,\true);
+		\imagesavealpha($copy,true);
 		$transparent=\imagecolorallocatealpha($copy,0,0,0,127);
 		\imagefill($copy,0,0,$transparent);
 		$width=($x-$this->x)/2;
@@ -377,7 +377,7 @@ class pic{
 	 * @param float $opacity watermart opacity
 	 */
 	function addWatermark($x,$y,$watermarkFile,$opacity=100){
-		if (!\is_readable($watermarkFile))  throw new \Exception('watermark file not exists');
+		if (!\is_readable($watermarkFile))throw new \Exception('watermark file not exists');
 		$prop=\getimagesize($watermarkFile);
 		if (!$this->memoryTest($prop[0],$prop[1]))throw new \Exception('Need more memory');
 		switch($prop[2]){
@@ -392,8 +392,8 @@ class pic{
 				break;
 			default: throw new \Exception('watermark file is not image');
 		}
-		\imagealphablending($this->image,\true);
-		\imagealphablending($watermark,\true);
+		\imagealphablending($this->image,true);
+		\imagealphablending($watermark,true);
 		\imagecopymerge($this->image,$watermark,($this->x-$prop[0])*.01*$x,($this->y-$prop[1])*.01*$y,0,0,$prop[0],$prop[1],$opacity);
 		\imagedestroy($watermark);
 		return $this;
@@ -446,8 +446,8 @@ class pic{
 		}else{
 			// Make a desaturated copy of the image
 			$new =\imagecreatetruecolor($this->x,$this->y);
-			\imagealphablending($new,\false);
-			\imagesavealpha($new,\true);
+			\imagealphablending($new,false);
+			\imagesavealpha($new,true);
 			\imagecopy($new,$this->image,0,0,0,0,$this->x,$this->y);
 			\imagefilter($new,\IMG_FILTER_GRAYSCALE);
 			// Merge with specified percentage
@@ -477,8 +477,8 @@ class pic{
 		return $this;
 	}
 
-	function pixelate($blockSize = 10){
-		\imagefilter($this->image,\IMG_FILTER_PIXELATE,$blockSize,\true);
+	function pixelate($blockSize=10){
+		\imagefilter($this->image,\IMG_FILTER_PIXELATE,$blockSize,true);
 		return $this;
 	}
 
@@ -499,7 +499,7 @@ class pic{
 				$rs=\imagejpeg($this->image,$filename,$quality);
 				break;
 			case 'png':
-				\imagesavealpha($this->image,\true);
+				\imagesavealpha($this->image,true);
 				$rs=\imagepng($this->image,$filename,9-\floor($quality/11));
 				break;
 			case 'gif':
@@ -518,7 +518,7 @@ class pic{
 				\imagejpeg($this->image,null,$quality);
 				break;
 			case 'png':
-				\imagesavealpha($this->image,\true);
+				\imagesavealpha($this->image,true);
 				\imagepng($this->image,null,9-\floor($quality/11));
 				break;
 			case 'gif':
@@ -532,6 +532,6 @@ class pic{
 	}
 
 	function __destruct() {
-		if(\PHP_VERSION_ID<80000 && $this->image!==\null && \get_resource_type($this->image)==='gd')\imagedestroy($this->image);
+		if(\PHP_VERSION_ID<80000 && $this->image!==null && \get_resource_type($this->image)==='gd')\imagedestroy($this->image);
 	}
 }

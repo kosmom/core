@@ -37,18 +37,18 @@ class mail_apache{
 	}
 
 	function Send(){
-		$headers  = 'MIME-Version: 1.0' . "\r\n";
-		$headers .= 'Content-type: text/html; charset=UTF-8' . "\r\n";
-		if ($this->Cc)$headers .= 'Cc: '.\implode(',',$this->Cc) . "\r\n";
-		if ($this->BCc)$headers .= 'BCc: '.\implode(',',$this->BCc) . "\r\n";
-		$headers .= 'From: '.$this->From . "\r\n" .
-		'Reply-To: ' .($this->Reply?\implode(',',$this->Reply):$this->From). "\r\n" .
-		'Return-Path: ' .$this->From. "\r\n" .
-		'X-Mailer: PHP/' . \phpversion();
+		$headers="MIME-Version: 1.0\r\n".
+		"Content-type: text/html; charset=UTF-8\r\n";
+		if ($this->Cc)$headers.='Cc:'.\implode(',',$this->Cc)."\r\n";
+		if ($this->BCc)$headers.= 'BCc: '.\implode(',',$this->BCc)."\r\n";
+		$headers.='From: '.$this->From."\r\n".
+		'Reply-To: '.($this->Reply?\implode(',',$this->Reply):$this->From)."\r\n".
+		'Return-Path: '.$this->From."\r\n".
+		'X-Mailer: PHP/'.\phpversion();
 
 		$success=0;
 		foreach ($this->addresslist as $value){
-			$result=\mail($value, $this->Subject, $this->body, $headers);
+			$result=\mail($value,$this->Subject,$this->body,$headers);
 			if ($result)$success++;
 		}
 		return $success;

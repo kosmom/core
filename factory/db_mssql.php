@@ -5,9 +5,9 @@ class db_mssql{
 	var $data;
 	var $cn;
 	var $connect;
-	var $m_result=\false;
-	var $error_resume=\true;
-	private $result_array=array('sele'=>\true,'show'=>\true);
+	var $m_result=false;
+	var $error_resume=true;
+	private $result_array=array('sele'=>true,'show'=>true);
 	function __construct($data,$connection_name=''){
 		$this->data=$data;
 		$this->cn=$connection_name;
@@ -20,7 +20,7 @@ class db_mssql{
 		if (!$this->connect){
 			if (\c\core::$debug){
 				\c\debug::trace('Mssql connection error',\c\error::ERROR);
-				return \false;
+				return false;
 			}
 			throw new \Exception('Error connection to mssql');
 		}
@@ -31,20 +31,20 @@ class db_mssql{
 			\c\core::$data['stat']['db_connections']++;
 			\c\debug::groupEnd();
 		}
-		return \true;
+		return true;
 	}
 	function disconnect(){
 		\mssql_close($this->connect);
 	}
 	function bind($sql,$bind=array()){
-		if (\sizeof($bind)==0 || !\is_array($bind))return $sql;
+		if (\count($bind)==0 || !\is_array($bind))return $sql;
 		$bind2=array();
 		foreach ($bind as $key=>$value){
-			$bind2[':'.$key]=($value===\null?'NULL':($value===''?"''": ($value instanceof \c\db?$value:"'".\strtr($value,["'"=>"''","\\"=>"\\\\"])."'")));
+			$bind2[':'.$key]=($value===null?'NULL':($value===''?"''":($value instanceof \c\db?$value:"'".\strtr($value,["'"=>"''","\\"=>"\\\\"])."'")));
 		}
 		return \strtr($sql,$bind2);
 	}
-	function execute($sql, $bind=array(), $mode='e'){
+	function execute($sql,$bind=array(),$mode='e'){
 		if (\c\core::$debug){
 			\c\core::$data['stat']['db_queryes']++;
 			\c\debug::group('MsSQL query');
@@ -52,28 +52,28 @@ class db_mssql{
 				\c\debug::trace('clear whitespaces at begin of query for correct work. Autocorrect in debug mode',\c\error::ERROR);
 				$sql=\ltrim($sql);
 			}
-			\c\debug::trace('SQL:'.$sql,\false);
+			\c\debug::trace('SQL:'.$sql,false);
 			if ($bind){
-				\c\debug::trace('BIND:',\false);
+				\c\debug::trace('BIND:',false);
 				\c\debug::dir($bind);
 			}else{
-				\c\debug::trace('BIND: None',\false);
+				\c\debug::trace('BIND: None',false);
 			}
-			$start=\microtime(\true);
+			$start=\microtime(true);
 		}
 		$sql=$this->bind($sql,$bind);
 		if (\c\core::$debug)\c\debug::consoleLog('Full query: '.$sql);
 		$result=\mssql_query($sql,$this->connect);
 		if (\c\core::$debug){
-			\c\debug::consoleLog('Query get '.\round((\microtime(\true)-$start)*1000,2).' ms');
-			$start=\microtime(\true);
+			\c\debug::consoleLog('Query get '.\round((\microtime(true)-$start)*1000,2).' ms');
+			$start=\microtime(true);
 		}
 		if(!$result){
 			if (\c\core::$debug){
 				\c\debug::trace('Mssql Query error: '.\mssql_get_last_message(),\c\error::ERROR);
 				\c\debug::groupEnd();
 				\c\debug::trace('MsSQL Query error: '.\mssql_get_last_message(),\c\error::ERROR);
-				return \false;
+				return false;
 			}elseif ($this->error_resume){
 				return 'MsSql execute error: '.\mssql_get_last_message();
 			}else{
@@ -95,7 +95,7 @@ class db_mssql{
 					break;
 			}
 			\mssql_free_result($result);
-			if (\c\core::$debug)\c\debug::trace('Result fetch get '.\round((\microtime(\true)-$start)*1000,2).' ms');
+			if (\c\core::$debug)\c\debug::trace('Result fetch get '.\round((\microtime(true)-$start)*1000,2).' ms');
 		}
 		if (\c\core::$debug){
 			if (!isset($this->result_array[$subsql]) && $mode!='e')\c\debug::trace('ea function used without result. Better use e function',\c\error::WARNING);
@@ -106,16 +106,16 @@ class db_mssql{
 						\c\debug::group('Query result');
 						\c\debug::dir($data);
 					}else{
-						\c\debug::group('Query result. Count: '.\sizeof($data),\c\error::INFO,\sizeof($data)>10);
+						\c\debug::group('Query result. Count: '.\count($data),\c\error::INFO,\count($data)>10);
 						\c\debug::table(\array_slice($data,0,30));
-						if (sizeof($data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
+						if (\count($data)>30)\c\debug::trace('Too large data was sliced',\c\error::INFO);
 					}
 					\c\debug::groupEnd();
 				}else{
 					\c\debug::trace('No results found',\c\error::WARNING);
 				}
 			}else{
-				\c\debug::trace('Affected '.$this->rows().' rows',\false);
+				\c\debug::trace('Affected '.$this->rows().' rows',false);
 			}
 // explain
 //			debug::group('Explain select');
@@ -139,7 +139,7 @@ class db_mssql{
 	}
 
 	function insertId(){
-		return \false;
+		return false;
 	}
 
 	function rows(){
@@ -154,10 +154,10 @@ class db_mssql{
 			$o1="DESC";
 			$o2="ASC";
 		}
-		if ($from != 0) return "SELECT * FROM (SELECT TOP ".$count." * FROM (SELECT TOP ".($from + $count)." * FROM (".$sql.") DBLIMIT1 ORDER BY ".$order_fild." ".$o2.") DBLIMIT2 ORDER BY ".$order_fild." ".$o1.") DBLIM";
+		if ($from!=0)return "SELECT * FROM (SELECT TOP ".$count." * FROM (SELECT TOP ".($from+$count)." * FROM (".$sql.") DBLIMIT1 ORDER BY ".$order_fild." ".$o2.") DBLIMIT2 ORDER BY ".$order_fild." ".$o1.") DBLIM";
 		else return "SELECT TOP ".($from + $count)." * FROM (".$sql.") DBLIMIT2 ";
 	}
 	function explain(){
-		return \false;
+		return false;
 	}
 }

@@ -12,7 +12,7 @@ class collection_object extends collection{
 	var $is_full;
 	var $collectionSourceCache=array();
 	
-	function __construct($array,$generator=\null,$pk_field=\null,$is_full=\false){
+	function __construct($array,$generator=null,$pk_field=null,$is_full=false){
 		parent::__construct($array);
 		$this->generator=$generator;
 		$this->pk_field=$pk_field;
@@ -25,7 +25,7 @@ class collection_object extends collection{
 		return new collection_object($array);
 	}
 	function offsetGet($offset){
-		return $this->offsetExists($offset)?(new $this->generator($this->_c[$offset],$this)):\null;
+		return $this->offsetExists($offset)?(new $this->generator($this->_c[$offset],$this)):null;
 	}
 	function first(){
 		foreach ($this->_c as $item){
@@ -35,7 +35,7 @@ class collection_object extends collection{
 	function pluck($column){
 		$out=array();
 		foreach ($this->_c as $key=>$item){
-			$out[$key]=model::getData($this->generator, $item, $column);
+			$out[$key]=model::getData($this->generator,$item,$column);
 		}
 		return $out;
 	}
@@ -58,7 +58,7 @@ class collection_object extends collection{
 	function toArray(){
 		$out=array();
 		foreach ($this->_c as $key=>$item){
-			$out[$key]= model::getData($this->generator, $item);
+			$out[$key]=model::getData($this->generator,$item);
 		}
 		return $out;
 	}

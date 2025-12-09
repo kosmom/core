@@ -11,7 +11,7 @@ class mail{
 	private static $mail_config;
 	private static $testAdress=array();
 	static function test($adress=array()){
-		if ($adress===\false){
+		if ($adress===false){
 			self::$testAdress=array();
 		}elseif (\is_string($adress)){
 			self::$testAdress=\explode(',',$adress);
@@ -22,16 +22,16 @@ class mail{
 
 	private static function toMailArray($string,$db=''){
 		if (\is_array($string))return $string;
-		if (\is_string($string) or \is_numeric($string)){
+		if (\is_string($string) || \is_numeric($string)){
 			$string=\trim($string);
 			if ($string==''){
 				error::add('Error on main send: Not set email address',error::WARNING);
 				self::$mails[$db]->ClearAddresses();
-				return \false;
+				return false;
 			}
 			return \explode(';',$string);
 		}
-		if ($string===\false)return \false;
+		if ($string===false)return false;
 	}
 	/**
 	 * @deprecated since version 3.4
@@ -40,9 +40,9 @@ class mail{
 		return self::setCc($adress,$db);
 	}
 	static function setCc($adress=array(),$db=''){
-		if (empty($adress))return \false;
+		if (empty($adress))return false;
 		if ($db=='')$db=core::$data['mail'];
-		if (self::$testAdress)return \false;
+		if (self::$testAdress)return false;
 		if (empty(self::$mails[$db]))self::connect($db);
 		if (\is_string($adress))$adress=explode(',',$adress);
 		if (isset(core::$data['mail_modify_callback']))$adress=core::$data['mail_modify_callback']($adress);
@@ -57,9 +57,9 @@ class mail{
 		return self::setBcc($adress,$db);
 	}
 	static function setBcc($adress=array(),$db=''){
-		if (empty($adress))return \false;
+		if (empty($adress))return false;
 		if ($db=='')$db=core::$data['mail'];
-		if (self::$testAdress)return \false;
+		if (self::$testAdress)return false;
 		if (empty(self::$mails[$db]))self::connect($db);
 		if (\is_string($adress))$adress=\explode(',',$adress);
 		if (isset(core::$data['mail_modify_callback']))$adress=core::$data['mail_modify_callback']($adress);
@@ -87,23 +87,23 @@ class mail{
 		self::$mails[$db]->AddAttachment($sourceFilename,$totalFilename,$cid);
 	}
 
-	static function embedAttachment($text,$cacheFolder=\null,$db=''){
+	static function embedAttachment($text,$cacheFolder=null,$db=''){
 		$files=array();
 		if (!self::$time)self::$time=\time();
-		$text=\preg_replace_callback('|<img src="([^"]*\.([^"]*))"|s', function($phrase) use(&$files,$db,$cacheFolder){
+		$text=\preg_replace_callback('|<img src="([^"]*\.([^"]*))"|s',function($phrase) use(&$files,$db,$cacheFolder){
 		if (empty($files[$phrase[1]])){
-			$counter=$files[$phrase[1]]=\sizeof($files);
+			$counter=$files[$phrase[1]]=\count($files);
 			if ($cacheFolder){
-				if (!\file_exists($cacheFolder.'/'.\md5($phrase[1])))\file_put_contents($cacheFolder.'/'.\md5($phrase[1]), input::file_get_content($phrase[1]));
-				self::AddAttachment($cacheFolder.'/'.\md5($phrase[1]), 'file'.$counter.'.'.$phrase[2], 'file'.$counter.self::$time,$db);
+				if (!\file_exists($cacheFolder.'/'.\md5($phrase[1])))\file_put_contents($cacheFolder.'/'.\md5($phrase[1]),input::file_get_content($phrase[1]));
+				self::AddAttachment($cacheFolder.'/'.\md5($phrase[1]),'file'.$counter.'.'.$phrase[2],'file'.$counter.self::$time,$db);
 			}else{
-				self::AddStringAttachment(input::file_get_content($phrase[1]), 'file'.$counter.'.'.$phrase[2], 'file'.$counter.self::$time,$db);
+				self::AddStringAttachment(input::file_get_content($phrase[1]),'file'.$counter.'.'.$phrase[2],'file'.$counter.self::$time,$db);
 			}
 		}else{
 			$counter=$files[$phrase[1]];
 		}
 		return '<img src="cid:file'.($counter.self::$time).'"';
-	}, $text);
+	},$text);
 		return $text;
 	}
 
@@ -114,7 +114,7 @@ class mail{
 		return self::setReplyTo($adress,$db);
 	}
 	static function setReplyTo($adress=array(),$db=''){
-		if (empty($adress))return \false;
+		if (empty($adress))return false;
 		if ($db=='')$db=core::$data['mail'];
 		if (empty(self::$mails[$db]))self::connect($db);
 		if (\is_string($adress))$adress=\explode(',',$adress);
@@ -124,7 +124,7 @@ class mail{
 		}
 	}
 	static function sendOrFail($text,$adress=array(),$subject='System mail',$db=''){
-		if (empty($adress))return \false;
+		if (empty($adress))return false;
 		if ($db=='')$db=core::$data['mail'];
 		if (empty(self::$mails[$db]))self::connect($db);
 
@@ -135,8 +135,7 @@ class mail{
 		}
 		$adress=self::toMailArray($adress);
 		$adress=\array_filter($adress,function($item){
-			if ($item===\null)return \false;
-			return \true;
+			return $item!==null;
 		});
 		if (isset(core::$data['mail_modify_callback']))$adress= \call_user_func(core::$data['mail_modify_callback'],$adress);
 		foreach ($adress as $value){
@@ -169,8 +168,8 @@ class mail{
 		}
 	}
 	static function sendToQueue($text,$adress=array(),$subject='System mail',$db='',$order=100,$date_must='now'){
-		if (!isset(core::$data['mail_send_to_queue'])) throw new \Exception('not exists c\\core::$data[\'mail_send_to_queue\'] method');
-		if (empty($adress))return \false;
+		if (!isset(core::$data['mail_send_to_queue']))throw new \Exception('not exists c\\core::$data[\'mail_send_to_queue\'] method');
+		if (empty($adress))return false;
 		if ($db=='')$db=core::$data['mail'];
 		if (self::$testAdress){
 			if (\is_array($adress))$adress=\implode(';',$adress);
