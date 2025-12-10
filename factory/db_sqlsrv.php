@@ -1,7 +1,7 @@
 <?php
 namespace c\factory;
 
-class db_sqlsrv {
+class db_sqlsrv{
 	private static $date_formats=array(
 		'd'=>'%d',
 		'm'=>'%m',

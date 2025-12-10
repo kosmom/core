@@ -1,7 +1,7 @@
 <?php
 namespace c\factory;
 
-class db_mysql {
+class db_mysql{
 	private static $date_formats=array(
 		'd'=>'%d',
 		'm'=>'%m',

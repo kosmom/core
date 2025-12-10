@@ -1,7 +1,7 @@
 <?php
 namespace c\factory;
 
-class db_pgsql {
+class db_pgsql{
 	private static $date_formats=array(
 		'd'=>'DD',
 		'm'=>'MM',

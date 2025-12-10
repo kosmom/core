@@ -431,7 +431,7 @@ class db{
 	static function getAllConnectSchemes(){
 		self::getConfig();
 		$dbs=self::$db_config[core::$env];
-		foreach ($dbs as &$db) {
+		foreach ($dbs as &$db){
 		unset($db['password']);
 	    }
 	    return $dbs;

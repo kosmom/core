@@ -133,8 +133,7 @@ class mail{
 			$subject=$subject."(".$adress.")";
 			$adress=self::$testAdress;
 		}
-		$adress=self::toMailArray($adress);
-		$adress=\array_filter($adress,function($item){
+		$adress=\array_filter(self::toMailArray($adress),function($item){
 			return $item!==null;
 		});
 		if (isset(core::$data['mail_modify_callback']))$adress= \call_user_func(core::$data['mail_modify_callback'],$adress);
@@ -148,14 +147,14 @@ class mail{
 		}
 		self::$mails[$db]->MsgHTML($text);
 		self::$mails[$db]->Subject=$subject;
-		try {
+		try{
 			self::$mails[$db]->Send();
 			if (core::$debug){
 				debug::trace('Message successfull send: '.$subject.' - '.\implode(';',$adress),error::SUCCESS);
 			}
-		} catch (\Exception $exc) {
+		}catch (\Exception $exc){
 			throw new \Exception($exc->getMessage());
-		} finally {
+		}finally{
 			self::$mails[$db]->ClearAddresses();
 			self::$mails[$db]->ClearReplyTos();
 		}

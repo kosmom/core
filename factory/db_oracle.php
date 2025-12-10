@@ -1,7 +1,7 @@
 <?php
 namespace c\factory;
 
-class db_oracle {
+class db_oracle{
 	private $execute_mode=\OCI_COMMIT_ON_SUCCESS;
 	private static $date_formats=array(
 		'd'=>'DD',
@@ -85,7 +85,7 @@ class db_oracle {
 			}
 			$start=\microtime(true);
 		}
-		if(\is_array($bind)) {
+		if(\is_array($bind)){
 			$bind2=array();
 			foreach($bind as $key=>$value){
 				if ($value instanceof \c\db){
@@ -106,7 +106,7 @@ class db_oracle {
 			if (empty(\c\core::$data['db_exception']))return false;
 			throw new \Exception('SQL parsing error');
 		}
-		if(\is_array($bind)) {
+		if(\is_array($bind)){
 			foreach($bind as $key=>&$value){
 				\oci_bind_by_name($stmt,':'.$key, $value,-1);
 			}
@@ -151,7 +151,7 @@ class db_oracle {
 			}
 			\oci_free_statement($stmt);
 			if (\c\core::$debug)\c\debug::trace('Result fetch get '.\round((\microtime(true)-$start)*1000,2).' ms');
-		}else {
+		}else{
 			$data=true;
 			if (\c\core::$debug)\c\debug::trace('Affected '.$this->rows().' rows',false);
 		}
@@ -284,9 +284,9 @@ class db_oracle {
 			if (empty(\c\core::$data['db_exception']))return false;
 			throw new \Exception('SQL parsing error');
 		}
-		if(\is_array($bind) && \count($bind)) {
-			foreach($bind as $key=>&$value) {
-				\oci_bind_by_name($stmt,":".$key, $value,-1);
+		if(\is_array($bind) && \count($bind)){
+			foreach($bind as $key=>&$value){
+				\oci_bind_by_name($stmt,":".$key,$value,-1);
 			}
 		}
 		$result=\oci_execute($stmt);
@@ -302,7 +302,7 @@ class db_oracle {
 		}
 		
 		$subsql=\strtolower(\substr($sql,0,5));
-		$isResult=$subsql == 'selec' || $subsql=='with ';
+		$isResult=$subsql=='selec' || $subsql=='with ';
 		if($isResult){
 			$data=array();
 			if ($assoc){

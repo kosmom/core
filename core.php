@@ -6,7 +6,7 @@ namespace c;
  * @author Kosmom <Kosmom.ru>
  * @link: https://core.kosmom.ru
  */
-class core {
+class core{
 	const WINDOWS1251='WINDOWS-1251';
 	const UTF8='UTF-8';
 	const VERSION='3.6';

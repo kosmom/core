@@ -22,7 +22,7 @@ class ftp{
 				if($st_file=='.' || $st_file=='..')continue;
 				if (\ftp_size($connId, $dir.'/'.$st_file) == -1){
 					$files+=self::rmdir($dir.'/'.$st_file,$connId);
-				} else {
+				}else{
 					\ftp_delete($connId,$dir.'/'.$st_file);
 					$files++;
 				}
@@ -55,7 +55,7 @@ class ftp{
 			if($st_file=='.' || $st_file=='..')continue;
 			if (\ftp_size($connId,$dir.'/'.$st_file)==-1){
 				$files+=self::rmdir($dir.'/'.$st_file,$connId);
-			} else {
+			}else {
 				\ftp_delete($connId,$dir.'/'.$st_file);
 				$files++;
 			}

@@ -147,9 +147,9 @@ class dbwork{
 						}
 						continue;
 					  }
-					  if (\substr($string,0,11)=='CONSTRAINT ') {
+					  if (\substr($string,0,11)=='CONSTRAINT '){
 						$re = '/CONSTRAINT `(.*)` FOREIGN KEY \(`(.*)`\) REFERENCES `(.*)` \(`(.*)`\)( ON DELETE (.*)( ON UPDATE (.*))?)?/';
-						$matches = array();
+						$matches=array();
 						if (\preg_match_all($re,$string,$matches,\PREG_SET_ORDER,0)){
 						  $matches = $matches[0];
 						  $foreignKey[$matches[1]]=array('table'=>$matches[3],'mainfield'=>$matches[2],'referencefield'=>$matches[4]);
@@ -430,15 +430,15 @@ class dbwork{
 								if (@$fieldVal['unsigned']){
 									$min=0;
 									$max=$max*2+1;
-								} else {
+								} else{
 									$min=-$max-1;
 									$min*=2;
 								}
-								if ($value<$min) {
+								if ($value<$min){
 									$outErrors[]=translate::t('Field {field} must be greather {min}. You try set <b>{value}</b> value', array('min'=>$min,'field'=>$fieldName,'value'=>input::htmlspecialchars($value)));
 									break;
 								}
-								if ($value>$max) {
+								if ($value>$max){
 									$outErrors[]=translate::t('Field {field} must be less {max}. You try set <b>{value}</b> value', array('max'=>$max,'field'=>$fieldName,'value'=>input::htmlspecialchars($value)));
 									break;
 								}
@@ -576,7 +576,7 @@ class dbwork{
 			if ($opType == 1){ // insert
 				if ($notIsset===false && \count($desc['primary_key'])==1 && isset($bind[$desc['primary_key'][0]])){
 					$notIsset=$desc['primary_key'][0];
-			    }
+				}
 				if (isset($bind[$notIsset]) && $bind[$notIsset]!==''){
 					$return=$bind[$notIsset];
 				}else{

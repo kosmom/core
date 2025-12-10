@@ -156,7 +156,7 @@ class cache{
 	 * @param null|int $timeout
 	 * @return mixed
 	 */
-	static function get($key,$callback=null,$timeout=null) {
+	static function get($key,$callback=null,$timeout=null){
 		if ($timeout===null)$timeout=isset(core::$data['cacheTimeout'])?core::$data['cacheTimeout']:self::$cacheTimeout;
 		$fullpath=self::getPath().'/'.$key.'.cache';
 		$mtime=@\filemtime($fullpath);
@@ -193,9 +193,9 @@ class cache{
 			self::set($key,$value);
 		}
 	}
-	static function set($key, $value) {
+	static function set($key, $value){
 		$fullpath=self::getPath().'/'.$key.'.cache';
-		filedata::savedata($fullpath, $value);
+		filedata::savedata($fullpath,$value);
 	}
 	static function has($key,$timeout=null){
 		if ($timeout===null)$timeout=isset(core::$data['cacheTimeout'])?core::$data['cacheTimeout']:self::$cacheTimeout;

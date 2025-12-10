@@ -5,7 +5,7 @@ class form_bootstrap{
 	private $form;
 	private $name;
 
-	function __construct($form,$name) {
+	function __construct($form,$name){
 		$this->form=$form;
 		$this->name=$name;
 	}
@@ -330,7 +330,7 @@ class form_bootstrap{
 	}
 	}
 	$(".fancytree").fancytree({
-	source: {
+	source:{
 		url: "http://...",
 		complete: after_load
 	},
@@ -340,11 +340,11 @@ class form_bootstrap{
 	aria: true
 
 	});
-							 $("form").submit(function () {
-								$(".fancytree").fancytree("getTree").generateFormElements();
-								});
-							 */
-							break;
+		 $("form").submit(function (){
+			$(".fancytree").fancytree("getTree").generateFormElements();
+			});
+		 */
+						break;
 					}
 
 					break;

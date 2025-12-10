@@ -24,7 +24,7 @@ class debug{
 	private static function readFileVar($file,$string){
 		if (!($f=\fopen($file,"r")))throw new \Exception('Read file error');
 		$s=0;
-		while (!\feof($f)) {
+		while (!\feof($f)){
 			$line=\fgets($f);
 			$s++;
 			if ($s==$string)break;
@@ -66,10 +66,10 @@ class debug{
 		}
 		if (!self::$groupCounter){
 			$need = self::getBacktrace();
-			$filename=\substr($need['file'], self::$bugtrace_file_from);
+			$filename=\substr($need['file'],self::$bugtrace_file_from);
 			if ($need['file'])$var=self::readFileVar($need['file'],$need['line']);
 			$string=self::getDifference().' '.($var?$var.' = ':'').$filename.':'.$need['line'].' - '.$need['class'].$need['type'].$need['function'].' - '.$header;
-		} else {
+		}else{
 			$string=$header;
 		}
 		if ($increaseCounter)self::$groupCounter++;

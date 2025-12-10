@@ -531,7 +531,7 @@ class pic{
 		return \ob_get_clean();
 	}
 
-	function __destruct() {
+	function __destruct(){
 		if(\PHP_VERSION_ID<80000 && $this->image!==null && \get_resource_type($this->image)==='gd')\imagedestroy($this->image);
 	}
 }

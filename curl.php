@@ -35,9 +35,9 @@ class curl{
 		$retryCount=isset(core::$data['curl_safely_retry_count'])?core::$data['curl_safely_retry_count']-1:1;
 		$retryPause=isset(core::$data['curl_safely_retry_pause'])?core::$data['curl_safely_retry_pause']:1;
 		for ($i=0;$i<$retryCount;$i++){
-			try {
+			try{
 				return self::getContent($URL,$post,$cookieFile,$options);
-			} catch (\Exception $exc) {
+			}catch (\Exception $exc){
 				input::sleep($retryPause);
 			}
 		}
@@ -97,7 +97,7 @@ class curl{
 		\usleep($pause);
 		\curl_multi_exec(self::$master, self::$running);
 		//if ($execrun != CURLM_OK)return false;
-		while ($done=\curl_multi_info_read(self::$master)) {
+		while ($done=\curl_multi_info_read(self::$master)){
 			self::$pipe--;
 			$task_id=self::$tasks_link[(int)$done['handle']];
 			self::$tasks[$task_id]['status']=1;
@@ -107,7 +107,7 @@ class curl{
 			//var_dump(curl_multi_getcontent($done['handle']));
 			if (self::$stack){
 				$rolling_window=\min(\count(self::$stack),5);
-				for ($i=self::$pipe;$i<$rolling_window;$i++) {
+				for ($i=self::$pipe;$i<$rolling_window;$i++){
 					self::addCh(\array_shift(self::$stack));
 					self::$pipe++;
 				}
@@ -118,10 +118,10 @@ class curl{
 	}
 	static function waitAll(){
 		self::push();
-		do {
+		do{
 			$rs=self::check();
 			if ($rs===false)break;
-		} while (self::$running);
+		}while (self::$running);
 		\curl_multi_close(self::$master);
 		\var_dump(self::$contents);
 	}
@@ -140,7 +140,7 @@ class curl{
 			if (\count($p)==1)return false;
 			return \trim(\array_pop($p));
 		}else{
-			// "rtt min/avg/max/mdev=19.300/19.300/19.300/0.000 ms"
+			// "rtt min/avg/max/mdev = 19.300/19.300/19.300/0.000 ms"
 			$out=\exec('ping '.$host.' -c 1 -w '.$timeout);
 			if ($out=='')return false;
 			$p=\explode('/',$out);
@@ -158,7 +158,7 @@ class curl{
 		\socket_connect($sock,$host,0);
 
 		$t=\microtime(true);
-		\socket_send($sock, "\x08\x00\x7d\x4b\x00\x00\x00\x00PingHost",16,0);
+		\socket_send($sock,"\x08\x00\x7d\x4b\x00\x00\x00\x00PingHost",16,0);
 		$rs=\socket_read($sock,255)?\microtime(true)-$t:false;
 		\socket_close($sock);
 		return $rs;

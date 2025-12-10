@@ -107,7 +107,7 @@ class form implements \ArrayAccess{
 		return (bool)$this->fields;
 	}
 
-	function __toString() {
+	function __toString(){
 		return $this->render();
 	}
 

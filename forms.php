@@ -11,7 +11,7 @@ class forms{
 	private static $activeForm='default';
 	static $defaultResolver='c\\factory\\form_bootstrap';
 
-	function __construct() {
+	function __construct(){
 		if (core::$debug)debug::trace('Create form with static class forms',error::WARNING);
 	}
 	

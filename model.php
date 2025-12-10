@@ -117,7 +117,7 @@ class model implements \Iterator{
 		if (!$this->pk_value)return null;
 		try{
 			return model::getDataOrFail($this,$this->pk_value,$name);
-		} catch (\Exception $exc) {
+		}catch (\Exception $exc){
 			$this->formData();
 			return model::getData($this,$this->pk_value,$name);
 		}
@@ -233,18 +233,14 @@ class model implements \Iterator{
 		return $this->primaryField='id';
 	}
 	function saveOrFail($exception=null){
-		try {
+		try{
 			if (core::$data['db_exception'])return $this->save();
 			core::$data['db_exception']=true;
 			$rs=$this->save();
 			core::$data['db_exception']=false;
 			return $rs;
-		} catch (\Exception $exc) {
-			if ($exception){
-				throw new \Exception($exception);
-			}else{
-				throw new \Exception($exc);
-			}
+		}catch (\Exception $exc){
+                        throw new \Exception($exception?$exception:$exc);
 		}
 	}
 	
@@ -257,14 +253,13 @@ class model implements \Iterator{
 		$mode=$this->isRowMode;
 		$this->isRowMode=true;
 		$isCreate=1;
-		try {
+		try{
 			if ($this->pk_value && ($this->toObject()->findOrFail($this->pk_value)))$isCreate=0;
-		} catch (\Exception $exc) {
-		}
+		}catch (\Exception $exc){}
 		if ($isCreate){
 			$this->on_before_create();
 			$base=array();
-		} else {
+		}else{
 			$base=$this->pk_value?model::getRawData($this,$this->pk_value):array();
 			$this->on_before_update($base);
 		}
@@ -403,7 +398,7 @@ class model implements \Iterator{
 		if (\is_string($params))$params=array($params=>$value);
 		if (!isset($this))return self::toObject()->update($params);
 		$set=array();
-		foreach ($params as $field=>$value) {
+		foreach ($params as $field=>$value){
 			$set[]=$field.'=:cu_'.$field;
 			$this->queryBind['cu_'.$field]=$value;
 		}
@@ -939,7 +934,7 @@ class model implements \Iterator{
 	function globalScope(){
 	}
 
-	function __construct($pkValue=null,$fromCollection=null) {
+	function __construct($pkValue=null,$fromCollection=null){
 		if ($fromCollection!==null)$this->collectionSource=$fromCollection;
 		if ($pkValue!==null)$this->find($pkValue);
 	}
@@ -1169,9 +1164,9 @@ class model implements \Iterator{
 	 */
 	function findOrCreate($pk_value){
 		if (!isset($this))return self::toObject()->findOrCreate($pk_value);
-		try {
+		try{
 			return $this->findOrFail($pk_value);
-		} catch (\Exception $exc) {
+		}catch (\Exception $exc){
 			$model=new $this();
 			$model->__set($model->getPrimaryField(),$pk_value);
 			return $model;
@@ -1187,7 +1182,7 @@ class model implements \Iterator{
 	function when($condition, $ifCallback, $elseCallback=null){
 		if ($condition){
 			$ifCallback($this);
-		} elseif (\is_callable($elseCallback)){
+		}elseif (\is_callable($elseCallback)){
 			$elseCallback($this);
 		}
 		return $this;

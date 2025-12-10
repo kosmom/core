@@ -452,7 +452,7 @@ class mvc{
 	}
 	static function drawJs($inlineOnly=false){
 		$out='';
-		if (core::$debug) {
+		if (core::$debug){
 			if (core::$ajax)debug::groupEnd();
 			$debugOut=debug::debugOutput();
 			if ($debugOut)array_unshift(self::$js,array(\implode(';',$debugOut),self::$jsHard,3));
@@ -858,7 +858,7 @@ echo '>';
 	static function getFileProp($__FILE__){
 		$data=\file($__FILE__); // may be long in largest files?
 		$module=array();
-		foreach ($data as $key=>$item) {
+		foreach ($data as $key=>$item){
 			$item=\trim($item);
 			if ($item=='<?php')continue;
 			if (\substr($item,0,2)!='//')break;
@@ -868,7 +868,7 @@ echo '>';
 		}
 		if (self::$search_config && \substr($__FILE__,-10)!='config.php' && \file_exists($f=\dirname($__FILE__).'/config.php')){
 			$data=\file($f);  // may be long in largest files?
-			foreach ($data as $key=>$item) {
+			foreach ($data as $key=>$item){
 				$item=\trim($item);
 				if ($item=='<?php')continue;
 				if (\substr($item,0,2)!='//')break;
@@ -902,14 +902,14 @@ echo '>';
 	private static function getMenuPart($__DIR__,$base__DIR__,$href,$additionMenu,$level){
 		$modules=array();
 		if (!($handle=\opendir($__DIR__)))return false;
-		while (false!==($file=readdir($handle))) {
+		while (false!==($file=readdir($handle))){
 			if ($file=='.' || $file=='..' || \substr($file,0,1)=='_')continue;
 			if (\is_file($__DIR__.\DIRECTORY_SEPARATOR.$file))continue;
 			$nextfile=$__DIR__.\DIRECTORY_SEPARATOR.$file.\DIRECTORY_SEPARATOR.'index.php';
 			if (!\file_exists($nextfile))continue;
 			$module=self::getFileProp($nextfile);
 
-			if (empty($module->name)) continue;
+			if (empty($module->name))continue;
 			if (!isset($module->link))$module->href=$module->link=@(self::$url[$base__DIR__]?self::$url[$base__DIR__].'/':'').$href.$file.self::$slashAtEnd;
 			$module->__DIR__=$__DIR__.\DIRECTORY_SEPARATOR.$file;
 			$modules[$file]=$module;
@@ -1315,11 +1315,11 @@ echo '>';
 		}
 		self::$layoutCounter++;
 		if ($showError!==false)render::showAlerts();
-		do {
+		do{
 			$dir=\array_shift(self::$next_dir);
 			if (!$dir)return __DIR__.'/empty';
 			$nextPage=$dir.\DIRECTORY_SEPARATOR.(request::isCmd()?'cli':(isset(self::$viewPageNames[$dir])?self::$viewPageNames[$dir]:'index')).".phtml";
-		} while (!\is_readable($nextPage));
+		}while (!\is_readable($nextPage));
 		return $nextPage?$nextPage:__DIR__.'/empty';
 	}
 	/**

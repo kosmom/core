@@ -15,7 +15,7 @@ class arrayaccess implements \ArrayAccess{
 	function offsetSet($o, $v){
 		$this->$o=$v;
 	}
-	function __get($o) {
+	function __get($o){
 		return property_exists($this,$o)?$this->$o:null;
 	}
 	function offsetUnset($o){

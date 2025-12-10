@@ -26,7 +26,7 @@ class datawork{
 			if (!isset($headers[$name]))continue;
 			$link_header[$num]=$headers[$name];
 		}
-		if (empty($link_header)) throw new \Exception('Headers not match');
+		if (empty($link_header))throw new \Exception('Headers not match');
 		if (self::$numstring){
 			$data_header=\array_shift($dataWithHeader);
 			foreach ($data_header as $key=>$item){
@@ -74,12 +74,12 @@ class datawork{
 		return $out;
 	}
 
-	static function flatten($array,$concat='.', $prefix='') {
+	static function flatten($array,$concat='.',$prefix=''){
 		$result=array();
-		foreach($array as $key=>$value) {
-			if(\is_array($value)) {
-				$result+= self::flatten($value,$concat, $prefix . $key . $concat);
-			}else {
+		foreach($array as $key=>$value){
+			if(\is_array($value)){
+				$result+= self::flatten($value,$concat,$prefix.$key.$concat);
+			}else{
 				$result[$prefix.$key]=$value;
 			}
 		}
@@ -89,7 +89,7 @@ class datawork{
 	static function unflatten($array,$concat='.'){
 		$buffer=array();
 		foreach ($array as $key=>$value){
-			$keys=\explode($concat, $key);
+			$keys=\explode($concat,$key);
 			switch (\count($keys)){
 				case 5:
 					$buffer[$keys[0]][$keys[1]][$keys[2]][$keys[3]][$keys[4]]=$value;
@@ -757,7 +757,7 @@ class datawork{
 		foreach ($array as &$item){
 			$item=array($index++,$item);
 		}
-		$result=\uasort($array,function($a,$b) use($cmpFunction) {
+		$result=\uasort($array,function($a,$b) use($cmpFunction){
 			$result=\call_user_func($cmpFunction,$a[1],$b[1]);
 			return $result==0?$a[0]-$b[0]:$result;
 		});

@@ -5,7 +5,7 @@ namespace c;
  * Ajax class infrastructure. For use, you must include core.js javascript file in html file with ajax action
  * @author Kosmom <Kosmom.ru>
  */
-class ajax {
+class ajax{
 	private static $answer=array();
 
 	/**
@@ -76,7 +76,7 @@ class ajax {
 	 * Add custom user script type feedback. 'type' key must be required and isset in javascript feedback function
 	 * @param array $data
 	 */
-	static function add($data) {
+	static function add($data){
 		self::$answer[]=$data;
 	}
 
@@ -190,7 +190,7 @@ class ajax {
 			if ($answerNeeded===null)$answerNeeded=self::$answer_needed;
 			if ($answerNeeded && empty(self::$answer))self::$answer[]=array('_type'=>'message','message'=>'Action not supported','type'=>error::ERROR);
 		}
-		if (core::$debug) {
+		if (core::$debug){
 			\array_unshift(self::$answer,debug::debugOutput());
 			self::consoleLog('Core MVC debug finished',error::INFO);
 			self::consoleGroupEnd();

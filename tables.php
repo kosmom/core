@@ -33,7 +33,7 @@ class tables{
 		}
 	}
 
-	function __construct() {
+	function __construct(){
 		if (core::$debug)debug::trace('Create table with static class tables',error::WARNING);
 	}
 	static function sort($defaultField='',$field=''){

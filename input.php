@@ -243,13 +243,13 @@ class input{
 	}
 	static function findFirst($string,$symbol){
 		$i=0;
-		do {
-		$quote=\mb_strpos($string, $symbol.$symbol,$i+1,core::$charset);
-		$finish=\mb_strpos($string, $symbol,$i+1,core::$charset);
+		do{
+		$quote=\mb_strpos($string,$symbol.$symbol,$i+1,core::$charset);
+		$finish=\mb_strpos($string,$symbol,$i+1,core::$charset);
 		if ($finish===false)return false;
 		if ($quote===false)return $finish;
 		$i=$quote+1;
-		} while ($quote==$finish);
+		}while ($quote==$finish);
 		return $finish;
 	}
 	
@@ -618,7 +618,7 @@ class input{
 		if ($charset==core::UTF8)return $var;
 		if (\is_array($var)){
 			$new=array();
-			foreach ($var as $k=>$v) {
+			foreach ($var as $k=>$v){
 				$new[self::jsonFixCharset($k,$charset,$fromUtf)]=self::jsonFixCharset($v,$charset,$fromUtf);
 			}
 			$var=$new;
@@ -626,7 +626,7 @@ class input{
 			$var=$fromUtf?\iconv($charset,core::UTF8,$var):\iconv(core::UTF8,$charset,$var);
 		}elseif (\is_object($var)){
 			$vars=\get_object_vars($var);
-			foreach ($vars as $m=>$v) {
+			foreach ($vars as $m=>$v){
 				$var->$m=self::jsonFixCharset($v,$charset,$fromUtf);
 			}
 		}

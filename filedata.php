@@ -88,7 +88,7 @@ class filedata{
 		if (\is_array($var)){
 			$toImplode=array();
 			foreach ($var as $key=>$value){
-				$toImplode[]=\var_export($key,\true).'=>'.self::varExportMin($value);
+				$toImplode[]=\var_export($key,true).'=>'.self::varExportMin($value);
 			}
 			return 'array('.\implode(',',$toImplode).')';
 		}
@@ -133,16 +133,16 @@ class filedata{
 	 * @param string $mask preg match mask of filename
 	 * @return array|boolean
 	 */
-	static function filelist($src_dir,$mask='',$callback=\null){
-		if (!\is_dir($src_dir))return \false;
+	static function filelist($src_dir,$mask='',$callback=null){
+		if (!\is_dir($src_dir))return false;
 		$dir=\opendir($src_dir);
 		$out=array();
-		while(\false!==($file=\readdir($dir))){
+		while(false!==($file=\readdir($dir))){
 			if (( $file == '.' )||( $file == '..' ))continue;
 			if (\is_dir($src_dir.\DIRECTORY_SEPARATOR.$file)){
 				$out+=self::filelist($src_dir.\DIRECTORY_SEPARATOR.$file,$mask,$callback);
 			}elseif (!$mask||\preg_match($mask,$file)){
-				$out[$src_dir.\DIRECTORY_SEPARATOR.$file]=\is_callable($callback)?$callback($src_dir.\DIRECTORY_SEPARATOR.$file,$file,$src_dir):\true;
+				$out[$src_dir.\DIRECTORY_SEPARATOR.$file]=\is_callable($callback)?$callback($src_dir.\DIRECTORY_SEPARATOR.$file,$file,$src_dir):true;
 			}
 		}
 		\closedir($dir);
@@ -155,14 +155,14 @@ class filedata{
 	 * @param string $dst destitation directory
 	 */
 	static function copy($src,$dst){
-		if (!\is_dir($src))return \false;
+		if (!\is_dir($src))return false;
 		$dir=\opendir($src);
 		@\mkdir($dst);
-		while(\false!==($file=\readdir($dir))){
+		while(false!==($file=\readdir($dir))){
 			if (($file=='.')||($file=='..'))continue;
 			if (\is_dir($src.\DIRECTORY_SEPARATOR.$file)){
 				self::copy($src.\DIRECTORY_SEPARATOR.$file,$dst.\DIRECTORY_SEPARATOR.$file);
-			} else {
+			}else{
 				\copy($src.\DIRECTORY_SEPARATOR.$file,$dst.\DIRECTORY_SEPARATOR.$file);
 			}
 		}
@@ -190,13 +190,13 @@ class filedata{
 	static function extension($filename){
 		return \pathinfo($filename,\PATHINFO_EXTENSION);
 	}
-	static function readfile($path,$filename,$attachment=\true,$type=\null){
+	static function readfile($path,$filename,$attachment=true,$type=null){
 		if (!\file_exists($path))throw new \Exception('file not exists');
-		if ($type===\null)header('Content-Type: '.($type?(self::$mime_types[$type]?self::$mime_types[$type]:$type):\mime_content_type($path)));
+		if ($type===null)header('Content-Type: '.($type?(self::$mime_types[$type]?self::$mime_types[$type]:$type):\mime_content_type($path)));
 		\header('Content-Transfer-Encoding: binary');
 		\header('Content-Disposition: '.($attachment?'attachment;':'').' filename="'.$filename.'"');
 		\readfile($path);
-		die();
+		die;
 	}
 	/**
 	 * Get mime type by content or extension
@@ -206,7 +206,7 @@ class filedata{
 	static function mime_content_type($filename){
 		if ($type=@\mime_content_type($filename))return $type;
 		if ($type=self::$mime_types[self::extension($filename)])return $type;
-		return \false;
+		return false;
 	}
 	static function appendDataPart($filename,$data){
 		$pos=@\filesize($filename);
@@ -237,7 +237,7 @@ class filedata{
 		}
 		return $out;
 	}
-	static function readLastDataPart($handlerOrPath,$offset=\null){
+	static function readLastDataPart($handlerOrPath,$offset=null){
 		$handler=self::getHandler($handlerOrPath,$offset);
 		\fseek($handler,-1,\ftell($handler)?\SEEK_CUR:\SEEK_END);
 		$char=(int)\fgetc($handler);
@@ -248,7 +248,7 @@ class filedata{
 		\fseek($handler,-$pos-1,\SEEK_CUR);
 		return $val;
 	}
-	static function getHandler($handlerOrPath,$offset=\null){
+	static function getHandler($handlerOrPath,$offset=null){
 		if (!\is_string($handlerOrPath))return $handlerOrPath;
 		if (isset(self::$dataPartHandlers[$handlerOrPath]))return self::$dataPartHandlers[$handlerOrPath];
 		self::$dataPartHandlers[$handlerOrPath]=\fopen($handlerOrPath,'r');

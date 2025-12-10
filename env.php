@@ -22,8 +22,8 @@ class env{
 		}
 	}
 	
-	static function getCpuCoresNumber() {
-		if (self::isWindowsOS()) {
+	static function getCpuCoresNumber(){
+		if (self::isWindowsOS()){
 			return (int)\shell_exec('echo %NUMBER_OF_PROCESSORS%');
 		}
 		return (int)\shell_exec('nproc');

@@ -5,11 +5,11 @@ namespace c;
  * Collection class for ORM
  * @author Kosmom <Kosmom.ru>
  */
-class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
+class collection implements \ArrayAccess,\Countable,\Iterator,\Serializable{
 	protected $_c; // container
 	protected $_p=0; // position
 
-	function __construct($array=\null){
+	function __construct($array=null){
 		if (\is_array($array))$this->_c= \SplFixedArray::fromArray($array);
 	}
 
@@ -20,12 +20,12 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 
 	#[\ReturnTypeWillChange]
 	function offsetGet($offset){
-		return $this->offsetExists($offset)?$this->_c[$offset]:\null;
+		return $this->offsetExists($offset)?$this->_c[$offset]:null;
 	}
 
 	#[\ReturnTypeWillChange]
-	function offsetSet($offset, $value){
-		if (\is_null($offset)){
+	function offsetSet($offset,$value){
+		if ($offset===null){
 			$this->_c[]=$value;
 		}else{
 			$this->_c[$offset]=$value;
@@ -33,13 +33,13 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	}
 
 	function pluck($column){
-		return datawork::group($this->toArray(), '[]',$column);
+		return datawork::group($this->toArray(),'[]',$column);
 	}
 	function map($callback){
-		return \array_map($callback, $this->toArray());
+		return \array_map($callback,$this->toArray());
 	}
 	function implode($callback, $glue=', '){
-		return \implode($glue, $this->map($callback));
+		return \implode($glue,$this->map($callback));
 	}
 	
 	#[\ReturnTypeWillChange]
@@ -95,8 +95,8 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 		$this->_c=\unserialize($data);
 	}
 
-	function __invoke(array $data=\null){
-		if (\is_null($data))return $this->toArray();
+	function __invoke(array $data=null){
+		if ($data===null)return $this->toArray();
 		$this->_c=$data;
 	}
 
@@ -104,12 +104,12 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 		return $this->_c->toArray();
 	}
 
-	function group($key, $val=\false){
-		return datawork::group($this->toArray(), $key, $val);
+	function group($key,$val=false){
+		return datawork::group($this->toArray(),$key,$val);
 	}
 
-	function tree($keyField, $parentField, $childrenName='children', $mainbranch=\null){
-		return datawork::tree($this->toArray(), $keyField, $parentField, $childrenName, $mainbranch);
+	function tree($keyField,$parentField,$childrenName='children',$mainbranch=null){
+		return datawork::tree($this->toArray(),$keyField,$parentField,$childrenName,$mainbranch);
 	}
 
 	function first(){
@@ -122,7 +122,7 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 
 	function dd(){
 		\var_dump($this->toArray());
-		die();
+		die;
 	}
 
 	function last(){
@@ -136,7 +136,7 @@ class collection implements \ArrayAccess, \Countable, \Iterator, \Serializable{
 	function __toString(){
 		return input::json_encode($this->_c);
 	}
-	function where($field,$prop,$value=\null){
+	function where($field,$prop,$value=null){
 		if ($prop=='='){
 			return $this->out(array_filter($this->toArray(),function($row) use ($field,$value){
 				return ($row[$field]==$value);
