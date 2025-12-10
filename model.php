@@ -620,7 +620,7 @@ class model implements \Iterator{
 	function whereAny($fields,$prop=null,$value=null){
 		return $this->where(function($query) use ($fields,$prop,$value){
 			foreach ($fields as $field){
-				$query->where($field,$prop,$value)->or();
+				$query->where($field,$prop,$value)->_or();
 			}
 			return $query;
 		});
@@ -654,7 +654,7 @@ class model implements \Iterator{
 		if (\is_object($value) || \is_numeric($value))$value=(string)$value;
 		if ($prop=='=<')$prop='<=';
 		if ($prop=='=>')$prop='>=';
-		if ($prop=='in' && \count($value)==1){
+		if ($prop=='in' && \is_array($value) && \count($value)==1){
 			$prop='=';
 			$value=\current($value);
 		}
@@ -1188,15 +1188,34 @@ class model implements \Iterator{
 		return $this;
 	}
 	
+        /**
+         * @deprecated use _and
+         */
 	function and(){
+		return $this->_and();
+	}
+        /**
+         * @deprecated use _or
+         */
+	function or(){
+		return $this->_or();
+	}
+        /**
+         * @deprecated use _xor
+         */
+	function xor(){
+		return $this->_xor();
+	}
+        
+        function _and(){
 		$this->nextConjunction='AND';
 		return $this;
 	}
-	function or(){
+        function _or(){
 		$this->nextConjunction='OR';
 		return $this;
 	}
-	function xor(){
+        function _xor(){
 		$this->nextConjunction='XOR';
 		return $this;
 	}
