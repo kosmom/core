@@ -12,8 +12,8 @@ class env{
 	
 	static function getCpuLoad(){
 		if (self::isWindowsOS()){
-			@\exec("wmic cpu get loadpercentage /all", $output);
-			foreach ($output as $line){
+			@\exec("wmic cpu get loadpercentage /all",$out);
+			foreach ($out as $line){
 				if (\is_numeric($line))return (int)$line;
 			}
 			return false;

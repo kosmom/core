@@ -67,11 +67,11 @@ class curl{
 		);
 		//if (isset(self::$tasks[$task_id]['callback']))$options[CURLOPT_HEADERFUNCTION]=self::$tasks[$task_id]['callback'];
 		$options[\CURLOPT_URL]=self::$tasks[$task_id]['url'];
-		\curl_setopt_array($ch, $options);
+		\curl_setopt_array($ch,$options);
 		self::$tasks[$task_id]['handler']=(int)$ch;
 		self::$tasks_link[(int)$ch]=$task_id;
 		self::$tasks[$task_id]['status']=0; //0-send 1-done
-		\curl_multi_add_handle(self::$master, $ch);
+		\curl_multi_add_handle(self::$master,$ch);
 		unset($ch);
 	//return $ch;
 	}
@@ -113,7 +113,7 @@ class curl{
 				}
 				self::$running=1;
 			}
-			\curl_multi_remove_handle(self::$master, $done['handle']);
+			\curl_multi_remove_handle(self::$master,$done['handle']);
 		}
 	}
 	static function waitAll(){

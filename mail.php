@@ -79,7 +79,7 @@ class mail{
 		self::$mails[$db]->AddStringAttachment($text,$totalFilename,$cid);
 	}
 
-	static function AddAttachment($sourceFilename,$totalFilename='', $cid='',$db=''){
+	static function AddAttachment($sourceFilename,$totalFilename='',$cid='',$db=''){
 		if ($db=='')$db=core::$data['mail'];
 		if (empty(self::$mails[$db]))self::connect($db);
 		if ($totalFilename=='')$totalFilename=\basename($sourceFilename);

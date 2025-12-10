@@ -67,7 +67,7 @@ class pics{
 	 * @return pic
 	 */
 	static function getpic($filename,$autorotate=true,$pic=null){
-		return self::createPic($filename, $autorotate,$pic);
+		return self::createPic($filename,$autorotate,$pic);
 	}
 
 	/**

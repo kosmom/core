@@ -657,7 +657,7 @@ class models{
 		foreach ($this->possibleConnections as $connect=>$t)break;
 		$data=$this->ea1();
 		if (!$data)throw new \Exception('no data found');
-		return new model($data, $this->getFieldAttributes(), $connect,false);
+		return new model($data,$this->getFieldAttributes(),$connect,false);
 	}
 
 	/**

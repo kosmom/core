@@ -68,7 +68,7 @@ class db_oracle{
 		return true;
 	}
 
-	function execute($sql, $bind=array(), $mode='e'){
+	function execute($sql,$bind=array(),$mode='e'){
 		if (\c\core::$debug){
 			@\c\core::$data['stat']['db_queryes']++;
 			\c\debug::group('Oracle query');
@@ -108,7 +108,7 @@ class db_oracle{
 		}
 		if(\is_array($bind)){
 			foreach($bind as $key=>&$value){
-				\oci_bind_by_name($stmt,':'.$key, $value,-1);
+				\oci_bind_by_name($stmt,':'.$key,$value,-1);
 			}
 		}
 		$result=\oci_execute($stmt,$this->execute_mode);
@@ -187,9 +187,9 @@ class db_oracle{
 		return $data;
 	}
 	private function slashes($bind){
-		return \str_replace("'", "''", $bind);
+		return \str_replace("'", "''",$bind);
 	}
-	function massExecute($sql,$begin_sql,$repeat_sql,$end_sql, $binds = array()){
+	function massExecute($sql,$begin_sql,$repeat_sql,$end_sql,$binds=array()){
 		if (\c\core::$debug){
 			@\c\core::$data['stat']['db_queryes']++;
 			\c\debug::group('Oracle query');
@@ -216,7 +216,7 @@ class db_oracle{
 		}
 		$sql=$begin_sql.\implode($repeat_sql,$total_sql).$end_sql;
 		\c\debug::trace('SQL:'.$sql,false);
-		$stmt=\oci_parse($this->connect, $sql);
+		$stmt=\oci_parse($this->connect,$sql);
 		if(!$stmt){
 			$error=\oci_error($this->connect);
 			if (\c\core::$debug){
@@ -246,7 +246,7 @@ class db_oracle{
 		return false;
 	}
 	
-	function execute_ref($sql, &$bind, $assoc=false){
+	function execute_ref($sql,&$bind,$assoc=false){
 		if (\c\core::$debug){
 			\c\core::$data['stat']['db_queryes']++;
 			\c\debug::group('Oracle query');
@@ -341,7 +341,7 @@ class db_oracle{
 		return $this->execute_assoc_1($sql,$bind);
 	}
 	
-	function db_limit($sql, $from=0, $count=0){
+	function db_limit($sql,$from=0,$count=0){
 		//if (!$from)return 'select * from ('.$sql.') WHERE rownum < '.((int)$count+1);
                 if (isset($this->data['version']) && $this->data['version']>11){
                     return $sql.($from?' OFFSET '.(int)$from.' ROWS':'').($count?' FETCH NEXT '.(int)$count.' ROWS ONLY':'');
@@ -419,7 +419,7 @@ class db_oracle{
 		}
 		if(\is_array($bind)){
 			foreach($bind as $key=>&$value){
-				\oci_bind_by_name($stmt,':'.$key, $value,-1);
+				\oci_bind_by_name($stmt,':'.$key,$value,-1);
 			}
 		}
 		$result=\oci_execute($stmt,$this->execute_mode);

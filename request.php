@@ -58,7 +58,7 @@ class request{
 	static function protocol($SERVER=null){
 		if ($SERVER===null)$SERVER=$_SERVER;
 		if (self::isCmd($SERVER)) return false;
-		return 'http'.(($SERVER['HTTP_X_FORWARDED_PROTO']=='https' || (!empty($SERVER['HTTPS']) && $SERVER['HTTPS']!=='off' || $SERVER['SERVER_PORT'] == 443))?'s':'').'://';
+		return 'http'.(($SERVER['HTTP_X_FORWARDED_PROTO']=='https' || (!empty($SERVER['HTTPS']) && $SERVER['HTTPS']!=='off' || $SERVER['SERVER_PORT']==443))?'s':'').'://';
 	}
 
 	static function get($parameter,$default=null){
@@ -69,7 +69,7 @@ class request{
 	}
 	static function input($parameter,$default=null){
 		if (isset($_REQUEST[$parameter]))return $_REQUEST[$parameter];
-		return self::cookie($parameter, $default);
+		return self::cookie($parameter,$default);
 	}
 	static function request($parameter,$default=null){
 		return isset($_REQUEST[$parameter])?$_REQUEST[$parameter]:$default;
@@ -156,7 +156,7 @@ class request{
 		if (!isset(self::$counter[$file]))self::$counter[$file]=0;
 		return self::$files[$file][self::$counter[$file]];
 	}
-	static function basicAuth($validateLoginPadd, $realm='Need auth'){
+	static function basicAuth($validateLoginPadd,$realm='Need auth'){
 		if ($_SERVER['PHP_AUTH_USER']){
 			$user=$_SERVER['PHP_AUTH_USER'];
 			$pass=$_SERVER['PHP_AUTH_PW'];
@@ -206,7 +206,7 @@ class request{
 		}elseif (false !== \strpos($userAgent,'Opera ')){
 			//http://www.useragentstring.com/pages/Opera/
 			$name='Opera';
-			\preg_match('#Opera (\d{1,2})\.(\d{1,2})#i', $userAgent, $versionMatch);
+			\preg_match('#Opera (\d{1,2})\.(\d{1,2})#i',$userAgent,$versionMatch);
 			isset($versionMatch[1]) && $version[0]=(int)$versionMatch[1];
 			isset($versionMatch[2]) && $version[1]=(int)$versionMatch[2];
 		}elseif (false !== \strpos($userAgent, 'Firefox/')){
@@ -247,7 +247,7 @@ class request{
 			* and their version was marked as build number (ex. 528.16).
 			if (false !== strpos($userAgent, 'Version/')) // old versions of Safari doesn't have Version tag in UserAgent
 			{
-			preg_match('#Version/(\d{1,2})\.(\d{1,2})(\.(\d{1,2}))?#i', $userAgent, $versionMatch);
+			preg_match('#Version/(\d{1,2})\.(\d{1,2})(\.(\d{1,2}))?#i',$userAgent,$versionMatch);
 			isset($versionMatch[1]) && $version[0] = (int)$versionMatch[1];
 			isset($versionMatch[2]) && $version[1] = (int)$versionMatch[2];
 			isset($versionMatch[4]) && $version[2] = (int)$versionMatch[4];

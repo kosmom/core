@@ -189,7 +189,7 @@ class forms{
 	 * @deprecated since version 3.4
 	 */
 	static function add_fields($fields,$form=null){
-		return self::addFields($fields, $form);
+		return self::addFields($fields,$form);
 	}
 	/**
 	 * @param array $fields form fields

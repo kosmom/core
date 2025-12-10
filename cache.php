@@ -35,10 +35,8 @@ class cache{
 	}
 	static function compressHtml($compress){
 		self::$replaces=array();
-		$compress=self::decodeHtml($compress);
-		$compress=\preg_replace('/\s+/',' ',$compress);
-		if (empty(self::$replaces))return $compress;
-		return self::encodeHtml($compress);
+		$compress=\preg_replace('/\s+/',' ',self::decodeHtml($compress));
+		return empty(self::$replaces)?$compress:self::encodeHtml($compress);
 	}
 	/**
 	 * @deprecated since version 3.4
@@ -60,7 +58,7 @@ class cache{
 		return self::encodeHtml($text);
 	}
 	static function encodeHtml($text){
-		return \preg_replace_callback('/{{{replace}}}/','self::encodes', $text);
+		return \preg_replace_callback('/{{{replace}}}/','self::encodes',$text);
 	}
 	private static function encodes($matches){
 		return \array_shift(self::$replaces);
@@ -193,7 +191,7 @@ class cache{
 			self::set($key,$value);
 		}
 	}
-	static function set($key, $value){
+	static function set($key,$value){
 		$fullpath=self::getPath().'/'.$key.'.cache';
 		filedata::savedata($fullpath,$value);
 	}

@@ -60,7 +60,7 @@ class form_bootstrap{
 				}
 			}
 			if (\is_string($attributes)){
-				$attr=\explode(' ', $attributes);
+				$attr=\explode(' ',$attributes);
 			}else{
 				foreach ($attributes as $key=>$val){
 					$attr[]=\c\input::htmlspecialchars($key).'="'.\c\input::htmlspecialchars($val).'"';
@@ -68,7 +68,7 @@ class form_bootstrap{
 			}
 		}
 
-		return ' <div class="'.\implode(' ',$classes).'" '.(@$attr?\implode(' ', $attr):'').'>';
+		return ' <div class="'.\implode(' ',$classes).'" '.(@$attr?\implode(' ',$attr):'').'>';
 	}
 	function renderFieldFormGroupEnd($item){
 		if ($item['type']=='hidden')return '';
@@ -370,14 +370,14 @@ class form_bootstrap{
 								$out.='<label>'.$item['range_before_text'].'</label> <input name="'.$renderName.'[min]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.$attributes.$placeholder.$required.$value['min'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 //var_dump($attributes);
-								$out.=' <label>'.$item['range_to_text'].'</label> <input name="'.$renderName.'[max]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.\str_replace('id=', 'id2=', $attributes).$placeholder.$required.$value['max'].'/>';
+								$out.=' <label>'.$item['range_to_text'].'</label> <input name="'.$renderName.'[max]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.\str_replace('id=', 'id2=',$attributes).$placeholder.$required.$value['max'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 							}else{
 								$out.='<div class="row"><div class="col-xs-6">';
 								$out.=$item['range_before_text'].' <input name="'.$renderName.'[min]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.$attributes.$placeholder.$required.$value['min'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 								$out.='</div><div class="col-xs-6">';
-								$out.=$item['range_to_text'].' <input name="'.$renderName.'[max]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.\str_replace('id=', 'id2=', $attributes).$placeholder.$required.$value['max'].'/>';
+								$out.=$item['range_to_text'].' <input name="'.$renderName.'[max]" type="text" class="form-control '.$item['type'].'picker'.$classes.'" '.\str_replace('id=', 'id2=',$attributes).$placeholder.$required.$value['max'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 								$out.='</div></div>';
 							}
@@ -456,7 +456,7 @@ class form_bootstrap{
 								$out.='<input name="'.$renderName.'[min]" type="'.$item['type'].'" class="form-control'.$classes.'" '.$attributes.$placeholder.$required.$value['min'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 								$out.='</div><div class="col-xs-6">';
-								$out.='<input name="'.$renderName.'[max]" type="'.$item['type'].'" class="form-control'.$classes.'" '.\str_replace('id=', 'id2=', $attributes).$placeholder.$required.$value['max'].'/>';
+								$out.='<input name="'.$renderName.'[max]" type="'.$item['type'].'" class="form-control'.$classes.'" '.\str_replace('id=', 'id2=',$attributes).$placeholder.$required.$value['max'].'/>';
 								if (isset($item['ico']))$out.='<span aria-hidden="true" class="'.$item['ico'].' form-control-feedback"></span>';
 								$out.='</div></div>';
 							}else{

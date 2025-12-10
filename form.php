@@ -173,7 +173,7 @@ class form implements \ArrayAccess{
 		if (core::$debug)debug::dir($fields);
 		if (core::$debug)debug::groupEnd();
 		foreach ($fields as $key=>$item){
-			$this->addField($key, $item);
+			$this->addField($key,$item);
 		}
 		return $this;
 	}

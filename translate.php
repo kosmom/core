@@ -514,7 +514,7 @@ class translate{
 	/**
 	 * @deprecated since version 3.4 use plural method
 	 */
-	static function num_ending($number, $ending1,$ending4,$ending5=null){
+	static function num_ending($number,$ending1,$ending4,$ending5=null){
 		return self::plural($number,$ending1,$ending4,$ending5);
 	}
 	/**

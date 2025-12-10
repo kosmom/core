@@ -38,7 +38,7 @@ class collection implements \ArrayAccess,\Countable,\Iterator,\Serializable{
 	function map($callback){
 		return \array_map($callback,$this->toArray());
 	}
-	function implode($callback, $glue=', '){
+	function implode($callback,$glue=', '){
 		return \implode($glue,$this->map($callback));
 	}
 	

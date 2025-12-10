@@ -403,7 +403,7 @@ class model implements \Iterator{
 			$this->queryBind['cu_'.$field]=$value;
 		}
 		$sql='update '.$this->getScemeWithTable().' set '.implode(',',$set).$this->getWhereSqlPart();
-		if ($this->limitCount || $this->limitStart)$sql=db::limit($sql, $this->limitStart,$this->limitCount,$this->getConnections());
+		if ($this->limitCount || $this->limitStart)$sql=db::limit($sql,$this->limitStart,$this->limitCount,$this->getConnections());
 		return db::e($sql,$this->queryBind,$this->getConnections());
 	}
 	private function sqlExpression($where){
@@ -796,7 +796,7 @@ class model implements \Iterator{
 			\array_shift($this->queryWhere);
 			\array_shift($this->queryBind);
 			$collectionElements=$this->collectionSource->keys();
-			if (!$this->collectionSource->is_full)$this->where($field, $collectionElements);
+			if (!$this->collectionSource->is_full)$this->where($field,$collectionElements);
 			$rs=db::ea($this->getSql(),$this->queryBind,$this->getConnections());
 			foreach ($rs as $row){
 				model::setData($this,$row[$pk],$row);
@@ -869,7 +869,7 @@ class model implements \Iterator{
 		foreach ($this->queryWhere as $key=>$where){
 			$wheres[]=($key?' '.$where['conjunction'].' ':'').$this->sqlExpression($where);
 		}
-		return ($this->isSubquery?'':' WHERE ').\implode('', $wheres);
+		return ($this->isSubquery?'':' WHERE ').\implode('',$wheres);
 	}
 	
 	function count($distinctField=null){
@@ -903,10 +903,10 @@ class model implements \Iterator{
 			if ($groupFields){
 				if (\is_string($groupFields))$groupFields=array($groupFields);
 				$sql='SELECT '.\implode(',',$sqlString).' from '.$this->getScemeWithTable().' '.$this->tableAlias.$this->getWhereSqlPart().' group by '.\implode(',',$groupFields).$this->getOrderSqlPart();
-				return db::ea($sql,$this->queryBind,$this->getConnections(), $this->cacheTimeout);
+				return db::ea($sql,$this->queryBind,$this->getConnections(),$this->cacheTimeout);
 			}
 			$sql='SELECT '.\implode(',',$sqlString).' from '.$this->getScemeWithTable().' '.$this->tableAlias.$this->getWhereSqlPart();
-			return model::$cache[\get_called_class()][$hash]=db::ea1($sql,$this->queryBind,$this->getConnections(), $this->cacheTimeout);
+			return model::$cache[\get_called_class()][$hash]=db::ea1($sql,$this->queryBind,$this->getConnections(),$this->cacheTimeout);
 		}
 		if ($this->collectionSource && isset($this->collectionSource->keys()[1])){
 			// get whole request with group by expression
@@ -916,7 +916,7 @@ class model implements \Iterator{
 			\array_shift($this->queryWhere);
 			\array_shift($this->queryBind);
 			$collection_elements=$this->collectionSource->keys();
-			if (!$this->collectionSource->is_full)$this->where($field, $collection_elements);
+			if (!$this->collectionSource->is_full)$this->where($field,$collection_elements);
 			$sql='SELECT '.$field.' '.db::wrapper('f',$this->getConnections()).','.$aggregateSql.' '.db::wrapper('a',$this->getConnections()).' from '.$this->getScemeWithTable().' '.$this->tableAlias.$this->getWhereSqlPart().' group by '.$field;
 			$rs=db::ea($sql,$this->queryBind,$this->getConnections());
 			$rs=datawork::group($rs,'f','a');
@@ -1047,7 +1047,7 @@ class model implements \Iterator{
 				}
 			}
 		}
-		$obj=new $model(null, $baseCollection);
+		$obj=new $model(null,$baseCollection);
 		if ($foreign_key===null)$foreign_key=$obj->getPrimaryField();
 		if ($this->whereHasMode){
 			$obj->select('1');
@@ -1179,7 +1179,7 @@ class model implements \Iterator{
 		}
 	}
 	
-	function when($condition, $ifCallback, $elseCallback=null){
+	function when($condition,$ifCallback,$elseCallback=null){
 		if ($condition){
 			$ifCallback($this);
 		}elseif (\is_callable($elseCallback)){

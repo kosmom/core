@@ -369,7 +369,7 @@ class xlsx{
 		$strings=\explode("\r",$file);
 		$data=array();
 		foreach ($strings as $string){
-			$data[]=\str_getcsv($string, $delimeter);
+			$data[]=\str_getcsv($string,$delimeter);
 //			$str=explode($delimeter,trim($string));
 //			foreach ($str as $key=>$cell){
 //				if (substr($cell,0,1)=='"' && substr($cell,-1,1)=='"'){

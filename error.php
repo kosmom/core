@@ -71,13 +71,13 @@ class error{
 		return self::add($text,self::WARNING,$redirect,$header);
 	}
 
-	static function setSuccess($key, $text,$redirect=false,$header=''){
+	static function setSuccess($key,$text,$redirect=false,$header=''){
 		return self::add($text,self::SUCCESS,$redirect,$header,$key);
 	}
-	static function setError($key, $text,$redirect=false,$header=''){
+	static function setError($key,$text,$redirect=false,$header=''){
 		return self::add($text,self::ERROR,$redirect,$header,$key);
 	}
-	static function setWarning($key, $text,$redirect=false,$header=''){
+	static function setWarning($key,$text,$redirect=false,$header=''){
 		return self::add($text,self::WARNING,$redirect,$header,$key);
 	}
 	

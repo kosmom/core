@@ -141,7 +141,7 @@ class dbwork{
 						$string=\substr($string,4,-1);
 						$name=input::findFirstPrepare($string);
 						$string=\trim($string,' (');
-						$key=\explode(',', $string);
+						$key=\explode(',',$string);
 						foreach ($key as $item){
 							$indexKey[$name][]=input::findFirstPrepare($item);
 						}

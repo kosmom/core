@@ -92,7 +92,7 @@ class tables{
 		$table=new table();
 		if (!isset($input['header']))$table->header=self::$header;
 		$table->data=self::$data;
-		return $table->renderAsText($delimeterRow,$delimeterCol,$delimeterKeyVal, $input);
+		return $table->renderAsText($delimeterRow,$delimeterCol,$delimeterKeyVal,$input);
 	}
 	static function getTableObject(){
 		$table=new table(self::$data,self::$header);

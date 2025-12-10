@@ -65,7 +65,7 @@ class db_pgsql{
 		}
 		return \strtr($sql,$bind2);
 	}
-	function execute($sql, $bind=array()){
+	function execute($sql,$bind=array()){
 		return $this->execute_assoc($sql,$bind,'e');
 	}
 	function execute_assoc($sql,$bind=array(),$mode='ea'){

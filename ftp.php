@@ -20,7 +20,7 @@ class ftp{
 			foreach ($ar_files as $file){
 				$st_file=\basename($file);
 				if($st_file=='.' || $st_file=='..')continue;
-				if (\ftp_size($connId, $dir.'/'.$st_file) == -1){
+				if (\ftp_size($connId,$dir.'/'.$st_file) == -1){
 					$files+=self::rmdir($dir.'/'.$st_file,$connId);
 				}else{
 					\ftp_delete($connId,$dir.'/'.$st_file);
@@ -65,7 +65,7 @@ class ftp{
 	/**
 	* @deprecated since version 3.4
 	*/
-	static function copy_to_ftp($srcDir, $dstDir,$connId){
+	static function copy_to_ftp($srcDir,$dstDir,$connId){
 	  return self::copyToFtp($srcDir,$dstDir,$connId);
 	}
 	/**
@@ -83,7 +83,7 @@ class ftp{
 		while($file=$d->read()){
 			if ($file=='.' || $file=='..')continue;
 			if (\is_dir($srcDir.'/'.$file)){
-				if (!@ftp_chdir($connId, $dstDir.'/'.$file))\ftp_mkdir($connId,$dstDir.'/'.$file);
+				if (!@ftp_chdir($connId,$dstDir.'/'.$file))\ftp_mkdir($connId,$dstDir.'/'.$file);
 				self::copyToFtp($srcDir.'/'.$file,$dstDir.'/'.$file,$connId);
 			}else{
 				\ftp_put($connId,$dstDir.'/'.$file,$srcDir.'/'.$file,\FTP_BINARY);

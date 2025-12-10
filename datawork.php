@@ -709,7 +709,7 @@ class datawork{
 			$out[]=$newitem;
 			if (isset($item[$children])){
 				$rs=self::flatTree($item[$children],$children,$level+1);
-				$out=\array_merge($out, $rs);
+				$out=\array_merge($out,$rs);
 			}
 		}
 		return $out;

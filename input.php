@@ -26,9 +26,9 @@ class input{
 				}elseif ($value=='date'){
 					if (!\strtotime($var))return translate::t('Date wrong');
 				}elseif ($value=='date_format'){
-					if (!\preg_match('/^\d{1,2}([-. /])\d{1,2}\1\d{2,4}$/', $var))return translate::t('Date set not in format DD.MM.YYYY');
+					if (!\preg_match('/^\d{1,2}([-. /])\d{1,2}\1\d{2,4}$/',$var))return translate::t('Date set not in format DD.MM.YYYY');
 				}elseif ($value=='mail'){
-					if (!\preg_match('/^[\.\-_A-Za-z0-9]+?@[\.\-A-Za-z0-9]+?\.[A-Za-z0-9]{2,6}$/', $var) && $var!='') return translate::t('mail format wrong');
+					if (!\preg_match('/^[\.\-_A-Za-z0-9]+?@[\.\-A-Za-z0-9]+?\.[A-Za-z0-9]{2,6}$/',$var) && $var!='') return translate::t('mail format wrong');
 				}
 			}
 		}
@@ -129,7 +129,7 @@ class input{
 					case 'from-utf8':
 						if (core::$charset==core::UTF8)break;
 						$var=self::iconv($var);
-//						$var=iconv('utf-8', core::$charset, $var);
+//						$var=iconv('utf-8',core::$charset,$var);
 						break;
 					case 'ucfirst':
 						$var=self::ucfirst($var);
@@ -229,7 +229,7 @@ class input{
 			if ($valid===false && (!isset($validator['text']) or $validator['text']===false))continue;
 			$errorText=self::htmlspecialchars(translate::t($validator['text']!=self::VALIDATE_AUTO_TEXT?$validator['text']:($errorDict[$validator['type']]?$errorDict[$validator['type']]:'Field "{label_full}" has wrong value'),$validator+(array)$label));
 			$errorLevel=@$validator['level']?$validator['level']:error::ERROR;
-			$check=self::valid($validator, $val, $formKey);
+			$check=self::valid($validator,$val,$formKey);
 			if ($valid && !$check)$valid=false;
 			if (!$check && isset($validator['text']) && $validator['text']!==false)error::add($errorText,$errorLevel);
 		}

@@ -993,7 +993,7 @@ echo '>';
 			unset(self::$url_links[self::$page_counter]);
 		}
 		$result=null;
-		$default=self::relativeFilePath($default, $__DIR__);
+		$default=self::relativeFilePath($default,$__DIR__);
 		if ($exception===null){
 			$exception=empty(core::$data['controller_exception_page'])?$default:core::$data['controller_exception_page'];
 		}

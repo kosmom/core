@@ -12,7 +12,7 @@ class arrayaccess implements \ArrayAccess{
 	function offsetGet($o){
 		return property_exists($this,$o)?$this->$o:null;
 	}
-	function offsetSet($o, $v){
+	function offsetSet($o,$v){
 		$this->$o=$v;
 	}
 	function __get($o){

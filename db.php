@@ -171,19 +171,19 @@ class db{
 	private static function execute($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
 		if ($sql==null)global $sql;
 		$db=self::dbPrepare($db);
-		if ($cacheTimeout===null)return self::$dbs[core::$env][$db]->execute_assoc($sql,self::autobind($sql, $bind));
-		return cache::get('db_'.\md5(\json_encode(array($sql,$db,core::$env,$bind))), function() use ($bind,$sql,$db){
+		if ($cacheTimeout===null)return self::$dbs[core::$env][$db]->execute_assoc($sql,self::autobind($sql,$bind));
+		return cache::get('db_'.\md5(\json_encode(array($sql,$db,core::$env,$bind))),function() use ($bind,$sql,$db){
 			return self::$dbs[core::$env][$db]->execute_assoc($sql,self::autobind($sql,$bind));
-		}, $cacheTimeout);
+		},$cacheTimeout);
 	}
 	
 	private static function execute1($sql=null,$bind=array(),$db=null,$cacheTimeout=null){
 		if ($sql==null)global $sql;
 		$db=self::dbPrepare($db);
-		if ($cacheTimeout===null)return self::$dbs[core::$env][$db]->ea1($sql,self::autobind($sql, $bind));
-		return cache::get('db1_'.\md5(\json_encode(array($sql,$db,core::$env,$bind))), function() use ($bind,$sql,$db){
-			return self::$dbs[core::$env][$db]->ea1($sql,self::autobind($sql, $bind));
-		}, $cacheTimeout);
+		if ($cacheTimeout===null)return self::$dbs[core::$env][$db]->ea1($sql,self::autobind($sql,$bind));
+		return cache::get('db1_'.\md5(\json_encode(array($sql,$db,core::$env,$bind))),function() use ($bind,$sql,$db){
+			return self::$dbs[core::$env][$db]->ea1($sql,self::autobind($sql,$bind));
+		},$cacheTimeout);
 	}
 	
 	/**
@@ -380,7 +380,7 @@ class db{
 		if ($db=='')$db=core::$data['db'];
 		if (\is_array($db))$db=self::autodb($db);
 		if (empty(self::$dbs[core::$env][$db]))self::connect($db);
-		return self::$dbs[core::$env][$db]->explain($sql,self::autobind($sql, $bind));
+		return self::$dbs[core::$env][$db]->explain($sql,self::autobind($sql,$bind));
 	}
 
 	/**
@@ -391,7 +391,7 @@ class db{
 	}
 	static function dateFromDb($field,$format='Y-m-d H:i:s',$db=''){
 		$db=self::dbPrepare($db);
-		return self::$dbs[core::$env][$db]->date_from_db($field, $format);
+		return self::$dbs[core::$env][$db]->date_from_db($field,$format);
 	}
 
 	/**
