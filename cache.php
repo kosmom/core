@@ -9,6 +9,7 @@ class cache{
 	private static $cacheTimeout=0;
 	private static $cachePath='cache';
 	private static $replaces=array();
+	private static $onces=array();
 	
 	static function refresh_page($link){
 		$cachefile=self::getPath().'/'.\md5($link).'.gz';
@@ -24,8 +25,7 @@ class cache{
 		return true;
 	}
 	static function once($param='_default'){
-		if (isset(self::$onces[$param]))return false;
-		return self::$onces[$param]=true;
+		return isset(self::$onces[$param])?false:self::$onces[$param]=true;
 	}
 	/**
 	 * @deprecated since version 3.4
