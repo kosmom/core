@@ -24,7 +24,6 @@ class db{
 		$a->sqlPart=$sqlPart;
 		return $a;
 	}
-	
 	function __toString(){
 		return (string)$this->sqlPart;
 	}
@@ -52,6 +51,7 @@ class db{
 	}
 
 	static function wrapper($object,$db=''){
+		if ($object instanceof db)return $object;
 		$db=self::dbPrepare($db);
 		return self::$dbs[core::$env][$db]->wrapper($object);
 	}

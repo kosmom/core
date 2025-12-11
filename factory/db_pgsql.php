@@ -61,7 +61,7 @@ class db_pgsql{
 		if (\count($bind)==0 || !\is_array($bind))return $sql;
 		$bind2=array();
 		foreach ($bind as $key=>$value){
-			$bind2[':'.$key]=($value===\c\db::NULL || $value===null?'NULL': ($value instanceof \c\db?$value:"'".\pg_escape_string($this->connect,$value)."'"));
+			$bind2[':'.$key]=($value===\c\db::NULL || $value===null?'NULL':($value instanceof \c\db?$value:"'".\pg_escape_string($this->connect,$value)."'"));
 		}
 		return \strtr($sql,$bind2);
 	}
@@ -86,7 +86,7 @@ class db_pgsql{
 			$start=\microtime(true);
 		}
 		$sql=$this->bind($sql,$bind);
-		@$result=pg_query($this->connect,$sql);
+		@$result=\pg_query($this->connect,$sql);
 		if (\c\core::$debug){
 			\c\debug::consoleLog('Query execute for '.\round((\microtime(true)-$start)*1000,2).' ms');
 			$start=\microtime(true);
