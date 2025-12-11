@@ -410,11 +410,10 @@ class model implements \Iterator{
 		if (isset($where['field']) && \is_callable($where['field']) && !\is_string($where['field'])){
 			$model=new $this;
 			$model->isSubquery=true;
-			//$model->tableAlias=$this->tableAlias;
-			//$model->queryBind=$this->queryBind;
+			$model->queryBind=&$this->queryBind;
+			$model->bindCounter=&$this->bindCounter;
 			$model->connection=$this->connection;
 			$where['field']($model);
-			$this->queryBind+=$model->queryBind;
 			$sql=$model->getSql();
 			return $sql?'('.$sql.')':'1';
 		}
