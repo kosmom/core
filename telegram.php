@@ -151,7 +151,10 @@ class telegram{
                 }else{
                     $mediaItem=array('type'=>'photo','media'=>$item);
                 }
-                if ($index===0 && $caption!==null)$mediaItem['caption']=input::iconv($caption, true);
+                if ($index===0 && $caption){
+                    $mediaItem['caption']=input::iconv($caption,true);
+                    if (self::$parse_mode)$mediaItem['parse_mode']=self::$parse_mode;
+                }
                 $media[]=$mediaItem;
             }
             $data['media']=input::jsonEncode($media);
@@ -166,7 +169,10 @@ class telegram{
 		self::check();
 		$data=array('chat_id'=>$chat_id);
 		$options=array();
-		if ($caption)$data['caption']=input::iconv($caption,true);
+		if ($caption){
+                    $data['caption']=input::iconv($caption,true);
+                    if (self::$parse_mode)$data['parse_mode']=self::$parse_mode;
+                }
 		if ($protect_content)$data['protect_content']=true;
 		if ($reply_markup)$data['reply_markup']=$reply_markup;
 		if (\is_file($photoLink)){
