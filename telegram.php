@@ -44,7 +44,7 @@ class telegram{
 	static function getFileContent($fileId){
 		$rs=self::getFile($fileId);
 		if ($rs['ok']!=true)throw new Exception('file get error');
-		return curl::getContent('https://api.telegram.org/file/bot'.core::$data['telegram'].'/'.$rs['result']['file_path']);
+                return self::request($rs['result']['file_path'],null,array(),true);
 	}
 	static function sendLocation($chat_id,$latitude,$longitude,$reply_markup=null){
 		self::check();
@@ -232,20 +232,19 @@ class telegram{
 		return \json_decode(input::iconv(\file_get_contents("php://input")),true);
 	}
 	static function check(){
-		if (!isset(core::$data['telegram']))throw new \Exception('need set c\\core::$data[\'telegram key\'] from BotFather');
+		if (!isset(core::$data['telegram']))throw new \Exception('need set c\\core::$data[\'telegram\'] key from BotFather');
 	}
-	private static function request($api,$post=null,$options=array()){
+	private static function request($api,$post=null,$options=array(),$is_file=false){
 		if (\is_callable(@core::$data['telegram_request'])){
 			$a=core::$data['telegram_request'];
-			return $a($api,$post);
+			return $a($api,$post,$is_file);
 		}
-		$url='https://api.telegram.org/bot'.core::$data['telegram'].'/'.$api;
-		if (@core::$data['telegram_proxy']){
-			$options[\CURLOPT_PROXY]=core::$data['telegram_proxy']['host'];
-			$options[\CURLOPT_PROXYUSERPWD]=core::$data['telegram_proxy']['auth'];
-			$options[\CURLOPT_PROXYTYPE]=core::$data['telegram_proxy']['type'];
-		}
-		return \json_decode(curl::getContentSafely($url,$post,null,$options),true);
+		$url='https://api.telegram.org/'.($is_file?'file/':'').'bot'.core::$data['telegram'].'/'.$api;
+		if (@core::$data['telegram_proxy']['host'])$options[\CURLOPT_PROXY]=core::$data['telegram_proxy']['host'];
+		if (@core::$data['telegram_proxy']['auth'])$options[\CURLOPT_PROXYUSERPWD]=core::$data['telegram_proxy']['auth'];
+		if (@core::$data['telegram_proxy']['type'])$options[\CURLOPT_PROXYTYPE]=core::$data['telegram_proxy']['type'];
+		$rs=curl::getContentSafely($url,$post,null,$options);
+        return $is_file?$rs:\json_decode($rs,true);
 	}
 	static function checkAuth($auth_data){
 		$check_hash=$auth_data['hash'];
