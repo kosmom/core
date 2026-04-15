@@ -600,7 +600,10 @@ class input{
 	static function jsonDecode($var,$charset=null){
 		if ($charset==null)$charset=core::$charset;
 		$rs=\json_decode($var,1);
-		if ($rs===null && \substr($var,0,1)!=='[')throw new \Exception('json decode error: '.\json_last_error_msg());
+		if ($rs===null && \substr($var,0,1)!=='['){
+			if (core::$data['input_json_debug_log_file'])error::log(core::$data['input_json_debug_log_file'],date('Y-m-d H:i:s').PHP_EOL.\json_last_error_msg().PHP_EOL.print_r(debug_backtrace(),1).PHP_EOL.$var);
+			throw new \Exception('json decode error: '.\json_last_error_msg());
+		}
 		if ($charset==core::UTF8)return $rs;
 		return self::jsonFixCharset($rs,$charset,false);
 	}

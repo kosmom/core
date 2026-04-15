@@ -71,6 +71,7 @@ class core{
 	 * @param table_header_render_callback
 	 * @param curl_safely_retry_count
 	 * @param curl_safely_retry_pause
+	 * @param input_json_debug_log_file
 	 * @param render
 	 */
 	static $data=array('db_autobind'=>array(),'render'=>'bootstrap3','db_describe_cache'=>array());
