@@ -53,16 +53,12 @@ class max_api {
      * @return array
      * @throws \Exception
      */
-        private static function request($method, $api_method, $params = array(), $data = null) {
-            if (!isset(core::$data['max'])) {
-                throw new \Exception('need set c\\core::$data[\'max\'] token');
-            }
+        private static function request($method,$api_method,$params=array(),$data=null){
+            if (!isset(core::$data['max']))throw new \Exception('need set c\\core::$data[\'max\'] token');
             $access_token=core::$data['max'];
             $url='https://platform-api2.max.ru/'.$api_method;
 
-            if (!empty($params)) {
-                $url.='?'.http_build_query($params);
-            }
+            if (!empty($params))$url.='?'.http_build_query($params);
             $ch = curl_init();
             curl_setopt($ch,CURLOPT_URL,$url);
             curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
@@ -72,58 +68,40 @@ class max_api {
                 'Authorization: '.$access_token,
                 'Accept: application/json'
             );
-
-            switch (strtoupper($method)){
+            switch (\strtoupper($method)){
                 case 'POST':
                     curl_setopt($ch,CURLOPT_POST,true);
                     $headers[]='Content-Type: application/json';
-                    if ($data!==null) {
-                        curl_setopt($ch,CURLOPT_POSTFIELDS,json_encode($data));
-                    }
+                    if ($data!==null)curl_setopt($ch,CURLOPT_POSTFIELDS,json_encode($data));
                     break;
-
                 case 'PATCH':
-                    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
-                    $headers[] = 'Content-Type: application/json';
-                    if ($data !== null) {
-                        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-                    }
+                    curl_setopt($ch,CURLOPT_CUSTOMREQUEST,'PATCH');
+                    $headers[]='Content-Type: application/json';
+                    if ($data!==null)curl_setopt($ch,CURLOPT_POSTFIELDS,json_encode($data));
                     break;
-            
                 case 'PUT':
                     curl_setopt($ch,CURLOPT_CUSTOMREQUEST,'PUT');
                     $headers[]='Content-Type: application/json';
-                    if ($data!==null) {
-                        curl_setopt($ch,CURLOPT_POSTFIELDS,json_encode($data));
-                    }
+                    if ($data!==null)curl_setopt($ch,CURLOPT_POSTFIELDS,json_encode($data));
                     break;
-
                 case 'DELETE':
                     curl_setopt($ch,CURLOPT_CUSTOMREQUEST,'DELETE');
                     break;
             }
-
             curl_setopt($ch,CURLOPT_HTTPHEADER,$headers);
-
             $response=curl_exec($ch);
             $http_code=curl_getinfo($ch,CURLINFO_HTTP_CODE);
             $error=curl_error($ch);
-
             curl_close($ch);
-
-            if ($error){
-                throw new \Exception('CURL Error: '.$error);
-            }
-            if ($http_code>=400) {
+            if ($error)throw new \Exception('CURL Error: '.$error);
+            if ($http_code>=400){
                 $response_array=json_decode($response, true);
                 $error_message=isset($response_array['error'])?$response_array['error']:'HTTP Error '.$http_code;
                 throw new \Exception($error_message,$http_code);
             }
-
             if ($method==='DELETE' && empty($response)){
                 return array('ok'=>true,'result'=>true);
             }
-
             return json_decode($response,true);
         }
     
@@ -225,31 +203,29 @@ class max_api {
 		elseif (isset($uploadResult['token'])){
 		    $token=$uploadResult['token'];
 		}
-
 		if (!$token){
 		    throw new \Exception('Invalid response from upload: missing token. Response: '.json_encode($uploadResult));
 		}
-
 		return array(
 		    'type'=>$type,
 		    'payload'=>array('token'=>$token)
 		);
     }
     
-    static function patchBot($patch) {
-        return self::request('PATCH', 'me', array(), $patch);
+    static function patchBot($patch){
+        return self::request('PATCH','me',array(),$patch);
     }
 
     /**
      * set commands
      * @param array $commands [['name' => 'start', 'description' => 'Start'], ...]
      */
-    static function setMyCommands($commands) {
-        return self::patchBot(array('commands' => $commands));
+    static function setMyCommands($commands){
+        return self::patchBot(array('commands'=>$commands));
     }
 
-    static function deleteMyCommands() {
-        return self::patchBot(array('commands' => array()));
+    static function deleteMyCommands(){
+        return self::patchBot(array('commands'=>array()));
     }
     
     /**
@@ -262,7 +238,7 @@ class max_api {
      * @return array
      */
     static function sendMessage($chat_id,$text,$attachments=null,$disable_link_preview=false,$notify=true,$reply_to_message_id=null){
-        $params=array('chat_id'=>$chat_id);
+        $params=\is_array($char_id)?$chat_id:array('chat_id'=>$chat_id);
         $data=array('text'=>input::iconv($text,true));
         if (self::$parse_mode)$data['format']=self::$parse_mode;
         if ($disable_link_preview)$data['disable_link_preview']=true;
@@ -358,22 +334,10 @@ class max_api {
      */
     static function getUpdates($options=array()){
         $params=array();
-        
-        if (isset($options['limit'])){
-            $params['limit']=min(max($options['limit'], 1),1000);
-        }
-        
-        if (isset($options['timeout'])){
-            $params['timeout']=min(max($options['timeout'],0),90);
-        }
-        
-        if (isset($options['marker'])){
-            $params['marker']=$options['marker'];
-        }
-        
-        if (isset($options['types']) && is_array($options['types'])){
-            $params['types']=implode(',',$options['types']);
-        }
+        if (isset($options['limit']))$params['limit']=min(max($options['limit'], 1),1000);
+        if (isset($options['timeout']))$params['timeout']=min(max($options['timeout'],0),90);
+        if (isset($options['marker']))$params['marker']=$options['marker'];
+        if (isset($options['types']) && is_array($options['types']))$params['types']=implode(',',$options['types']);
         return self::request('GET','updates',$params);
     }
     
@@ -393,20 +357,11 @@ class max_api {
      * @param string|null $secret Секретный ключ для проверки заголовка X-Max-Bot-Api-Secret
      * @return array Ответ API
      */
-    static function setWebhook($url, $update_types = null, $secret = null) {
-        $data = array(
-            'url' => $url
-        );
-        
-        if ($update_types !== null && is_array($update_types)) {
-            $data['update_types'] = $update_types;
-        }
-        
-        if ($secret !== null) {
-            $data['secret'] = $secret;
-        }
-        
-        return self::request('POST', 'subscriptions', array(), $data);
+    static function setWebhook($url,$update_types=null,$secret=null){
+        $data=array('url'=>$url);
+        if ($update_types!==null && \is_array($update_types))$data['update_types']=$update_types;
+        if ($secret!==null)$data['secret']=$secret;
+        return self::request('POST','subscriptions',array(),$data);
     }
     
     /**
@@ -414,33 +369,24 @@ class max_api {
      * @param string $url URL webhook для удаления
      * @return array Ответ API с полями success и message
      */
-    static function deleteWebhook($url) {
-        $params = array(
-            'url' => $url
-        );
-        return self::request('DELETE', 'subscriptions', $params);
+    static function deleteWebhook($url){
+        $params=array('url'=>$url);
+        return self::request('DELETE','subscriptions',$params);
     }
     
     /**
- * Добавление участников в групповой чат
- * @param int $chat_id ID чата
- * @param array|int $user_ids ID пользователя или массив ID пользователей для добавления
- * @return array Ответ API
- */
-static function addChatMembers($chat_id, $user_ids) {
-    // Если передан не массив, преобразуем в массив
-    if (!is_array($user_ids)) {
-        $user_ids = array($user_ids);
+     * Добавление участников в групповой чат
+     * @param int $chat_id ID чата
+     * @param array|int $user_ids ID пользователя или массив ID пользователей для добавления
+     * @return array Ответ API
+     */
+    static function addChatMembers($chat_id,$user_ids){
+        if (!is_array($user_ids))$user_ids=array($user_ids);
+        $data=array('user_ids'=>$user_ids);
+        return self::request('POST','chats/'.$chat_id.'/members',array(),$data);
     }
-    
-    $data = array(
-        'user_ids' => $user_ids
-    );
-    
-    return self::request('POST', 'chats/' . $chat_id . '/members', array(), $data);
-}
 
-static function getChatMembers($chat_id, $params = array()) {
-    return self::request('GET', 'chats/' . $chat_id . '/members', $params);
-}
+    static function getChatMembers($chat_id,$params=array()){
+        return self::request('GET','chats/'.$chat_id.'/members',$params);
+    }
 }
