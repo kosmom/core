@@ -94,11 +94,22 @@ class db_mysql{
 		}
 		$sql=$this->bind($sql,$bind);
 		//echo $sql;
-		@$result = \mysqli_query($this->connect,$sql);
-		if (!$result && \mysqli_error($this->connect)=='MySQL server has gone away'){
-			$this->disconnect();
-			$this->connect();
+		try{
 			$result=\mysqli_query($this->connect,$sql);
+		}catch (\mysqli_sql_exception $e){
+			if ($e->getCode()==2006 || $e->getCode()==2013){
+				$this->disconnect();
+				$this->connect();
+				try{
+					$result=\mysqli_query($this->connect,$sql);
+				}catch (\mysqli_sql_exception $e2){
+					if (empty(\c\core::$data['db_exception'])) return \false;
+					throw new \Exception('SQL execute error: '.$e2->getMessage(),(int)$e2->getCode());
+				}
+			}else{
+				if (empty(\c\core::$data['db_exception'])) return \false;
+				throw new \Exception('SQL execute error: '.$e->getMessage(),(int)$e->getCode());
+			}
 		}
 		if (\c\core::$debug){
 			\c\debug::consoleLog('Query execute for '.\round((\microtime(true)-$start)*1000,2).' ms');
