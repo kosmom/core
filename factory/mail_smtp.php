@@ -106,11 +106,12 @@ $size_msg=\strlen($header."\r\n".$this->body);
 $code=\substr($this->getData($smtp_conn),0,3);
 if($code!=250)throw new \Exception('Error MAIL FROM');
 
-	foreach($this->addresslist as $mail){
-\fputs($smtp_conn,"RCPT TO:".$mail."\r\n");
-$code=\substr($this->getData($smtp_conn),0,3);
-if($code!=250 && $code!=251)throw new \Exception('Error MAIL RCPT TO');
-	}
+foreach($this->addresslist as $mail){
+	\fputs($smtp_conn,"RCPT TO:".$mail."\r\n");
+	$rs=$this->getData($smtp_conn);
+	$code=\substr($rs,0,3);
+	if($code!=250 && $code!=251)throw new \Exception('Error MAIL RCPT TO: '.$rs);
+}
 
 \fputs($smtp_conn,"DATA\r\n");
 $code=\substr($this->getData($smtp_conn),0,3);
